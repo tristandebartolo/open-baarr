@@ -15,7 +15,8 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/stores/auth-store';
 
-const DEFAULT_SERVER_URL = 'https://open.baarr.ddev.site';
+// Surchargeable au build : EXPO_PUBLIC_SERVER_URL=https://open.baarr.fr npx expo run:ios ...
+const DEFAULT_SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL ?? 'https://open.baarr.ddev.site';
 
 export default function LoginScreen() {
   const theme = useTheme();
