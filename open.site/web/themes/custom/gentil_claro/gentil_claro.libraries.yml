@@ -15,7 +15,7 @@ global-styling:
     - gentil_claro/global-styling-uikit-js
     - gentil_claro/global-styling-uikit-css
     - gentil_claro/global-styling-fonts
-    - cookies/cookies.lib
+    # - cookies/cookies.lib
 # Css uikit
 global-styling-uikit-css:
   version: VERSION
