@@ -1,0 +1,89 @@
+.gntl-nav {
+  z-index: 999999999;
+  background-color: #ffffff;
+  .gntl-nav-container {
+    .gntl-nav-wrapper {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      justify-content: space-between;
+      .gntl-nav-branding {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        .gntl-branding-logo {
+          width: 90px;
+          height: 84px;
+          overflow: hidden;
+          margin: 0 5px 0 0px;
+          min-width: 90px;
+        }
+        .gntl-branding-name {
+          font-size: 0.8rem;
+          line-height: 1;
+          margin-bottom: 0;
+          .site-name {
+            font-size: 1.4rem;
+            margin-bottom: 0;
+            font-weight: 100;
+            a {
+              padding: 0;
+            }
+          }
+        }
+      }
+      .gntl-navbar-menu {
+        .menu--main {
+          ul.menu {
+            list-style: none;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: flex-end;
+            // visibility: hidden;
+            // opacity: 0;
+            transition: all 0.5s ease-out;
+            li.menu-item {
+              list-style: none;
+              margin: 0;
+              padding: 0;
+              display: flex;
+              a {
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                margin-right: 0;
+                font-weight: 100;
+                text-decoration: none;
+                padding: 0 15px;
+                min-height: 80px;
+                display: flex;
+                align-items: center;
+              }
+            }
+          }
+        }
+      }
+      .region-third-menu {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+
+  &:hover {
+    .gntl-nav-container {
+      .gntl-nav-wrapper {
+        .gntl-navbar-menu {
+          .menu--main {
+            ul.menu {
+              // visibility: visible;
+              // opacity: 1;
+              // transition: all 0.5s ease-out;
+            }
+          }
+        }
+      }
+    }
+  }
+}

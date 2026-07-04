@@ -1,0 +1,67 @@
+.lg-coeur-0 path{
+    animation: rainfall .6s .4s linear infinite;
+}
+
+.lg-coeur-1 path{
+    animation: rainfall .5s linear infinite;
+}
+
+.lg-coeur-2 path{
+    animation: rainfall .6s .1s linear infinite;
+}
+
+.lg-coeur-3 path{
+    animation: rainfall .7s .3s linear infinite;
+}
+
+.lg-coeur-4 path{
+    animation: rainfall .6s .4s linear infinite;
+}
+
+.lg-coeur-5 path{
+    animation: rainfall .6s .4s linear infinite;
+}
+
+.lg-coeur-6 path{
+    animation: rainfall .5s .2s linear infinite;
+}
+
+.lg-coeur-7 path{
+    animation: rainfall .7s .2s linear infinite;
+}
+
+.lg-coeur-8 path{
+    animation: rainfall .8s .3s linear infinite;
+}
+
+.lg-coeur-9 path{
+    animation: rainfall .6s .4s linear infinite;
+}
+
+.lg-coeur-10 path{
+    animation: rainfall .7s .2s linear infinite;
+}
+
+.lg-coeur-11 path{
+    animation: rainfall .6s .3s linear infinite;
+}
+
+.lg-coeur-12 path{
+    animation: rainfall .6s .3s linear infinite;
+}
+
+.lg-coeur-13 path{
+    animation: rainfall .7s .1s linear infinite;
+}
+
+@keyframes rainfall {
+    from {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+
+    to {
+      transform: translate(15px, -250px);
+      opacity: .4;
+    }
+}

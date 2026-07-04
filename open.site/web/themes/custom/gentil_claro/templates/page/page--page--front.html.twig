@@ -1,0 +1,17 @@
+{# Menu #}
+{% include directory ~ '/templates/partials/gntl-menu.html.twig' %}
+<div class="gntl-main">
+	<main id="contenu-principal">
+		<div
+			class="gntl-main-page uk-section uk-padding-remove-vertical">
+			{# Msg #}
+			{% if page.msg %}
+				{{ page.msg }}
+			{% endif %}
+			{# Content #}
+			{{ page.content }}
+		</div>
+	</main>
+	{# Footer #}
+	{% include directory ~ '/templates/partials/gntl-footer.html.twig' %}
+</div>

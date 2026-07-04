@@ -1,0 +1,16 @@
+uuid: 12daef80-62ef-493c-aa9d-6b68a1ed2b08
+langcode: fr
+status: true
+dependencies:
+  config:
+    - node.type.trajet
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+id: node.trajet
+target_entity_type_id: node
+target_bundle: trajet
+default_langcode: site_default
+language_alterable: false

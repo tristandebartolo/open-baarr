@@ -1,0 +1,181 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+.logo-container {
+	.logo-container-wrapper {
+		position: relative;
+		width: 100%;
+		margin: 0 auto;
+		.logo-wrapper {
+			width: 90px;
+			z-index: 0;
+			height: 90px;
+			position: relative;
+			.lg-coeur-wrapper {
+				position: absolute;
+				z-index: 0;
+				width: 50px;
+				height:80px;
+				svg {
+					width: 25px;
+					height: 25px;
+					position: absolute;
+					opacity: 1;
+					bottom: 0px;
+					left: 12px;
+					transform: scale(.2);
+				}
+				&.lg-coeur-wrappe-1 {
+					position: absolute;
+					bottom: 30px;
+					left: -5px;
+				}
+				&.lg-coeur-wrappe-1a {
+					position: absolute;
+					bottom: 20px;
+					left: 3px;
+				}
+				&.lg-coeur-wrappe-2 {
+					position: absolute;
+					bottom: 25px;
+					right: 10px;
+				}
+				&.lg-coeur-wrappe-2a {
+					position: absolute;
+					bottom: 10px;
+					right: 12px;
+				}
+			}
+			#lg-cheminee {
+				width: 90px;
+				height: auto;
+				position: absolute;
+				z-index: 0 !important;
+				// display:none;
+			}
+
+			/*.logo {
+			width: 90px;
+			position: relative;
+			svg {
+				width: 100%;
+				height: auto;
+				.lg-coeur {
+					path {
+						display: block;
+						position: absolute;
+						bottom: 160px;
+						margin-left: -20px;
+						left: 60px;
+						opacity: 1;
+						transform: scale(1);
+					}
+				}
+			}
+		}*/
+		}
+	}
+}
+
+/* Love animation */
+@keyframes lovePast {
+	0% {
+		transform: scale(0.2) translate(0, 0);
+	}
+	10% {
+		opacity: 1;
+		transform: scale(0.3) translate(0, -5px);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.1) translate(10px, -50px);
+	}
+}
+
+@keyframes loveFuture {
+	0% {
+		transform: scale(0.2) translate(0, 0);
+	}
+	10% {
+		opacity: 1;
+		transform: scale(0.2) translate(0, -5px);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.2) translate(30px, -60px);
+	}
+}
+
+/* Love animation */
+@keyframes lovePast1 {
+	0% {
+		transform: scale(0.2) translate(0, 0);
+	}
+	10% {
+		opacity: 1;
+		transform: scale(0.3) translate(0, -5px);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.1) translate(20px, -65px);
+	}
+}
+
+@keyframes loveFuture1 {
+	0% {
+		transform: scale(0.2) translate(0, 0);
+	}
+	10% {
+		opacity: 1;
+		transform: scale(0.2) translate(0, -10px);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.1) translate(30px, -80px);
+	}
+}
+
+.lg-coeur-wrappe-1 svg.lg-coeur-0 { animation: lovePast 10s 0s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-1 { animation: loveFuture 10s 1s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-2 { animation: lovePast 10s 2s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-3 { animation: loveFuture 10s 3s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-4 { animation: lovePast 10s 4s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-5 { animation: loveFuture 10s 5s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-6 { animation: lovePast 10s 6s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-7 { animation: loveFuture 10s 7s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-8 { animation: lovePast 10s 8s infinite }
+.lg-coeur-wrappe-1 svg.lg-coeur-9 { animation: loveFuture 10s 9s infinite }
+
+.lg-coeur-wrappe-1a svg.lg-coeur-0 { animation: lovePast 6s 0s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-1 { animation: loveFuture 6s 1.5s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-2 { animation: lovePast 6s 2s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-3 { animation: loveFuture 6s 2.5s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-4 { animation: lovePast 6s 3s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-5 { animation: loveFuture 6s 3.5s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-6 { animation: lovePast 6s 4s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-7 { animation: loveFuture 6s 4.5s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-8 { animation: lovePast 6s 5s infinite }
+.lg-coeur-wrappe-1a svg.lg-coeur-9 { animation: loveFuture 6s 6s infinite }
+
+.lg-coeur-wrappe-2 svg.lg-coeur-0 { animation: lovePast1 10s 0s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-1 { animation: loveFuture1 10s 1s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-2 { animation: lovePast1 10s 2s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-3 { animation: loveFuture1 10s 3s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-4 { animation: lovePast1 10s 4s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-5 { animation: loveFuture1 10s 5s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-6 { animation: lovePast1 10s 6s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-7 { animation: loveFuture1 10s 7s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-8 { animation: lovePast1 10s 8s infinite }
+.lg-coeur-wrappe-2 svg.lg-coeur-9 { animation: loveFuture1 10s 9s infinite }
+
+.lg-coeur-wrappe-2a svg.lg-coeur-0 { animation: lovePast1 8s 0s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-1 { animation: loveFuture1 8s 1s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-2 { animation: lovePast1 8s 2s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-3 { animation: loveFuture1 8s 3s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-4 { animation: lovePast1 8s 4s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-5 { animation: loveFuture1 8s 35s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-6 { animation: lovePast1 8s 6s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-7 { animation: loveFuture1 8s 7s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-8 { animation: lovePast1 8s 7.5s infinite }
+.lg-coeur-wrappe-2a svg.lg-coeur-9 { animation: loveFuture1 8s 8s infinite }

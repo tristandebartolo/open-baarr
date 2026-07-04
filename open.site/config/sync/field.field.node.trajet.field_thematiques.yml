@@ -1,0 +1,29 @@
+uuid: 3c275048-52f8-48c8-b19a-2be52a34eff3
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_thematiques
+    - node.type.trajet
+    - taxonomy.vocabulary.thematiques
+id: node.trajet.field_thematiques
+field_name: field_thematiques
+entity_type: node
+bundle: trajet
+label: Thématiques
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      thematiques: thematiques
+    sort:
+      field: name
+      direction: asc
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

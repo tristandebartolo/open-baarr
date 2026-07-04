@@ -1,0 +1,42 @@
+{%
+  set classes = [
+    'node',
+    'node-card',
+    'node--type-' ~ node.bundle|clean_class,
+    node.isPromoted() ? 'node--promoted',
+    node.isSticky() ? 'node--sticky',
+    not node.isPublished() ? 'node--unpublished',
+    view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+  ]
+%}
+<article{{attributes.addClass(classes)}} data-clk-oo="true">
+	{% if content.field_vignette %}
+		{{content.field_vignette}}
+	{% endif %}
+	<header class="oo-node-header-tiny">
+		{% if label and not page %}
+			{% set textShodow = create_attribute() %}
+			{% if color %}
+				{% set border_attribute = 'text-shadow: 20px 20px 49px ' ~ color  ~ ';'%}
+				{% set title_attributes = title_attributes.setAttribute('style', border_attribute) %}
+			{% endif %}
+			<h2{{title_attributes.addClass('node__title')}}>
+				<a data-clk-oo-target="{{ url }}" href="{{ url }}" rel="bookmark">{{ label }}</a>
+			</h2>
+		{% endif %}
+	</header>
+	{% if content.field_chapo and content.field_chapo[0] %}
+		<div{{content_attributes.addClass('node__content')}}>
+			{% set chapo = content.field_chapo[0] and content.field_chapo[0]['#context'] ? content.field_chapo[0]['#context'].value : null %}
+
+			<div class="oo-node-chapo">
+				{{ chapo }}
+			</div>
+			{% if content.field_thematiques %}
+				<div class="oo-node-mediums">
+					{{content.field_thematiques}}
+				</div>
+			{% endif %}
+		</div>
+	{% endif %}
+</article>

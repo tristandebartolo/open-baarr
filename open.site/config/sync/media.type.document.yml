@@ -1,0 +1,16 @@
+uuid: 6d7b281b-bf66-45e2-bbcd-2071903d5ef0
+langcode: fr
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: QgF3JDg2h0tf2gaqzc4mNvlHttNkUpmxk1LZefP82hE
+id: document
+label: Document
+description: "Un document hébergé localement, tel qu'un fichier PDF."
+source: file
+queue_thumbnail_downloads: false
+new_revision: true
+source_configuration:
+  source_field: field_media_document
+field_map:
+  name: name

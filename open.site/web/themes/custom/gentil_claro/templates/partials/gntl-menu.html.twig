@@ -1,0 +1,45 @@
+<div class="gntl-nav uk-section uk-padding-remove-vertical" uk-sticky="end: !.page-wrapper;">
+	<div class="gntl-nav-container uk-container">
+		<div class="gntl-nav-wrapper">
+
+			<div class="gntl-nav-branding">
+				<div class="gntl-branding-logo">
+					<a href="/">
+						{% include directory ~ '/templates/partials/gntl-logo.html.twig' %}
+						<span class="visually-hidden">{{'Accueil'}}</span>
+					</a>
+				</div>
+				{% if page.branding %}
+					<div class="gntl-branding-name">
+						{{ page.branding }}
+					</div>
+				{% endif %}
+			</div>
+			<div class="gntl-nav-branding">
+				<div class="gntl-nav-branding-wrapper">
+					<div class="gntl-navbar-menu uk-visible@m">{{ page.menu }}</div>
+				</div>
+			</div>
+			<div class="gntl-nav-research"></div>
+			<div class="gntl-nav-more">
+				{% if tabs_node %}
+					<div class="gntl-navbar-tabs uk-inline uk-animation-toggle">
+						<button aria-expanded="false" data-ariacontrols="gm-trgt-page" class="oo-tabs" data-menus="tabs" type="button">
+							<span class="i-gntl i-gntl--settings"></span>
+						</button>
+						<ul id="gm-trgt-page" class="oo-tabs-items">{{ tabs_node }}</ul>
+					</div>
+					{{ attach_library('gentil_front/menu-tabs') }}
+				{% endif %}
+				{% if page.third_menu %}
+					{{ page.third_menu }}
+				{% endif %}
+			</div>
+
+
+		</div>
+	</div>
+	<div id="progress-w-bar">
+		<div id="progress-bar"></div>
+	</div>
+</div>

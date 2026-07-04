@@ -1,0 +1,5 @@
+name: 'Gentil Access'
+type: module
+description: 'Permission access sites.'
+core_version_requirement: ^11
+package: 'Gentil'

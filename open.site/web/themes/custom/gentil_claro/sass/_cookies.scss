@@ -1,0 +1,92 @@
+
+.cookiesjsr-banner {
+  &.active {
+    width: 100% !important;
+    margin: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    border-top: 10px solid #8e8e8ea1 !important;
+    .cookiesjsr-banner--action {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Mobile */
+    @media (max-width: 960px) {
+      margin: 0 !important;
+      width: 100% !important;
+      bottom: 0 !important;
+    }
+  }
+}
+
+.cookiesjsr-service-group.active .cookiesjsr-service-group--content,
+.cookiesjsr-btn.cookiesjsr-settings,
+.cookiesjsr-banner {
+  background-color: #ffffff !important;
+  color: black;
+  font-size: .9rem;
+}
+
+.cookiesjsr-btn {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+  margin: 6px 0px 0px 0px;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.cookiesjsr-switch {
+  background-color: #a80000;
+}
+.cookiesjsr-btn.invert,
+.cookiesjsr-btn.important {
+  background-color: #fff !important;
+  border-color: #040404 !important;
+  color: #000000 !important;
+}
+
+
+.cookiesjsr-service-groups {
+  .cookiesjsr-service-group {
+    > button {
+      color: #494949 !important;
+    }
+    .cookiesjsr-links {
+      a {
+        color: #000000 !important;
+      }
+    }
+    &.active {
+      > button {
+        color: #494949 !important;
+        background-color: #e5e5e5 !important;
+      }
+    }
+  }
+}
+
+
+.cookiesjsr-layer--wrapper {
+
+}
+
+.cookiesjsr-layer--overlay {
+  background: rgba(0, 0, 0, 0.534);
+  height: 100vh;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: 314159;
+}
+
+
+.cookiesjsr--app:has(.cookiesjsr-banner.active) {
+  background: rgba(0, 0, 0, 0.534);
+  height: 100vh;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: 314159;
+}

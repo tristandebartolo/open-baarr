@@ -1,0 +1,32 @@
+name: Gentil
+type: theme
+description: Trstndbrtl deffault theme.
+package: Core
+version: VERSION
+# core: 8.x
+core_version_requirement: ^11
+base theme: claro
+
+libraries:
+  - gentil_claro/global-styling
+
+regions:
+  header_top: 'Header top'
+  header: Header
+  branding: Branding
+  menu: 'Primary menu'
+  secondary_menu: 'Secondary menu'
+  third_menu: 'Third menu'
+  locale: 'Locale'
+  msg: Message
+  task: Task
+  breadcrumb: Breadcrumb
+  title: Title
+  content: Content
+  sidebar_one: 'Sidebar one'
+  sidebar_two: 'Sidebar two'
+  footer: 'Footer'
+  footer1: 'Footer 1'
+  footer2: 'Footer 2'
+  footer3: 'Footer 3'
+  footer4: 'Footer 4'

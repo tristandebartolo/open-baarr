@@ -1,0 +1,14 @@
+uuid: 8ba44338-71e9-454a-a01d-e41145f324c6
+langcode: fr
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: flCi9IdafdLXlJqvoHguutUOiC05-aynK4niYN4YZ3o
+label: 'Focal point'
+id: focal_point
+description: 'Type de recadrage utilisé par le module Focal point.'
+aspect_ratio: ''
+soft_limit_width: null
+soft_limit_height: null
+hard_limit_width: null
+hard_limit_height: null

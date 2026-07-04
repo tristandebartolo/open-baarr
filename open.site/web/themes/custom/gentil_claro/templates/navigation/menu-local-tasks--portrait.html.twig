@@ -1,0 +1,12 @@
+{% if primary %}
+  <h2 id="cc-tabs-primary-title" class="visually-hidden">{{ 'Primary tabs'|t }}</h2>
+  <nav role="navigation" class="cc-tabs-nav" aria-labelledby="cc-tabs-primary-title">
+    <ul class="cc-tabs-wrapper cc-tabs-wrapper-primary clearfix cc-tabs-vertical">{{ primary }}</ul>
+  </nav>
+{% endif %}
+{% if secondary %}
+   <h2 id="cc-tabs-secondary-title" class="visually-hidden">{{ 'Secondary tabs'|t }}</h2>
+  <nav role="navigation" class="cc-tabs-nav" aria-labelledby="cc-tabs-secondary-title">
+    <ul class="cc-tabs-wrapper cc-tabs-wrapper-secondary clearfix cc-tabs-vertical">{{ secondary }}</ul>
+  </nav>
+{% endif %}

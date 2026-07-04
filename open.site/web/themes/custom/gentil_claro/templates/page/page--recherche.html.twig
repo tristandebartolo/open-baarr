@@ -1,0 +1,20 @@
+{# Menu #}
+{% include directory ~ '/templates/partials/gntl-menu.html.twig' %}
+<div class="gntl-main uu-revue-recherche">
+	<main>
+  {# Breadcrumb #}
+		{% include directory ~ '/templates/partials/gntl-breadcrumb.html.twig' %}
+		<div class="gntl-main-page uk-section uk-section-xsmall">
+			<div class="uk-container">
+        {# Msg #}
+        {% if page.msg %}
+          {{ page.msg }}
+        {% endif %}
+        {# Content #}
+        {{ page.content }}
+			</div>
+		</div>
+	</main>
+	{# Footer #}
+	{% include directory ~ '/templates/partials/gntl-footer.html.twig' %}
+</div>

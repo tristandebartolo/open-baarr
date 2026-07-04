@@ -1,0 +1,37 @@
+{% if logged_in %}
+	<div class="user-logged-greeting">
+		{% if user_picture %}
+			<a href="{{ path('entity.user.canonical', {'user': user_id}) }}" class="gm-prtrt-lg">
+				<img src="{{ user_picture }}" width="50" height="50">
+			</a>
+		{% else %}
+			<a href="{{ path('entity.user.canonical', {'user': user_id}) }}" class="gm-prtrt-lg">
+				<i class="bi bi-person-circle"></i>
+				{{'User'|t}}
+			</a>
+		{% endif %}
+		<div class="gm-prtrt">
+			<div class="gm-prtrt-name">
+				<span>Bonjour,</span>
+				<span class="gm-prtrt-n">{{ user_logged_in_name }}!</span>
+			</div>
+		</div>
+	</div>
+{% else %}
+	<div class="user-unlogged-greeting">
+		<div class="gm-prtrt">
+			<div class="gm-prtrt-link">
+				<a href="{{ path('user.login') }}" class="gm-prtrt-l gm-prtrt-login">
+					<i class="i-gntl--sports_motorsports"></i>
+					{{'Login'|t}}
+				</a>
+				{#      <a href="{{ path('user.pass') }}" class="gm-prtrt-l gm-prtrt-pass uk-visible@m">
+				                <i class="bi bi-key"></i>{{'Pass'|t}}
+				            </a>
+				            <a href="{{ path('user.register') }}" class="gm-prtrt-l gm-prtrt-register uk-visible@m">
+				                <i class="bi bi-box-arrow-in-up"></i>{{'Register'|t}}
+				            </a>
+				            </div> #}
+			</div>
+		</div>
+	{% endif %}

@@ -1,0 +1,249 @@
+$placeholder: rgba(0, 0, 0, 0.05);
+.pp-figure {
+  .pp-figure-portrait {
+    margin: 60px 0;
+    .rr-figure {
+      display: flex;
+      align-items: center;
+      @media(max-width: 960px) {
+        flex-direction: column;
+      }
+      .rr-figure-portrait {
+        margin-right: 15px;
+        background-color: $placeholder;
+        width: 300px;
+        border-radius: 600px;
+        height: 300px;
+        display: flex;
+        flex: 0 0 300px;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        color: $placeholder;
+        @media (max-width: 960px) {
+          flex: 0 0 150px;
+          height: 150px;
+          width: 150px;
+          margin-bottom: 30px;
+        }
+        img {
+          width: 100%;
+          border-radius: 600px;
+          height: auto;
+        }
+      }
+      .rr-figure-portrait-wrapper {
+        width: calc(100% - 300px);
+        @media (max-width: 960px) {
+          width: 100%;
+        }
+        .rr-figure-description {
+          font-size: 1rem;
+          position: relative !important;
+          max-height: 125px;
+          overflow: hidden;
+          transition: all 0.5s ease-out;
+          &.placeholder {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            span {
+              width: 85%;
+              height: 14px;
+              background-color: $placeholder;
+              margin-top: 5px;
+              &:first-child {
+                width: 70%;
+              }
+              &:last-child {
+                width: 40%;
+              }
+            }
+          }
+          p {
+            transition: all 0.5s ease-out;
+          }
+          p:not(:first-child) {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+          }
+
+          .ff-view-more {
+            position: absolute;
+            border: 0;
+            right: 0;
+            bottom: 0;
+            font-size: 1.4rem;
+          }
+          &[data-bio-more-status="false"] {
+            &:before {
+              content: "";
+              background-color: rgba(255, 255, 255, 0.8);
+              display: block;
+              width: 100%;
+              height: 30px;
+              position: absolute;
+              bottom: 0;
+            }
+          }
+          &[data-bio-more-status="true"] {
+            max-height: none;
+            p {
+              visibility: visible;
+              opacity: 1;
+              transition: all 0.5 ease-out;
+              position: relative;
+            }
+            &:before {
+              background-color: rgba(255, 255, 255, 0);
+            }
+          }
+        }
+        h1 {
+          display: flex;
+          margin: 0;
+          line-height: 1;
+          align-items: flex-start;
+          flex-direction: column;
+          .field.field--name-prenom {
+            margin-right: 10px;
+            font-size: 2rem;
+            text-transform: capitalize;
+          }
+        }
+        .rr-figure-naissance {
+          display: flex;
+          align-items: center;
+          .rr-figure-n,
+          .rr-figure-d {
+            &.placeholder {
+              width: 43px;
+              height: 22px;
+              background-color: $placeholder;
+            }
+          }
+          &.placeholder {
+            color: $placeholder;
+          }
+        }
+        .rr-figure-liens {
+          .field__items {
+            display: flex;
+            font-size: 1rem;
+            .field__item {
+              margin-right: 10px;
+            }
+            @media (max-width: 960px) {
+              flex-direction: column;
+            }
+          }
+        }
+      }
+    }
+  }
+  .pp-figure-main {
+    display: flex;
+    justify-content: space-between;
+    @media (max-width: 960px) {
+      flex-direction: column;
+    }
+    .pp-figure-articles {
+      flex: 0 0 calc(100% - 265px);
+      margin-bottom: 50px;
+      // .node__content::first-letter,
+      // .node__content:first-of-type::first-letter {
+      //   display: block;
+      //   margin-right: 10px;
+      //   float: left;
+      //   font-size: 4.5em;
+      //   line-height: 1;
+      //   margin-bottom: -2px;
+      // }
+      @media (max-width: 960px) {
+        flex: 0 0 100%;
+      }
+      article {
+        &.node--view-mode-list {
+          margin-bottom: 50px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+        .field--name-field-vignette {
+          width: 80px;
+          float: left;
+          margin-right: 15px;
+          img {
+            width: 100%;
+            height: auto;
+            border-radius: 100px;
+          }
+        }
+      }
+    }
+    .pp-figure-relations {
+      flex: 0 0 250px;
+
+      @media(max-width: 960px) {
+        flex: 0 0 100%;
+        margin-bottom: 50px;
+      }
+      .pp-figure-relations-item {
+        background-color: $placeholder;
+        padding: 15px;
+        margin-bottom: 15px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        ul {
+          padding-left: 0;
+          margin-block: 0;
+          margin-inline: 0;
+          padding-inline-start: 0;
+          list-style-type: none;
+          list-style-image: none;
+          li.figure-list {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            line-height: 1;
+            .field--name-field-portrait {
+              width: 60px;
+              margin-right: 10px;
+              height: 60px;
+              background-color: rgba(0, 0, 0, 0.08);
+            }
+          }
+        }
+      }
+    }
+    &.pp-display-inline {
+      flex-direction: column;
+      .pp-figure-articles {
+        flex: 0 0 100%;
+      }
+      .pp-figure-relations {
+        flex: 0 0 100%;
+        .pp-figure-relations-wrapper {
+          flex-direction: row;
+          display: flex;
+          justify-content: space-between;
+          @media (max-width: 960px) {
+            flex: 0 0 100%;
+            flex-direction: column;
+          }
+          .pp-figure-relations-item {
+            flex: 0 0 calc(33.3333% - 15px);
+            margin-bottom: 0;
+            @media (max-width: 960px) {
+              flex: 0 0 100%;
+              margin-bottom: 15px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+@import "_filtres_figures";

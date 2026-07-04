@@ -1,0 +1,177 @@
+// /* Color */
+// .node-evenement.node-mode-teaser .brr-date-d,
+// .node-evenement.node-mode-teaser .brr-date-m,
+// .node-evenement.node-mode-teaser .brr-date-wrapper,
+// .node-evenement h1,
+// .node-evenement h2,
+// .node-evenement h3,
+// .node-evenement h4,
+// .node-evenement h5,
+// .node-evenement a  {
+//     color: #00a259;
+// }
+
+// .node-revue h1,
+// .node-revue h2,
+// .node-revue h3,
+// .node-revue h4,
+// .node-revue h5,
+// .node-revue a  {
+//     color: #00abe9;
+// }
+
+// /* poeme */
+// .node-poeme.poeme-mode-1 h1,
+// .node-poeme.poeme-mode-1 h2,
+// .node-poeme.poeme-mode-1 h3,
+// .node-poeme.poeme-mode-1 h4,
+// .node-poeme.poeme-mode-1 h5,
+// .node-poeme.poeme-mode-1 a  {
+//     color: #7f63a4;
+// }
+
+// /* Citation */
+// .node-poeme.poeme-mode-2  {
+//     background-color: #fffd6a;
+//     padding: 20px;
+// }
+
+// /* extrait */
+// .node-poeme.poeme-mode-3 h1,
+// .node-poeme.poeme-mode-3 h2,
+// .node-poeme.poeme-mode-3 h3,
+// .node-poeme.poeme-mode-3 h4,
+// .node-poeme.poeme-mode-3 h5,
+// .node-poeme.poeme-mode-3 a  {
+//     color: #da355d;
+// }
+
+
+
+
+// .page-poeme{
+//     &.page-1-poeme {
+//         h1, h2, h3, h4, h5, h6,
+//         a {
+//             color: #7f63a4;
+//         }
+//         .progress-bar {
+//             background: #7f63a4;
+//         }
+//         #sliding-popup {
+//             background: #7f63a4;
+//         }
+//     }
+//     &.page-2-poeme {
+//         h1, h2, h3, h4, h5, h6,
+//         a {
+//             color: #fffd6a;
+//         }
+//         .progress-bar {
+//             background: #fffd6a;
+//         }
+//         #sliding-popup {
+//             background: #fffd6a;
+//         }
+//     }
+//     &.page-3-poeme {
+//         h1, h2, h3, h4, h5, h6,
+//         a {
+//             color: #da355d;
+//         }
+//         .progress-bar {
+//             background: #da355d;
+//         }
+//         #sliding-popup {
+//             background: #da355d;
+//         }
+//     }
+// }
+
+// .page-revue {
+//     h1, h2, h3, h4, h5, h6,
+//     #block-mzine-main-menu {
+//         li {
+//             a {
+//                 color: #00abe9;
+//             }
+//         }
+//     }
+//     a {
+//         color: #00abe9;
+//     }
+//     .progress-bar {
+//         background: #00abe9;
+//     }
+//     #sliding-popup {
+//         background: #00abe9;
+//     }
+// }
+
+// .page-evenement {
+//     h1, h2, h3, h4, h5, h6,
+//     a {
+//         color: #00a259;
+//     }
+//     #block-mzine-main-menu {
+//         li {
+//             a {
+//                 color: #00a259;
+//             }
+//         }
+//     }
+//     .progress-bar {
+//         background: #00a259;
+//     }
+//     #sliding-popup {
+//         background: #00a259;
+//     }
+// }
+
+// .page-livres {
+//     h1, h2, h3, h4, h5, h6{
+//         color: #a88b09;
+//         line-height: 1;
+//     }
+//     a {
+//         color: #a88b09;
+//     }
+//     #block-mzine-main-menu {
+//         li {
+//             a {
+//                 color: #a88b09;
+//             }
+//         }
+//     }
+//     .progress-bar {
+//         background: #a88b09;
+//     }
+//     #sliding-popup {
+//         background: #a88b09;
+//     }
+// }
+// .node-livres {
+//     h1, h2, h3, h4, h5, h6 {
+//         color: #a88b09;
+//         line-height: 1;
+//         a {
+//             color: #a88b09;
+//             overflow-wrap: break-word;
+//             text-decoration: underline;
+//         } 
+//     }
+//     a {
+//         color: #a88b09;
+//     } 
+// }
+
+
+// // $icons: ("eye": "\f112", "start": "\f12e", "stop": "\f12f");
+
+// // @each $name, $glyph in $icons {
+// //   .icon-#{$name}:before {
+// //     display: inline-block;
+// //     font-family: "Icon Font";
+// //     content: $glyph;
+// //   }
+// // }

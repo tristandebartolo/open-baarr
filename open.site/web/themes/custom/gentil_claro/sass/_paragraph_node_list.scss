@@ -1,0 +1,335 @@
+.prgrph--node-list {
+  .pk-chapo {
+    font-size: 1rem;
+  }
+
+  .pk-w-h {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 5px;
+    .pk-figures {
+      margin-right: 15px;
+      ul {
+        .figure-list {
+          margin-bottom: 0 !important;
+        }
+      }
+    }
+  }
+
+  .pk-c {
+    &.pk-figures {
+      ul {
+        margin-block: 0;
+        margin-inline: 0;
+        padding-inline-start: 0;
+        list-style-type: none;
+        list-style-image: none;
+        margin: 0;
+        padding: 0;
+        li {
+          display: flex;
+          align-items: center;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          margin-bottom: 10px;
+          .fd--nm-field-portrait {
+            width: 35px;
+            height: 35px;
+            background-color: #ccc;
+            border-radius: 100px;
+            margin-right: 10px;
+            img {
+              width: 100%;
+              height: auto;
+              border-radius: 300px;
+            }
+          }
+          a {
+            font-size: 0.9rem;
+            line-height: 1;
+          }
+        }
+      }
+    }
+    &.pk-thematiques {
+      ul {
+        margin-block: 0;
+        margin-inline: 0;
+        padding-inline-start: 0;
+        list-style-type: none;
+        list-style-image: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        li {
+          margin-bottom: 2px;
+          margin-right: 5px;
+          a {
+            background-color: #e4e4e4;
+            padding: 6px 10px;
+            font-size: 0.9rem;
+            line-height: 1;
+            border-radius: 4px;
+            display: inline-block;
+          }
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+    }
+  }
+  .pk-w-h {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 5px;
+    .pk-figures {
+      margin-right: 15px;
+      ul {
+        .figure-list {
+          margin-bottom: 0 !important;
+        }
+      }
+    }
+  }
+
+  .pk-vignette {
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1;
+    margin: 0px 0 15px 0;
+   /*  overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    a {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+    } */
+  }
+
+  .pk-wrap-right,
+  .pk-wrap-left,
+  .pk-wrap-right-2-3,
+  .pk-wrap-right-1-2,
+  .pk-wrap-left-2-3,
+  .pk-wrap-left-1-2 {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 100%;
+    gap: 15px;
+
+    .pk-vignette {
+      background-size: cover;
+      background-position: center center;
+    }
+  }
+
+  .pk-wrap-right-2-3,
+  .pk-wrap-right-1-2,
+  .pk-wrap-right {
+    flex-direction: row-reverse;
+  }
+
+  .pk-wrap-right,
+  .pk-wrap-left {
+    .pk-vignette {
+      flex: 0 0 33.33333%;
+    }
+  }
+  .pk-wrap-left-1-2,
+  .pk-wrap-right-1-2 {
+    .pk-vignette {
+      flex: 0 0 50%;
+    }
+  }
+  .pk-wrap-left-2-3,
+  .pk-wrap-right-2-3 {
+    .pk-vignette {
+      flex: 0 0 66.66666%;
+    }
+  }
+
+  /* Card type */
+  &.dg--grid {
+  }
+
+  &.dg--slider {
+    overflow: hidden;
+  }
+
+  &.dg--slidershow {
+  }
+  /* Card mode */
+  &.dg--list {
+  }
+  &.dg--card {
+    &.dg--header-overlay {
+      .pk-wrap-head {
+        position: relative;
+        .pk-wrap-head-info {
+          position: absolute;
+          z-index: 3;
+          padding: 20px;
+          height: 100%;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+  &.dg--card-overlay {
+    .pk-title {
+      line-height: 1;
+      a {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+      }
+    }
+    .pk-chapo {
+      font-size: 1rem;
+    }
+    .pk-wrap-cover-wrapper {
+      transition: all 1s ease-out;
+      z-index: 1;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .pk-cover {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      transition: all 1s ease-out;
+    }
+  }
+}
+
+// .pk-wrap {
+//   .pk-wrap-i {
+//     margin-bottom: 65px;
+//   }
+//   .pk-w-h {
+//     display: flex;
+//     align-items: center;
+//     justify-content: flex-start;
+//     margin-bottom: 5px;
+//     .pk-figures {
+//       margin-right: 15px;
+//       ul {
+//         .figure-list {
+//           margin-bottom: 0 !important;
+//         }
+//       }
+//     }
+//   }
+//   &.pk-card {
+//   }
+
+//   &.pk-card-over {
+//   }
+// }
+
+.uk-light {
+  .pk-wrap {
+    .pk-wrap-cover {
+      &:hover {
+        .pk-cover {
+          background-color: rgba(0, 0, 0, 0.8);
+        }
+      }
+    }
+    .pk-c {
+      &.pk-figures {
+        ul {
+          li {
+            .fd--nm-field-portrait {
+              background-color: transparent !important;
+              border: 1px solid white;
+            }
+          }
+        }
+      }
+      &.pk-thematiques {
+        ul {
+          li {
+            a {
+              background-color: transparent !important;
+              border: 1px solid white;
+            }
+          }
+        }
+      }
+    }
+    .pk-vignette {
+      img {
+        width: 100%;
+        height: auto;
+      }
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+.uk-dark {
+  .pk-wrap {
+    .pk-wrap-cover {
+      &:hover {
+        .pk-cover {
+          background-color: rgba(255, 255, 255, 0.8);
+        }
+      }
+    }
+    .pk-c {
+      &.pk-figures {
+        ul {
+          li {
+            .fd--nm-field-portrait {
+              border: 1px solid rgba(0, 0, 0, 0.8);
+              background-color: transparent !important;
+            }
+          }
+        }
+      }
+      &.pk-thematiques {
+        ul {
+          li {
+            a {
+              border: 1px solid rgba(0, 0, 0, 0.8);
+              background-color: transparent !important;
+            }
+          }
+        }
+      }
+    }
+    .pk-vignette {
+      img {
+        width: 100%;
+        height: auto;
+      }
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}

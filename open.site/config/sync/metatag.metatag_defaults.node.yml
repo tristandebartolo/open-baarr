@@ -1,0 +1,23 @@
+uuid: 40f30e63-5074-41fe-953a-1d96cd54fae8
+langcode: fr
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: rpwvgyEURXLz_JjgMCrkS1rUv-0k3L79BpO-ReN7fDI
+id: node
+label: Contenu
+tags:
+  abstract: '[node:field_chapo]'
+  canonical_url: '[node:url]'
+  description: '[node:field_chapo]'
+  og_description: '[node:field_chapo]'
+  og_image: '[node:field_vignette:entity:field_media_image:large:url]'
+  og_site_name: '[site:name]'
+  og_title: '[node:title]'
+  og_url: '[node:url]'
+  robots: 'index, follow'
+  title: '[node:title] | [site:name]'
+  twitter_cards_description: '[node:field_chapo]'
+  twitter_cards_image: '[node:field_vignette:entity:field_media_image:large:url]'
+  twitter_cards_title: '[node:title] | [site:name]'
+  twitter_cards_type: summary_large_image

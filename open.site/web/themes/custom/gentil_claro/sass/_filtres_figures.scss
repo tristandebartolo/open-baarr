@@ -1,0 +1,115 @@
+.pp-figure-pagination {
+  margin-bottom: 25px;
+  margin-bottom: 25px;
+  z-index: 999;
+  position: relative;
+  ul {
+    margin-block: 0;
+    margin-inline: 0;
+    padding-inline-start: 0;
+    list-style-type: none;
+    list-style-image: none;
+  }
+  .pp-figure-pagination-filters {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    .zz-filter {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+      a.zz-link {
+        background-color: rgba(0, 0, 0, 0.05);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+      }
+      .zz-meta {
+        font-size: 0.8rem;
+        @media only screen and (max-width: 640px) {
+          display: none;
+        }
+      }
+      .zz-total-page {
+        font-size: 1rem;
+      }
+
+      .zz-filter-wrapper {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        position: relative;
+        z-index: 99;
+        align-items: center;
+        .zz-filter-container {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          font-size: 0.9rem;
+          border-radius: 6px;
+          margin: 0;
+          top: 39px;
+          li {
+            border-bottom: 1px solid;
+            a {
+              padding: 10px 9px;
+              display: flex;
+              border-radius: 9px;
+              align-items: center;
+              justify-content: center;
+              &:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+              }
+            }
+            &:last-child {
+              margin-bottom: 0;
+              border-bottom: 0 solid;
+            }
+          }
+        }
+        button {
+          &.zz--btn {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 0px solid;
+            border-radius: 8px;
+            margin: 0;
+            width: 40px;
+            height: 40px;
+            font-size: 0.9rem;
+            padding: 0;
+            cursor: pointer;
+            &:hover {
+              background-color: rgba(0, 0, 0, 0.08);
+            }
+          }
+          &[aria-expanded="true"] + .zz-filter-container {
+            visibility: visible;
+            opacity: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: rgb(255, 255, 255);
+            box-shadow: 1px 1px 2px #000;
+            width: 40px;
+          }
+        }
+      }
+      &.zz-filter-sort-by {
+        .zz--btn {
+          width: 160px !important;
+        }
+        .zz-filter-container {
+          width: 160px !important;
+        }
+      }
+    }
+  }
+  .pp-figure-by-asc-mode {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}

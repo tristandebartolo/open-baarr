@@ -1,0 +1,175 @@
+.figure-container {
+  display: flex;
+  align-items: center;
+  .figure-wrapper {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    .figure-portrait {
+      width: 40px;
+      height: 40px;
+      background-color: #ddd;
+      border-radius: 80px;
+      margin-right: 10px;
+      min-width: 40px;
+    }
+    a {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+// h1 {
+//   text-shadow: 20px 20px 49px #8950b0;
+// }
+
+.relation--content {
+  .relation--content-by-authors {
+    margin-bottom: 25px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.3;
+      // text-shadow: 20px 20px 49px #8950b0;
+      margin-bottom: 5px;
+    }
+    ul {
+      margin-block: 0;
+      margin-inline: 0;
+      padding-inline-start: 0;
+      list-style-type: none;
+      list-style-image: none;
+      li {
+        h3 {
+          font-size: 1.1rem;
+          line-height: 1.2;
+          margin-bottom: 5px;
+        }
+        .node__content {
+          font-size: 1rem;
+        }
+        margin-bottom: 25px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+.nd--header-content {
+  .nd--header-tags {
+    line-height: 1;
+    word-break: auto-phrase;
+  }
+}
+
+.uu-revue-recherche {
+  .uu-main-node {
+    .node--type-revue {
+      cursor: pointer;
+      h2 {
+        &.node__title {
+          font-size: 1.2rem;
+          line-height: 1.7;
+          margin-bottom: 5px;
+        }
+      }
+      .fd--nm-field-vignette {
+        margin-bottom: 25px;
+        img {
+          border-radius: 9px;
+          transition: all 0.5s ease-out;
+        }
+      }
+      .node__content {
+        font-size: 0.9rem;
+        margin-bottom: 25px;
+        transition: all 0.5s ease-out;
+      }
+      .fd--nm-field-thematiques {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0;
+        margin-bottom: 0;
+        gap: 4px;
+        margin-top: 15px;
+        .field__item {
+          background-color: #f6f6f6;
+          padding: 0;
+          transition: all 0.5s ease-out;
+          a:focus-within,
+          &:hover {
+            background-color: #d7d5d5 !important;
+          }
+        }
+
+        a {
+          text-decoration: none !important;
+          background: linear-gradient(to right, transparent, transparent),
+            linear-gradient(
+              to right,
+              rgb(233, 171, 171),
+              rgba(234, 135, 135, 1),
+              rgb(16, 192, 198)
+            );
+          background-size: 100% 0.1em, 0 0.1em;
+          background-position: 100% 100%, 0 100%;
+          background-repeat: no-repeat;
+          transition: background-size 400ms;
+          line-height: 1.3;
+          padding: 5px;
+          display: block;
+          a:focus-within,
+          &:hover {
+            a {
+              text-decoration: none !important;
+              background-size: 0 0.1em, 100% 0.2em;
+            }
+          }
+        }
+      }
+      a:focus-within,
+      &:hover {
+        a {
+          text-decoration: none !important;
+          background-size: 0 0.1em, 100% 0.2em;
+        }
+        .fd--nm-field-thematiques {
+          .field__item {
+            background-color: #eaeaea;
+          }
+        }
+        .fd--nm-field-vignette {
+          img {
+            transform: scale(1.04);
+            box-shadow: 0px 0px 3px #000;
+          }
+        }
+        .node__content {
+          padding: 0 5px;
+        }
+      }
+    }
+  }
+}
+
+.oo-revue {
+  .uu-menu {
+    ul {
+      margin-block: 0;
+      margin-inline: 0;
+      padding-inline-start: 0;
+      list-style-type: none;
+      list-style-image: none;
+      margin: 20px 0 !important;
+    }
+  }
+}

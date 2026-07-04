@@ -1,0 +1,54 @@
+.i-tooltip {
+  position: absolute;
+  font-size: .8rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  .i-tooltip-wrapper {
+    position: relative;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    .i-tooltip-span {
+      background-color: #525252;
+      position: absolute;
+      padding: 10px;
+      color: white;
+      box-shadow: 1px 1px 2px #5a5a5a;
+      width: max-content;
+      word-break: auto-phrase;
+      white-space: break-spaces;
+      max-width: 160px;
+      justify-content: flex-start;
+    }
+  }
+&-top {
+    top: 0;
+    left: 0;
+    .i-tooltip-wrapper {
+      .i-tooltip-span {
+        bottom: 7px;
+      }
+    }
+    &-middle {
+      top: 0;
+      .i-tooltip-wrapper {
+        justify-content: center;
+        .i-tooltip-span {
+          bottom: 7px;
+        }
+      }
+    }
+    &-right {
+      top: 0;
+      .i-tooltip-wrapper {
+        justify-content: flex-end;
+        .i-tooltip-span {
+          bottom: 7px;
+        }
+      }
+    }
+  }
+}

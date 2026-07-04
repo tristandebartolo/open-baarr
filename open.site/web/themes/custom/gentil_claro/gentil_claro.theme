@@ -1,0 +1,263 @@
+<?php
+
+use Drupal\taxonomy\Entity\Term;
+
+/**
+ * Implements hook_preprocess_HOOK() for html.html.twig.
+ */
+function gentil_claro_preprocess_html(array &$variables) {
+
+  if ($node = \Drupal::request()->attributes->get('node')) {
+    $content_type = $node->bundle();
+    $variables['attributes']['class'][] = 'page-' . $node->id();
+    $variables['attributes']['class'][] = 'page-' . str_replace('.','-', $content_type);
+    // if ($node->bundle() == 'poeme' && $node->hasField('field_type_poeme')) {
+    //   $type_poeme = $node->field_type_poeme->getValue()[0]['value'];
+    //   if ($type_poeme) {
+    //     $variables['attributes']['class'][] = 'page-' . $type_poeme . '-poeme';
+    //   }
+    // }
+  }
+
+  $current_path = \Drupal::service('path.current')->getPath();
+  $is_front = \Drupal::service('path.matcher')->isFrontPage();
+
+  // $cp = \Drupal::service('path.alias_manager');
+  $host = \Drupal::request()->getSchemeAndHttpHost();
+
+  if ($host) {
+    $variables['#attached']['drupalSettings']['tdb_timeline_host'] = $host;
+  }
+
+  if ($current_path ) {
+    // $variables['current_path'] = $cp->getAliasByPath($current_path);
+    $variables['#attached']['drupalSettings']['tdb_timeline_current_route'] = $current_path;
+    $variables['#attached']['drupalSettings']['tdb_timeline_current_front'] = $is_front;
+    // $variables['#attached']['drupalSettings']['tdb_timeline_route'] = \Drupal::service('path.alias_manager')->getAliasByPath($current_path);
+  }
+
+  // if (\Drupal::routeMatch()->getRouteName() == 'entity.taxonomy_term.canonical') {
+  //   $tid = \Drupal::routeMatch()->getRawParameter('taxonomy_term');
+  //   $term = Term::load($tid);
+
+  //   $variables['term_id'] = $tid;
+  // }
+
+  // if ($term = \Drupal::routeMatch()->getParameter('taxonomy_term')) {
+  //   $tid = $term->id();
+  //   $bundle = $term->bundle();
+  //   if ($bundle === 'figures') {
+  //     $variables['#attached']['drupalSettings']['tdb_timeline_route'] = 'base-route-' . $bundle;
+  //   }
+  //   $variables['term_id'] = $tid;
+  // }elseif (\Drupal::service('path.matcher')->isFrontPage() === TRUE) {
+  //   $variables['#attached']['drupalSettings']['tdb_timeline_route'] = 'base-route-front';
+  // }else{
+  //   $variables['#attached']['drupalSettings']['tdb_timeline_route'] = NULL;
+  // }
+
+}
+
+/**
+ * Implements hook_preprocess_page() for page.html.twig.
+ */
+function gentil_claro_preprocess_page(array &$variables) {
+
+  $user = \Drupal::currentUser();
+  $isAnonymous = $user->isAnonymous() ? false : true;
+
+  $variables['#attached']['drupalSettings']['tdb_timeline'] = NULL;
+  $variables['logged_in'] = $isAnonymous;
+  if ($isAnonymous) {
+    $variables['user_id'] = $user->id();
+  }
+  if ($node = \Drupal::routeMatch()->getParameter('node')) {
+    $variables['Tnid'] = $node->id();
+  }
+  if ($term = \Drupal::routeMatch()->getParameter('taxonomy_term')) {
+    // dsm($term);
+    // $variables['Ttid'] = $term->id();
+    // $variables['#attached']['drupalSettings']['tdb_timeline'] = ['id' => $term->id(), 'label' => $term->label()];
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_node_alter().
+ */
+function gentil_claro_theme_suggestions_taxonomy_term_alter(array &$suggestions, array $variables) {
+  // Add custom template for element menu local task page user
+  $elements = $variables['elements'];
+  if($elements && $elements['#view_mode']) {
+    $sanitized_view_mode = strtr($elements['#view_mode'], ' ', '_');
+    $suggestions[] = 'taxonomy_term__' .$sanitized_view_mode;
+    if($elements && $elements['name']) {
+      $sanitized_bundle = strtr($elements['name']['#bundle'], ' ', '_');
+      $suggestions[] = 'taxonomy_term__' .$sanitized_bundle;
+      $suggestions[] = 'taxonomy_term__' .$sanitized_bundle. '_' .$sanitized_view_mode;
+    }
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_node_alter().
+ */
+function gentil_claro_theme_suggestions_node(array $variables) {
+  $suggestions = [];
+  if ($node = \Drupal::routeMatch()->getParameter('node')) {
+    // if ($node->bundle() == 'poeme' && $node->hasField('field_type_poeme')) {
+    //   $type_poeme = $node->field_type_poeme->getValue()[0]['value'];
+    //   if ($type_poeme) {
+    //     $suggestions[] = 'node__' . $type_poeme . '_poeme';
+    //   }
+    // }
+    // if ($node->bundle() == 'revue' && $node->hasField('field_type_revue')) {
+    //   $type_revue = $node->field_type_revue->getValue()[0]['value'];
+    //   if ($type_revue) {
+    //     $suggestions[] = 'node__' . $type_revue . '_revue';
+    //   }
+    // }
+  }
+  return $suggestions;
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function gentil_claro_preprocess_node(array &$variables) {}
+
+/**
+ * Implements hook_preprocess_status_messages().
+ */
+function gentil_claro_preprocess_status_messages(&$variables) {
+  // Run process to caotch message and to send it to javascript for UK notification
+  // if(isset($variables['message_list']['status'])){
+  //   $status_messages = $variables['message_list']['status'];
+  //   foreach($status_messages as $delta => $message) {
+  //     $variables['#attached']['drupalSettings']['tdbMessage'][] = ['state' => 'success', 'msg' => $message];
+  //   }
+
+  // }
+  // if(isset($variables['message_list']['error'])){
+  //   $status_messages = $variables['message_list']['error'];
+  //   foreach($status_messages as $delta => $message) {
+  //     $variables['#attached']['drupalSettings']['tdbMessage'][] = ['state' => 'danger', 'msg' => $message];
+  //   }
+
+  // }
+  // if(isset($variables['message_list']['warning'])){
+  //   $status_messages = $variables['message_list']['warning'];
+  //   foreach($status_messages as $delta => $message) {
+  //     $variables['#attached']['drupalSettings']['tdbMessage'][] = ['state' => 'warning', 'msg' => $message];
+  //   }
+
+  // }
+  // if(isset($variables['message_list']['error']) || isset($variables['message_list']['status'])){
+  //   $variables['#attached']['library'][] = 'gentil_claro/global-messages';
+  // }
+
+  // Run process to caotch message and to send it to javascript for UK notification
+  if(isset($variables['message_list']['status'])){
+    $status_messages = $variables['message_list']['status'];
+    foreach($status_messages as $delta => $message) {
+      // $variables['#attached']['drupalSettings']['brrApp']['gentilMessage'][] = ['state' => 'success', 'msg' => $message];
+      $variables['attributes']['class'][] = 'uk-alert-primary';
+    }
+  }
+  if(isset($variables['message_list']['error'])){
+    $status_messages = $variables['message_list']['error'];
+    foreach($status_messages as $delta => $message) {
+      // $variables['#attached']['drupalSettings']['brrApp']['gentilMessage'][] = ['state' => 'danger', 'msg' => $message];
+      $variables['attributes']['class'][] = 'uk-alert-warning';
+    }
+  }
+  if(isset($variables['message_list']['warning'])){
+    $status_messages = $variables['message_list']['warning'];
+    foreach($status_messages as $delta => $message) {
+      // $variables['#attached']['drupalSettings']['tdbMessage'][] = ['state' => 'warning', 'msg' => $message];
+      $variables['attributes']['class'][] = 'uk-alert-danger';
+    }
+  }
+
+}
+
+/**
+ * Implements hook_theme_suggestions_containe_alter().
+ */
+function gentil_claro_theme_suggestions_container_alter(array &$suggestions, array $variables) {
+  $element = $variables['element'];
+  if (isset($element['#type']) && $element['#type'] == 'view') {
+    $suggestions[] = 'container__' .$element['#name']. '__' . $element['#display_id'];
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_page_alter().
+ */
+function gentil_claro_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+
+  // Add content type suggestions.
+  if ($node = \Drupal::request()->attributes->get('node')) {
+    // array_splice($suggestions, 1, 0, 'page__' . $node->getType());
+    $content_type = $node->bundle();
+    $suggestions[] = 'page__' . $content_type;
+    if (\Drupal::service('path.matcher')->isFrontPage()) {
+      $suggestions[] = 'page__' . $content_type . '__front';
+    }
+
+  }
+
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.taxonomy_term.canonical' && $tid = \Drupal::routeMatch()->getRawParameter('taxonomy_term')) {
+    $term = Term::load($tid);
+    $suggestions[] = 'page__taxonomy__' . $term->bundle();
+  }
+  // On recupere le Code Statut de la page courante.
+  $status = \Drupal::requestStack()->getCurrentRequest()->attributes->get('exception');
+  // Si un status existe et que ce status est le 404 declare custom twig template
+  if ($status && $status->getStatusCode() == 404){
+    // $suggestions[] = 'page__404';
+  }
+  // Si un status existe et que ce status est le 403 declare custom twig template
+  if ($status && $status->getStatusCode() == 403){
+    // $suggestions[] = 'page__403';
+  }
+
+}
+
+/**
+ * Implements hook_preprocess_menu_local_task().
+ */
+function gentil_claro_preprocess_menu_local_task(array &$variables) {
+    // ksm($variables);
+    // unset($variables['attributes']['class']);
+  //$variables['element']['#link']['url']->setOption('attributes', ['class'=>'rounded']);
+  $variables['attributes']['class'][] = '';
+  $variables['link']['#options']['attributes']['class'][] = (!empty($variables['is_active']) ? ' uk-active' : '');
+}
+
+/**
+ * Implements hook_theme_suggestions_field_alter
+ */
+function gentil_claro_theme_suggestions_field_alter(array &$suggestions, array $variables) {
+  // Prepare the array suggestion
+  $suggestions = [];
+  // Build a variable with field information
+  $element = $variables['element'];
+  // sanitize #view_mode
+  $sanitized_view_mode = strtr($element['#view_mode'], '.', '_');
+  // Suggest template
+  $suggestions[] = 'field__' . $element['#field_type'];
+  $suggestions[] = 'field__' . $element['#field_name'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#bundle'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#field_name'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#field_name'] . '__' . $element['#bundle'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#field_name'] . '__' . $sanitized_view_mode;
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#field_name'] . '__' . $element['#bundle'] . '__' . $sanitized_view_mode;
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function gentil_claro_theme_suggestions_image_alter(array &$suggestions, array $variables) {
+  $image = $variables['style_name'];
+  $suggestions[] = 'image__'.$image;
+}

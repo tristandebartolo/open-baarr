@@ -1,0 +1,56 @@
+uuid: f893a1ba-f929-4f58-aca7-fccea1359bad
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.field.node.trajet.field_body
+    - field.field.node.trajet.field_chapo
+    - field.field.node.trajet.field_thematiques
+    - field.field.node.trajet.field_vignette
+    - node.type.trajet
+  module:
+    - text
+    - user
+id: node.trajet.default
+targetEntityType: node
+bundle: trajet
+mode: default
+content:
+  field_body:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  field_chapo:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 102
+    region: content
+  field_thematiques:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 104
+    region: content
+  field_vignette:
+    type: entity_reference_entity_view
+    label: above
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  langcode: true

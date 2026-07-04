@@ -1,0 +1,65 @@
+<article{{attributes.addClass(classes)}}>
+	<header class="oo-nd-header uk-section uk-section-xsmall">
+		<div class="uk-container">
+			<div class="nd--header-content">
+				<h1{{title_attributes.addClass('nd--title')}}>
+					{{ label }}
+				</h1>
+				<div class="nd--header-tags oo-grid">
+					{% if content.field_realisation %}
+						{{ content.field_realisation }}
+					{% endif %}
+					{% if content.field_figures %}
+						<div>{{ content.field_figures }}</div>
+					{% endif %}
+					{% if content.field_mediums %}
+						<div>{{ content.field_mediums }}</div>
+					{% endif %}
+					{% if content.field_thematiques %}
+						<div>{{ content.field_thematiques }}</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</header>
+
+	{% if content.field_show_message|render and content.field_message|render %}
+		{% set status = content.field_status_message and content.field_status_message[0] and content.field_status_message[0]['#markup'] ? content.field_status_message[0]['#markup'] : null %}
+		<div class="oo-nd-alert uk-section uk-section-xsmall uk-margin-bottom">
+			<div class="uk-container">
+				<div class="oo-alert oo-alert-{{status}}">{{ content.field_message }}</div>
+			</div>
+		</div>
+	{% endif %}
+
+	{{ content.field_embed_url }}
+	<div class="oo-nd-main uk-section uk-section-small">
+		<div class="uk-container">
+			<div class="content" uk-grid>
+				<div{{content_attributes.addClass('nd--content','uk-width-1-1',relation_figures?'uk-width-2-3@m':'uk-width-1-1@m')}}>
+					<div class="uk-text-lead uk-margin-bottom">{{ content.field_chapo }}</div>
+					{{ content|without('field_mediums', 'field_realisation', 'field_figures', 'field_thematiques', 'field_embed_url', 'field_chapo', 'field_vignette', 'field_show_message', 'field_status_message', 'field_message') }}
+				</div>
+				{% if relation_figures %}
+					<div class="relation--content uk-width-1-1 uk-width-1-3@m">
+						{% for figure in relation_figures %}
+							<div class="relation--content-by-authors">
+								{% if figure.item %}
+									{% set artiste = figure.item %}
+									<h2>{{ artiste.prenom ? artiste.prenom ~  ' ' : '' }}{{ artiste.name }}</h2>
+								{% endif %}
+								{% if figure.items %}
+									<ul>
+										{% for item in figure.items %}
+											<li>{{ item }}</li>
+										{% endfor %}
+									</ul>
+								{% endif %}
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</article>

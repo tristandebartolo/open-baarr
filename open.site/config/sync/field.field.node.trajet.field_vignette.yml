@@ -1,0 +1,29 @@
+uuid: e519b799-8717-4bbd-8df4-c6663ae4b04b
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_vignette
+    - media.type.image
+    - node.type.trajet
+id: node.trajet.field_vignette
+field_name: field_vignette
+entity_type: node
+bundle: trajet
+label: Vignette
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

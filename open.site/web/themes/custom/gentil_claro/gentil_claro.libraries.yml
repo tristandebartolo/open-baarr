@@ -1,0 +1,62 @@
+global-styling:
+  version: VERSION
+  css:
+    base:
+      css/gentil-claro.css: {}
+  js:
+    js/cookies_media.js: {}
+    js/gentil-claro.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.ajax
+    - core/jquery
+    - core/once
+    - core/drupalSettings
+    - gentil_claro/global-styling-uikit-js
+    - gentil_claro/global-styling-uikit-css
+    - gentil_claro/global-styling-fonts
+    - cookies/cookies.lib
+# Css uikit
+global-styling-uikit-css:
+  version: VERSION
+  css:
+    base:
+      css/uikit.min.css: { minified: true }
+# Js uikit
+global-styling-uikit-js:
+  version: VERSION
+  js:
+    js/uikit.min.js: { minified: true }
+    js/uikit-icons.min.js: { minified: true }
+    js/gentil-claro.js: {}
+  dependencies:
+    - system/admin
+    - core/jquery
+    - core/jquery.once
+    - core/drupal
+    - core/drupalSettings
+# Font
+global-styling-fonts:
+  version: VERSION
+  css:
+    base:
+      https://fonts.googleapis.com/css2?family=Numans&display=swap: {}
+      https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&display=swap:
+        {}
+
+# Js uikit
+global-skroolr:
+  version: VERSION
+  css:
+    base:
+      css/app/font-awesome.min.css: {}
+      css/app/skrollr.css: {}
+  js:
+    js/skrollr/skrollr.min.js: {}
+    js/skrollr/skrollr.menu.min.js: {}
+    js/skrollr/skrollr.app.min.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
+    - core/drupalSettings
