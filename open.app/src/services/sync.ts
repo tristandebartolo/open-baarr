@@ -5,11 +5,14 @@
  *   1. POST /trips              — idempotent par uuid client (200 rejeu / 201)
  *   2. POST /points/batch       — paquets de 500 triés par seq, rejouables
  *                                 sans doublon (index unique trajet+seq)
- *   3. PATCH /trips             — métadonnées (battery_end, ended_at)
+ *   3. PATCH /trips             — métadonnées (battery_end, ended_at,
+ *                                 santé capteurs hr/steps/calories)
  *   4. PATCH /trips/status      — `completed` seulement quand tous les
  *                                 points sont partis (le serveur recalcule
  *                                 métriques et tracé à ce moment-là)
- *   (5. photos — étape 6, queue déjà en place)
+ *   5. POST /photos             — file photos_queue, multipart, rejouable
+ *                                 (photo marquée synced sur 201 seulement ;
+ *                                 un échec est noté et retenté au run suivant)
  *
  * Déclencheurs (`initSyncTriggers` + appels directs) : retour du réseau,
  * fin de trajet, ouverture de l'app, toutes les 60 s pendant
@@ -26,15 +29,19 @@
 
 import * as Network from 'expo-network';
 
-import { ApiError, apiFetch } from '@/services/api';
+import { ApiError, apiFetch, apiUpload } from '@/services/api';
 import {
   countUnsyncedPoints,
   getTripsNeedingSync,
+  getUnsyncedPhotos,
   getUnsyncedPointsBatch,
+  markPhotoSynced,
   markPointsSynced,
+  recordPhotoError,
   updateTripSyncState,
 } from '@/db/queries';
-import type { PointRow, TripRow } from '@/db/schema';
+import type { PhotoQueueRow, PointRow, TripRow } from '@/db/schema';
+import { deleteLocalPhoto } from '@/services/photos';
 import { useSyncStore } from '@/stores/sync-store';
 
 const BATCH_SIZE = 500;
@@ -45,6 +52,7 @@ export type SyncResult = {
   skipped?: 'offline' | 'busy';
   tripsSynced: number;
   pointsSynced: number;
+  photosSynced: number;
   /** Erreur ayant interrompu le run (les données locales sont intactes). */
   aborted?: string;
 };
@@ -127,7 +135,7 @@ async function pushPoints(trip: TripRow): Promise<number> {
   }
 }
 
-/** 3. Métadonnées de fin (battery_end, ended_at de secours). */
+/** 3. Métadonnées de fin (battery_end, ended_at de secours, santé capteurs). */
 async function pushMeta(trip: TripRow): Promise<void> {
   if (trip.pendingMeta !== 1) {
     return;
@@ -135,6 +143,10 @@ async function pushMeta(trip: TripRow): Promise<void> {
   const body = {
     ...(trip.endedAt !== null ? { ended_at: toEpochSeconds(trip.endedAt) } : {}),
     ...(trip.batteryEnd !== null ? { battery_end: trip.batteryEnd } : {}),
+    ...(trip.hrAvg !== null ? { heart_rate_avg: trip.hrAvg } : {}),
+    ...(trip.hrMax !== null ? { heart_rate_max: trip.hrMax } : {}),
+    ...(trip.steps !== null ? { steps: trip.steps } : {}),
+    ...(trip.calories !== null ? { calories: trip.calories } : {}),
   };
   if (Object.keys(body).length > 0) {
     await apiFetch(`/opencar/api/v1/trips/${trip.uuid}`, { method: 'PATCH', body });
@@ -162,6 +174,44 @@ async function pushCompletedStatus(trip: TripRow): Promise<void> {
   await updateTripSyncState(trip.uuid, { syncedStatus: 'completed' });
 }
 
+/** Nom/type de fichier pour le multipart RN à partir de l'URI locale. */
+function photoFilePart(photo: PhotoQueueRow): { uri: string; name: string; type: string } {
+  const name = photo.localUri.split('/').pop() ?? `photo-${photo.id}.jpg`;
+  const ext = /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? 'jpg';
+  const type = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+  return { uri: photo.localUri, name, type };
+}
+
+/** 5. Upload des photos en attente (une par une, échec non bloquant). */
+async function pushPhotos(trip: TripRow): Promise<number> {
+  let pushed = 0;
+  for (const photo of await getUnsyncedPhotos(trip.uuid)) {
+    const form = new FormData();
+    // RN sérialise {uri, name, type} en partie fichier multipart.
+    form.append('file', photoFilePart(photo) as unknown as Blob);
+    if (photo.lat !== null && photo.lng !== null) {
+      form.append('lat', String(photo.lat));
+      form.append('lng', String(photo.lng));
+    }
+    if (photo.takenAt !== null) {
+      form.append('taken_at', String(toEpochSeconds(photo.takenAt)));
+    }
+    try {
+      await apiUpload(`/opencar/api/v1/trips/${trip.uuid}/photos`, form);
+      await markPhotoSynced(photo.id);
+      deleteLocalPhoto(photo.localUri);
+      pushed += 1;
+    } catch (e) {
+      if (isAbortingError(e)) {
+        throw e;
+      }
+      // 422/413/5xx propre à cette photo : noté, on continue avec les autres.
+      await recordPhotoError(photo.id, e instanceof Error ? e.message : String(e));
+    }
+  }
+  return pushed;
+}
+
 let currentRun: Promise<SyncResult> | null = null;
 
 /**
@@ -179,7 +229,7 @@ export function syncNow(reason: string): Promise<SyncResult> {
 }
 
 async function runSync(reason: string): Promise<SyncResult> {
-  const result: SyncResult = { reason, tripsSynced: 0, pointsSynced: 0 };
+  const result: SyncResult = { reason, tripsSynced: 0, pointsSynced: 0, photosSynced: 0 };
 
   const network = await Network.getNetworkStateAsync().catch(() => null);
   if (network !== null && (network.isInternetReachable === false || network.isConnected === false)) {
@@ -201,6 +251,7 @@ async function runSync(reason: string): Promise<SyncResult> {
       result.pointsSynced += await pushPoints(trip);
       await pushMeta(trip);
       await pushCompletedStatus(trip);
+      result.photosSynced += await pushPhotos(trip);
       if (trip.syncError !== null) {
         await updateTripSyncState(trip.uuid, { syncError: null });
       }

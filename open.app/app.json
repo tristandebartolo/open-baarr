@@ -17,6 +17,11 @@
     },
     "android": {
       "package": "fr.baarr.openapp",
+      "permissions": [
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#208AEF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -54,7 +59,23 @@
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }
-      ]
+      ],
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "open.app accède à vos photos pour les joindre à un trajet.",
+          "cameraPermission": "open.app utilise l’appareil photo pour prendre des photos pendant un trajet."
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "open.app lit votre fréquence cardiaque, vos pas et vos calories pour enrichir vos trajets.",
+          "NSHealthUpdateUsageDescription": false
+        }
+      ],
+      "react-native-health-connect"
     ],
     "experiments": {
       "typedRoutes": true,

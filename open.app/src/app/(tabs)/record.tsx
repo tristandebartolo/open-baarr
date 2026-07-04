@@ -14,6 +14,7 @@ import { ACTIVITY_ICONS, ACTIVITY_LABELS, ACTIVITY_TYPES } from '@/constants/act
 import { Spacing } from '@/constants/theme';
 import type { ActivityType } from '@/db/schema';
 import { useTheme } from '@/hooks/use-theme';
+import { captureTripPhoto } from '@/services/photos';
 import { useRecordStore } from '@/stores/record-store';
 import { useSyncStore } from '@/stores/sync-store';
 import { formatDistance, formatDuration, formatSpeed } from '@/utils/format';
@@ -25,6 +26,7 @@ export default function RecordScreen() {
   const theme = useTheme();
   const mapRef = useRef<MapView>(null);
   const [activityType, setActivityType] = useState<ActivityType>('car');
+  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
 
   const phase = useRecordStore((s) => s.phase);
   const trip = useRecordStore((s) => s.trip);
@@ -57,6 +59,28 @@ export default function RecordScreen() {
 
   const active = phase === 'recording' || phase === 'paused';
   const busy = phase === 'starting' || phase === 'stopping';
+
+  // Photo géolocalisée pendant le trajet → photos_queue (upload par la sync).
+  const handlePhoto = async () => {
+    if (trip === null) {
+      return;
+    }
+    try {
+      const result = await captureTripPhoto(
+        trip.uuid,
+        lastPoint !== null ? { lat: lastPoint.lat, lng: lastPoint.lng } : null,
+      );
+      setPhotoMessage(
+        result === 'queued'
+          ? 'Photo ajoutée au trajet (envoi à la prochaine sync).'
+          : result === 'permission-denied'
+            ? 'Accès à l’appareil photo refusé.'
+            : null,
+      );
+    } catch (e) {
+      setPhotoMessage(e instanceof Error ? e.message : 'Photo impossible.');
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -112,6 +136,11 @@ export default function RecordScreen() {
               <ThemedText type="small" style={styles.warning}>
                 Localisation « Toujours » refusée : l’enregistrement s’interrompra si l’app passe
                 en arrière-plan.
+              </ThemedText>
+            )}
+            {photoMessage !== null && (
+              <ThemedText type="small" themeColor="textSecondary">
+                {photoMessage}
               </ThemedText>
             )}
           </>
@@ -182,6 +211,17 @@ export default function RecordScreen() {
               color={DANGER}
               onPress={() => void stop()}
             />
+          )}
+          {active && (
+            <Pressable
+              accessibilityLabel="Prendre une photo"
+              onPress={() => void handlePhoto()}
+              style={({ pressed }) => [
+                styles.photoButton,
+                { backgroundColor: theme.backgroundSelected, opacity: pressed ? 0.7 : 1 },
+              ]}>
+              <Ionicons name="camera" size={22} color={theme.text} />
+            </Pressable>
           )}
         </View>
       </View>
@@ -279,6 +319,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.two + 4,
     minWidth: 130,
+  },
+  photoButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   error: {
     color: '#D64545',

@@ -118,7 +118,10 @@ async function extractErrorMessage(response: Response): Promise<string> {
   return `Erreur ${response.status}`;
 }
 
-export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+async function rawFetch(
+  path: string,
+  options: ApiFetchOptions & { formData?: FormData; accept?: string },
+): Promise<Response> {
   const credentials = options.credentials ?? sessionCredentials;
   if (!credentials) {
     throw new ApiError(401, 'Aucun identifiant enregistré.');
@@ -131,10 +134,12 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
       method: options.method ?? 'GET',
       headers: {
         Authorization: basicAuthHeader(credentials),
-        Accept: 'application/json',
+        Accept: options.accept ?? 'application/json',
+        // multipart : fetch pose lui-même le Content-Type avec la boundary.
         ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       },
-      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      body:
+        options.formData ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
     });
   } catch {
     throw new ApiError(0, 'Serveur injoignable. Vérifiez l’URL et la connexion réseau.');
@@ -153,9 +158,25 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     throw new ApiError(response.status, await extractErrorMessage(response));
   }
 
+  return response;
+}
+
+export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+  const response = await rawFetch(path, options);
   if (response.status === 204) {
     return undefined as T;
   }
+  return (await response.json()) as T;
+}
 
+/** Réponse texte brut (route GPX, sans `_format: json`). */
+export async function apiFetchText(path: string, accept = 'application/gpx+xml'): Promise<string> {
+  const response = await rawFetch(path, { format: false, accept });
+  return response.text();
+}
+
+/** POST multipart/form-data (upload de photo). */
+export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
+  const response = await rawFetch(path, { method: 'POST', formData });
   return (await response.json()) as T;
 }

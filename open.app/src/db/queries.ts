@@ -6,15 +6,17 @@
  * sont donc sûres à appeler depuis un contexte headless.
  */
 
-import { and, asc, count, desc, eq, gt, inArray, ne, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, gte, inArray, isNull, lte, ne, or, sql } from 'drizzle-orm';
 import type * as Location from 'expo-location';
 
 import { getDb } from '@/db';
 import {
+  photosQueue,
   points,
   trips,
   type ActivityType,
   type NewPointRow,
+  type PhotoQueueRow,
   type PointRow,
   type TripRow,
   type TripStatus,
@@ -189,6 +191,10 @@ export async function getTripsNeedingSync(): Promise<TripRow[]> {
     .selectDistinct({ uuid: points.tripUuid })
     .from(points)
     .where(eq(points.synced, 0));
+  const withUnsyncedPhotos = db
+    .selectDistinct({ uuid: photosQueue.tripUuid })
+    .from(photosQueue)
+    .where(eq(photosQueue.synced, 0));
   return db
     .select()
     .from(trips)
@@ -198,6 +204,7 @@ export async function getTripsNeedingSync(): Promise<TripRow[]> {
         eq(trips.pendingMeta, 1),
         and(eq(trips.status, 'completed'), ne(sql`COALESCE(${trips.syncedStatus}, '')`, 'completed')),
         inArray(trips.uuid, withUnsyncedPoints),
+        inArray(trips.uuid, withUnsyncedPhotos),
       ),
     )
     .orderBy(asc(trips.startedAt));
@@ -245,4 +252,182 @@ export async function updateTripSyncState(
 ): Promise<void> {
   const db = await getDb();
   await db.update(trips).set(changes).where(eq(trips.uuid, uuid));
+}
+
+// ---------------------------------------------------------------------------
+// Lecture pour l'écran détail (trajets enregistrés sur cet appareil)
+// ---------------------------------------------------------------------------
+
+/** Tous les points d'un trajet local, triés par séquence. */
+export async function getTripPoints(tripUuid: string): Promise<PointRow[]> {
+  const db = await getDb();
+  return db
+    .select()
+    .from(points)
+    .where(eq(points.tripUuid, tripUuid))
+    .orderBy(asc(points.seq));
+}
+
+// ---------------------------------------------------------------------------
+// Santé (fusion HealthKit / Health Connect)
+// ---------------------------------------------------------------------------
+
+export type HeartRateSample = {
+  /** Epoch ms de la mesure. */
+  t: number;
+  bpm: number;
+};
+
+/**
+ * Fusionne des échantillons de fréquence cardiaque aux points d'un trajet :
+ * chaque point sans FC reçoit l'échantillon au timestamp le plus proche,
+ * dans une tolérance donnée. Les points déjà pourvus ne sont pas modifiés.
+ *
+ * @returns Le nombre de points mis à jour.
+ */
+export async function mergeHeartRateSamples(
+  tripUuid: string,
+  samples: HeartRateSample[],
+  toleranceMs = 30000,
+): Promise<number> {
+  if (samples.length === 0) {
+    return 0;
+  }
+  const db = await getDb();
+  const ordered = [...samples].sort((a, b) => a.t - b.t);
+  const candidates = await db
+    .select({ id: points.id, t: points.t })
+    .from(points)
+    .where(
+      and(
+        eq(points.tripUuid, tripUuid),
+        isNull(points.hr),
+        gte(points.t, ordered[0].t - toleranceMs),
+        lte(points.t, ordered[ordered.length - 1].t + toleranceMs),
+      ),
+    )
+    .orderBy(asc(points.t));
+  if (candidates.length === 0) {
+    return 0;
+  }
+
+  // Points et échantillons sont triés : parcours en tandem, O(n + m).
+  const byBpm = new Map<number, number[]>();
+  let cursor = 0;
+  for (const point of candidates) {
+    while (cursor + 1 < ordered.length && ordered[cursor + 1].t <= point.t) {
+      cursor += 1;
+    }
+    const before = ordered[cursor];
+    const after = cursor + 1 < ordered.length ? ordered[cursor + 1] : null;
+    const nearest =
+      after !== null && Math.abs(after.t - point.t) < Math.abs(before.t - point.t) ? after : before;
+    if (Math.abs(nearest.t - point.t) > toleranceMs) {
+      continue;
+    }
+    const bpm = Math.round(nearest.bpm);
+    if (bpm < 1 || bpm > 300) {
+      continue;
+    }
+    const ids = byBpm.get(bpm) ?? [];
+    ids.push(point.id);
+    byBpm.set(bpm, ids);
+  }
+  if (byBpm.size === 0) {
+    return 0;
+  }
+
+  let updated = 0;
+  await db.transaction(async (tx) => {
+    for (const [bpm, ids] of byBpm) {
+      await tx.update(points).set({ hr: bpm }).where(inArray(points.id, ids));
+      updated += ids.length;
+    }
+  });
+  return updated;
+}
+
+/**
+ * Fige le résumé santé capteurs sur le trajet (fin d'enregistrement) et le
+ * marque à pousser via PATCH /trips (`pendingMeta`).
+ */
+export async function setTripHealthSummary(
+  uuid: string,
+  summary: Partial<{
+    hrAvg: number | null;
+    hrMax: number | null;
+    steps: number | null;
+    calories: number | null;
+  }>,
+): Promise<void> {
+  const db = await getDb();
+  await db
+    .update(trips)
+    .set({ ...summary, pendingMeta: 1 })
+    .where(eq(trips.uuid, uuid));
+}
+
+/** FC moyenne/max calculées sur les points locaux d'un trajet (bpm, NULL sans FC). */
+export async function getTripHeartRateStats(
+  tripUuid: string,
+): Promise<{ hrAvg: number | null; hrMax: number | null }> {
+  const db = await getDb();
+  const [row] = await db
+    .select({
+      hrAvg: sql<number | null>`ROUND(AVG(${points.hr}))`,
+      hrMax: sql<number | null>`MAX(${points.hr})`,
+    })
+    .from(points)
+    .where(and(eq(points.tripUuid, tripUuid), sql`${points.hr} IS NOT NULL`));
+  return { hrAvg: row?.hrAvg ?? null, hrMax: row?.hrMax ?? null };
+}
+
+// ---------------------------------------------------------------------------
+// File d'upload des photos
+// ---------------------------------------------------------------------------
+
+export async function enqueuePhoto(photo: {
+  tripUuid: string;
+  localUri: string;
+  lat: number | null;
+  lng: number | null;
+  takenAt: number;
+}): Promise<void> {
+  const db = await getDb();
+  await db.insert(photosQueue).values(photo);
+}
+
+export async function getUnsyncedPhotos(tripUuid: string): Promise<PhotoQueueRow[]> {
+  const db = await getDb();
+  return db
+    .select()
+    .from(photosQueue)
+    .where(and(eq(photosQueue.tripUuid, tripUuid), eq(photosQueue.synced, 0)))
+    .orderBy(asc(photosQueue.id));
+}
+
+export async function countUnsyncedPhotos(tripUuid?: string): Promise<number> {
+  const db = await getDb();
+  const rows = await db
+    .select({ n: count() })
+    .from(photosQueue)
+    .where(
+      tripUuid === undefined
+        ? eq(photosQueue.synced, 0)
+        : and(eq(photosQueue.tripUuid, tripUuid), eq(photosQueue.synced, 0)),
+    );
+  return rows[0]?.n ?? 0;
+}
+
+export async function markPhotoSynced(id: number): Promise<void> {
+  const db = await getDb();
+  await db.update(photosQueue).set({ synced: 1, lastError: null }).where(eq(photosQueue.id, id));
+}
+
+export async function recordPhotoError(id: number, error: string): Promise<void> {
+  const db = await getDb();
+  await db
+    .update(photosQueue)
+    .set({ lastError: error.slice(0, 500), attempts: sql`${photosQueue.attempts} + 1` })
+    .where(eq(photosQueue.id, id));
 }

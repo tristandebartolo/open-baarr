@@ -37,6 +37,13 @@ export const trips = sqliteTable(
     batteryStart: integer('battery_start'),
     batteryEnd: integer('battery_end'),
     deviceInfo: text('device_info'),
+    // --- Santé capteurs (HealthKit / Health Connect), figée à la fin du trajet ---
+    /** FC moyenne bpm (NULL si aucune donnée santé). */
+    hrAvg: integer('hr_avg'),
+    hrMax: integer('hr_max'),
+    steps: integer('steps'),
+    /** Calories actives (kcal). */
+    calories: real('calories'),
     // --- État de synchronisation vers Drupal ---
     /** 1 quand POST /trips a répondu 200/201 pour cet uuid. */
     serverCreated: integer('server_created').notNull().default(0),
@@ -111,3 +118,5 @@ export const syncMeta = sqliteTable('sync_meta', {
 export type TripRow = typeof trips.$inferSelect;
 export type PointRow = typeof points.$inferSelect;
 export type NewPointRow = typeof points.$inferInsert;
+export type PhotoQueueRow = typeof photosQueue.$inferSelect;
+export type NewPhotoQueueRow = typeof photosQueue.$inferInsert;

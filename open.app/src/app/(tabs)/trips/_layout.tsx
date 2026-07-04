@@ -12,6 +12,7 @@ export default function TripsLayout() {
         headerTintColor: theme.text,
       }}>
       <Stack.Screen name="index" options={{ title: 'Trajets' }} />
+      <Stack.Screen name="[uuid]" options={{ title: 'Trajet', headerBackTitle: 'Trajets' }} />
     </Stack>
   );
 }

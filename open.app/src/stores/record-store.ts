@@ -10,8 +10,16 @@
 
 import { create } from 'zustand';
 
-import { countUnsyncedPoints, getPointsAfter, getTrip } from '@/db/queries';
+import {
+  countUnsyncedPoints,
+  getPointsAfter,
+  getTrip,
+  getTripHeartRateStats,
+  mergeHeartRateSamples,
+  setTripHealthSummary,
+} from '@/db/queries';
 import type { ActivityType, PointRow, TripRow } from '@/db/schema';
+import { ensureHealthPermissions, getHealthSummary, getHeartRateSamples } from '@/services/health';
 import { syncNow } from '@/services/sync';
 import {
   pauseRecording,
@@ -57,7 +65,11 @@ let lastPointId = 0;
 let lastCoord: { lat: number; lng: number; seg: number } | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let syncTimer: ReturnType<typeof setInterval> | null = null;
+let healthTimer: ReturnType<typeof setInterval> | null = null;
 let ticking = false;
+/** Borne basse de la prochaine lecture d'échantillons FC (epoch ms). */
+let healthCursor = 0;
+let mergingHealth = false;
 
 function resetCursors(): void {
   lastPointId = 0;
@@ -72,6 +84,65 @@ function stopTimers(): void {
   if (syncTimer !== null) {
     clearInterval(syncTimer);
     syncTimer = null;
+  }
+  if (healthTimer !== null) {
+    clearInterval(healthTimer);
+    healthTimer = null;
+  }
+}
+
+/**
+ * Lit les nouveaux échantillons de FC et les fusionne aux points GPS
+ * (timestamp le plus proche). Fenêtre recouvrante d'une minute : un
+ * échantillon arrivé en retard dans HealthKit/Health Connect est rattrapé.
+ */
+async function mergeHeartRate(tripUuid: string): Promise<void> {
+  if (mergingHealth) {
+    return;
+  }
+  mergingHealth = true;
+  try {
+    const now = Date.now();
+    const samples = await getHeartRateSamples(healthCursor - 60000, now);
+    if (samples.length > 0) {
+      await mergeHeartRateSamples(tripUuid, samples);
+    }
+    healthCursor = now;
+  } catch (e) {
+    console.warn('opencar: fusion FC échouée', e);
+  } finally {
+    mergingHealth = false;
+  }
+}
+
+/**
+ * Fin de trajet : dernière fusion FC, puis résumé santé capteurs
+ * (FC avg/max depuis les points, pas + calories agrégés sur la fenêtre du
+ * trajet) figé sur le trajet — poussé par la sync via PATCH /trips.
+ */
+async function finalizeHealth(trip: TripRow, endedAt: number): Promise<void> {
+  try {
+    await mergeHeartRate(trip.uuid);
+    const [hrStats, summary] = await Promise.all([
+      getTripHeartRateStats(trip.uuid),
+      getHealthSummary(trip.startedAt, endedAt),
+    ]);
+    if (
+      hrStats.hrAvg !== null ||
+      hrStats.hrMax !== null ||
+      summary.steps !== null ||
+      summary.calories !== null
+    ) {
+      await setTripHealthSummary(trip.uuid, {
+        hrAvg: hrStats.hrAvg,
+        hrMax: hrStats.hrMax,
+        steps: summary.steps,
+        calories: summary.calories,
+      });
+    }
+  } catch (e) {
+    // La santé n'est jamais bloquante : le trajet part sans résumé capteurs.
+    console.warn('opencar: résumé santé indisponible', e);
   }
 }
 
@@ -128,6 +199,13 @@ export const useRecordStore = create<RecordState>((set, get) => {
     pollTimer = setInterval(() => void tick(), 1000);
     // Déclencheur du plan : sync toutes les 60 s pendant l'enregistrement.
     syncTimer = setInterval(() => void syncNow('enregistrement'), 60000);
+    // Fusion FC toutes les 30 s (avant la sync : les points partent avec leur hr).
+    healthTimer = setInterval(() => {
+      const { trip } = get();
+      if (trip !== null) {
+        void mergeHeartRate(trip.uuid);
+      }
+    }, 30000);
   }
 
   return {
@@ -152,6 +230,9 @@ export const useRecordStore = create<RecordState>((set, get) => {
       try {
         const { trip, backgroundGranted } = await startRecording(activityType);
         resetCursors();
+        healthCursor = trip.startedAt;
+        // Demande des permissions santé au premier trajet (non bloquant).
+        void ensureHealthPermissions();
         set({
           phase: 'recording',
           trip,
@@ -198,6 +279,8 @@ export const useRecordStore = create<RecordState>((set, get) => {
       stopTimers();
       try {
         await stopRecording(trip);
+        // Résumé santé AVANT la sync : le PATCH meta de ce run l'emporte.
+        await finalizeHealth(trip, Date.now());
       } finally {
         set({ phase: 'idle', trip: null, speedMs: null });
       }
@@ -214,6 +297,7 @@ export const useRecordStore = create<RecordState>((set, get) => {
         return;
       }
       resetCursors();
+      healthCursor = trip.startedAt;
       set({
         phase: trip.status === 'paused' ? 'paused' : 'recording',
         trip,
