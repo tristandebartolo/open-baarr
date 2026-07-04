@@ -1,0 +1,126 @@
+opencar_api.me:
+  path: '/opencar/api/v1/me'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\MeController::me'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    _format: json
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_create:
+  path: '/opencar/api/v1/trips'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripController::createTrip'
+  methods: [POST]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_list:
+  path: '/opencar/api/v1/trips'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripController::list'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    _format: json
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_get:
+  path: '/opencar/api/v1/trips/{uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripController::get'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_update:
+  path: '/opencar/api/v1/trips/{uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripController::update'
+  methods: [PATCH]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_delete:
+  path: '/opencar/api/v1/trips/{uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripController::delete'
+  methods: [DELETE]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_status:
+  path: '/opencar/api/v1/trips/{uuid}/status'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripController::updateStatus'
+  methods: [PATCH]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_points_batch:
+  path: '/opencar/api/v1/trips/{uuid}/points/batch'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripPointsController::batch'
+  methods: [POST]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_photos:
+  path: '/opencar/api/v1/trips/{uuid}/photos'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripPhotoController::upload'
+  methods: [POST]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_gpx:
+  path: '/opencar/api/v1/trips/{uuid}/gpx'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\GpxController::download'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.stats_summary:
+  path: '/opencar/api/v1/stats/summary'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\StatsController::summary'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    _format: json
+  options:
+    _auth: ['basic_auth']

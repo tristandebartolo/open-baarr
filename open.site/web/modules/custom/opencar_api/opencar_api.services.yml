@@ -1,0 +1,9 @@
+services:
+  opencar_api.payload_validator:
+    class: Drupal\opencar_api\Service\PayloadValidator
+  opencar_api.trip_repository:
+    class: Drupal\opencar_api\Service\TripRepository
+    arguments: ['@entity_type.manager']
+  opencar_api.trip_normalizer:
+    class: Drupal\opencar_api\Service\TripNormalizer
+    arguments: ['@opencar_core.track_point_repository', '@file_url_generator']

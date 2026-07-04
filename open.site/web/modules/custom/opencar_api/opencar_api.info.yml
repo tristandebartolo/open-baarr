@@ -1,0 +1,9 @@
+name: 'OpenCar API'
+type: module
+description: "Endpoints HTTP de l'API mobile OpenCar (/opencar/api/v1/*)."
+package: OpenCar
+core_version_requirement: ^11
+dependencies:
+  - basic_auth:basic_auth
+  - opencar_core:opencar_core
+  - serialization:serialization
