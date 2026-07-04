@@ -80,4 +80,5 @@ module:
 theme:
   olivero: 0
   claro: 0
+  gentil_claro: 0
 profile: standard

@@ -28,32 +28,32 @@ mode: full
 content:
   field_body:
     type: text_default
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 101
+    weight: 1
     region: content
   field_chapo:
     type: basic_string
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 102
+    weight: 0
     region: content
   field_coordinates:
     type: geolocation_latlng
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 105
+    weight: 4
     region: content
   field_coordinates_travel:
     type: geolocation_geometry_data
-    label: above
+    label: hidden
     settings:
       geometry_format: geojson
     third_party_settings: {  }
-    weight: 106
+    weight: 5
     region: content
   field_thematiques:
     type: entity_reference_label
@@ -61,21 +61,17 @@ content:
     settings:
       link: true
     third_party_settings: {  }
-    weight: 104
+    weight: 3
     region: content
   field_vignette:
     type: entity_reference_entity_view
-    label: above
+    label: hidden
     settings:
       view_mode: default
       link: false
     third_party_settings: {  }
-    weight: 103
-    region: content
-  links:
-    settings: {  }
-    third_party_settings: {  }
-    weight: 100
+    weight: 2
     region: content
 hidden:
   langcode: true
+  links: true

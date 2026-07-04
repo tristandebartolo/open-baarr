@@ -8,10 +8,11 @@ dependencies:
     - field.field.node.page.field_chapo
     - field.field.node.page.field_thematiques
     - field.field.node.page.field_vignette
+    - image.style.large
     - node.type.page
   module:
     - layout_builder
-    - text
+    - media
     - user
 third_party_settings:
   layout_builder:
@@ -22,19 +23,12 @@ targetEntityType: node
 bundle: page
 mode: tiny
 content:
-  field_body:
-    type: text_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 101
-    region: content
   field_chapo:
     type: basic_string
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 102
+    weight: 1
     region: content
   field_thematiques:
     type: entity_reference_label
@@ -42,21 +36,24 @@ content:
     settings:
       link: true
     third_party_settings: {  }
-    weight: 104
+    weight: 2
     region: content
   field_vignette:
-    type: entity_reference_entity_view
-    label: above
+    type: media_thumbnail
+    label: hidden
     settings:
-      view_mode: default
-      link: false
+      image_link: ''
+      image_style: large
+      image_loading:
+        attribute: lazy
     third_party_settings: {  }
-    weight: 103
+    weight: 0
     region: content
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 100
+    weight: 3
     region: content
 hidden:
+  field_body: true
   langcode: true

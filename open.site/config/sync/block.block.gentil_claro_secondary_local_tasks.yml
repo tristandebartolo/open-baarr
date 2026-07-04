@@ -1,0 +1,22 @@
+uuid: 4d3ef582-6660-4a36-809c-47a069c1618d
+langcode: fr
+status: true
+dependencies:
+  theme:
+    - gentil_claro
+_core:
+  default_config_hash: ydSxdq7R66I8UMC460rOzlfzvlUL4VRbdwc6z9DWaUI
+id: gentil_claro_secondary_local_tasks
+theme: gentil_claro
+region: header_top
+weight: -2
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: 'Onglets secondaires'
+  label_display: '0'
+  provider: core
+  primary: false
+  secondary: true
+visibility: {  }

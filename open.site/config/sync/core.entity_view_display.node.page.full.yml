@@ -1,28 +1,34 @@
-uuid: ee5a2fbf-cd9e-4838-9989-5b07a1a08a88
+uuid: a47ff136-ab9c-4dcb-8d31-6b734f94b897
 langcode: fr
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.node.card
-    - field.field.node.article.field_body
-    - field.field.node.article.field_chapo
-    - field.field.node.article.field_galerie
-    - field.field.node.article.field_thematiques
-    - field.field.node.article.field_video
-    - field.field.node.article.field_vignette
-    - node.type.article
+    - core.entity_view_mode.node.full
+    - field.field.node.page.field_body
+    - field.field.node.page.field_chapo
+    - field.field.node.page.field_thematiques
+    - field.field.node.page.field_vignette
+    - node.type.page
   module:
     - layout_builder
+    - text
     - user
 third_party_settings:
   layout_builder:
     enabled: false
     allow_custom: false
-id: node.article.card
+id: node.page.full
 targetEntityType: node
-bundle: article
-mode: card
+bundle: page
+mode: full
 content:
+  field_body:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
   field_chapo:
     type: basic_string
     label: hidden
@@ -36,7 +42,7 @@ content:
     settings:
       link: true
     third_party_settings: {  }
-    weight: 2
+    weight: 3
     region: content
   field_vignette:
     type: entity_reference_entity_view
@@ -47,13 +53,6 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  links:
-    settings: {  }
-    third_party_settings: {  }
-    weight: 3
-    region: content
 hidden:
-  field_body: true
-  field_galerie: true
-  field_video: true
   langcode: true
+  links: true

@@ -1,0 +1,22 @@
+uuid: c8f79c3b-1fca-4fa6-a9e0-6fecc327403e
+langcode: fr
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - gentil_claro
+_core:
+  default_config_hash: eYL19CLDyinGTWYQfBD1DswWzglEotE_kHnHx3AxTXM
+id: gentil_claro_powered
+theme: gentil_claro
+region: header_top
+weight: 0
+provider: null
+plugin: system_powered_by_block
+settings:
+  id: system_powered_by_block
+  label: 'Propulsé par Drupal'
+  label_display: '0'
+  provider: system
+visibility: {  }

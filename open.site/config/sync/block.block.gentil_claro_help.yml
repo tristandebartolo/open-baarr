@@ -1,0 +1,22 @@
+uuid: 78939bf9-d478-4dbf-a736-8c081cb1efbe
+langcode: fr
+status: true
+dependencies:
+  module:
+    - help
+  theme:
+    - gentil_claro
+_core:
+  default_config_hash: VfPFqqxfkomud5CO8DUijw85QIl9GIxh_nIxLOYESxg
+id: gentil_claro_help
+theme: gentil_claro
+region: header_top
+weight: 0
+provider: null
+plugin: help_block
+settings:
+  id: help_block
+  label: Aide
+  label_display: '0'
+  provider: help
+visibility: {  }

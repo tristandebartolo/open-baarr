@@ -1,0 +1,20 @@
+uuid: 8c608291-745e-4ab7-8b7c-3eba2611ecc3
+langcode: fr
+status: true
+dependencies:
+  theme:
+    - gentil_claro
+_core:
+  default_config_hash: 6aOgWsNTXjqrDm98TXSAjP6qd2nCijD1xw45MrnbK-Y
+id: gentil_claro_page_title
+theme: gentil_claro
+region: header_top
+weight: -5
+provider: null
+plugin: page_title_block
+settings:
+  id: page_title_block
+  label: 'Titre de la page'
+  label_display: '0'
+  provider: core
+visibility: {  }

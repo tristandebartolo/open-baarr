@@ -10,12 +10,12 @@ dependencies:
     - field.field.node.trajet.field_coordinates_travel
     - field.field.node.trajet.field_thematiques
     - field.field.node.trajet.field_vignette
+    - image.style.medium
     - node.type.trajet
   module:
     - geolocation
-    - geolocation_geometry
     - layout_builder
-    - text
+    - media
     - user
 third_party_settings:
   layout_builder:
@@ -26,34 +26,19 @@ targetEntityType: node
 bundle: trajet
 mode: list
 content:
-  field_body:
-    type: text_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 101
-    region: content
   field_chapo:
     type: basic_string
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 102
+    weight: 1
     region: content
   field_coordinates:
     type: geolocation_latlng
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 105
-    region: content
-  field_coordinates_travel:
-    type: geolocation_geometry_data
-    label: above
-    settings:
-      geometry_format: geojson
-    third_party_settings: {  }
-    weight: 106
+    weight: 3
     region: content
   field_thematiques:
     type: entity_reference_label
@@ -61,21 +46,25 @@ content:
     settings:
       link: true
     third_party_settings: {  }
-    weight: 104
+    weight: 2
     region: content
   field_vignette:
-    type: entity_reference_entity_view
-    label: above
+    type: media_thumbnail
+    label: hidden
     settings:
-      view_mode: default
-      link: false
+      image_link: ''
+      image_style: medium
+      image_loading:
+        attribute: lazy
     third_party_settings: {  }
-    weight: 103
+    weight: 0
     region: content
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 100
+    weight: 4
     region: content
 hidden:
+  field_body: true
+  field_coordinates_travel: true
   langcode: true

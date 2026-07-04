@@ -1,0 +1,23 @@
+uuid: 274c0901-54d7-4c7d-bb7a-510487da1c9e
+langcode: fr
+status: true
+dependencies:
+  module:
+    - search
+  theme:
+    - gentil_claro
+_core:
+  default_config_hash: pbbed0hdqGDF-_QWVVTWRAwgDIotFuAvWH5mWUZu0fA
+id: gentil_claro_search_form_wide
+theme: gentil_claro
+region: secondary_menu
+weight: -5
+provider: null
+plugin: search_form_block
+settings:
+  id: search_form_block
+  label: 'Formulaire de recherche (large)'
+  label_display: '0'
+  provider: search
+  page_id: null
+visibility: {  }

@@ -1,0 +1,22 @@
+uuid: 1d6cc365-1d69-4117-a316-0452df7daed8
+langcode: fr
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - gentil_claro
+_core:
+  default_config_hash: VhBzWb7lMRtIOg9G7VSw_0uopi-7zXeHq4vXqqV1HFE
+id: gentil_claro_breadcrumbs
+theme: gentil_claro
+region: breadcrumb
+weight: 0
+provider: null
+plugin: system_breadcrumb_block
+settings:
+  id: system_breadcrumb_block
+  label: "Fils d'ariane"
+  label_display: '0'
+  provider: system
+visibility: {  }
