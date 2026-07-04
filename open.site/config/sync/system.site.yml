@@ -3,12 +3,12 @@ _core:
 langcode: fr
 uuid: ac74ee75-766c-4438-9b25-dd403a7f2cfb
 name: 'Open Baarr'
-mail: tristandebartolo@gmail.com
+mail: contact@baarr.fr
 slogan: ''
 page:
-  403: ''
-  404: ''
-  front: /node
+  403: /node/3
+  404: /node/4
+  front: /node/2
 admin_compact_mode: false
 weight_select_max: 100
 default_langcode: fr
