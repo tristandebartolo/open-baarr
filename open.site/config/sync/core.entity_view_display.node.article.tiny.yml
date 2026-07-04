@@ -1,8 +1,9 @@
-uuid: 94f17f4c-de23-40b7-897f-5d2a59f51183
+uuid: c6dbe588-a1e5-4b2b-a1e2-74301b7e95bc
 langcode: fr
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.node.tiny
     - field.field.node.article.field_body
     - field.field.node.article.field_chapo
     - field.field.node.article.field_galerie
@@ -11,12 +12,17 @@ dependencies:
     - field.field.node.article.field_vignette
     - node.type.article
   module:
+    - layout_builder
     - text
     - user
-id: node.article.default
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: node.article.tiny
 targetEntityType: node
 bundle: article
-mode: default
+mode: tiny
 content:
   field_body:
     type: text_default
@@ -32,15 +38,6 @@ content:
     third_party_settings: {  }
     weight: 102
     region: content
-  field_galerie:
-    type: entity_reference_entity_view
-    label: above
-    settings:
-      view_mode: default
-      link: false
-    third_party_settings: {  }
-    weight: 105
-    region: content
   field_thematiques:
     type: entity_reference_label
     label: above
@@ -48,15 +45,6 @@ content:
       link: true
     third_party_settings: {  }
     weight: 104
-    region: content
-  field_video:
-    type: entity_reference_entity_view
-    label: above
-    settings:
-      view_mode: default
-      link: false
-    third_party_settings: {  }
-    weight: 106
     region: content
   field_vignette:
     type: entity_reference_entity_view
@@ -73,4 +61,6 @@ content:
     weight: 100
     region: content
 hidden:
+  field_galerie: true
+  field_video: true
   langcode: true

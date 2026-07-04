@@ -1,0 +1,11 @@
+uuid: bd1c7424-343d-4771-8349-a6953c7c722e
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+id: node.tiny
+label: Tiny
+description: null
+targetEntityType: node
+cache: true

@@ -1,0 +1,19 @@
+uuid: ccb01dab-ebab-4bd6-82e3-b4c298cbf29f
+langcode: fr
+status: true
+dependencies:
+  module:
+    - geolocation_geometry
+    - node
+id: node.field_coordinates_travel
+field_name: field_coordinates_travel
+entity_type: node
+type: geolocation_geometry_geometrycollection
+settings: {  }
+module: geolocation_geometry
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

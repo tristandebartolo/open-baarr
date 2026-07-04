@@ -1,0 +1,21 @@
+uuid: 19c87d37-8f48-41c0-bec0-738d53b36222
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coordinates_travel
+    - node.type.trajet
+  module:
+    - geolocation_geometry
+id: node.trajet.field_coordinates_travel
+field_name: field_coordinates_travel
+entity_type: node
+bundle: trajet
+label: 'Coordinates travel'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: geolocation_geometry_geometrycollection

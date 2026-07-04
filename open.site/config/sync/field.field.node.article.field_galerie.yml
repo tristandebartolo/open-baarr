@@ -1,0 +1,29 @@
+uuid: 72f40363-531a-4c41-aa88-15863c4c2fe1
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_galerie
+    - media.type.image
+    - node.type.article
+id: node.article.field_galerie
+field_name: field_galerie
+entity_type: node
+bundle: article
+label: Galerie
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      image: image
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: true
+    auto_create_bundle: ''
+field_type: entity_reference

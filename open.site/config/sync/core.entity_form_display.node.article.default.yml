@@ -5,7 +5,9 @@ dependencies:
   config:
     - field.field.node.article.field_body
     - field.field.node.article.field_chapo
+    - field.field.node.article.field_galerie
     - field.field.node.article.field_thematiques
+    - field.field.node.article.field_video
     - field.field.node.article.field_vignette
     - node.type.article
   module:
@@ -41,6 +43,13 @@ content:
       rows: 5
       placeholder: ''
     third_party_settings: {  }
+  field_galerie:
+    type: media_library_widget
+    weight: 135
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
   field_thematiques:
     type: entity_reference_autocomplete
     weight: 134
@@ -50,6 +59,13 @@ content:
       match_limit: 10
       size: 60
       placeholder: ''
+    third_party_settings: {  }
+  field_video:
+    type: media_library_widget
+    weight: 136
+    region: content
+    settings:
+      media_types: {  }
     third_party_settings: {  }
   field_vignette:
     type: media_library_widget

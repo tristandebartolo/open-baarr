@@ -1,0 +1,21 @@
+uuid: bd5d7ac6-0f96-4528-a60a-731e198bcb77
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coordinates
+    - node.type.trajet
+  module:
+    - geolocation
+id: node.trajet.field_coordinates
+field_name: field_coordinates
+entity_type: node
+bundle: trajet
+label: Coordinates
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: geolocation

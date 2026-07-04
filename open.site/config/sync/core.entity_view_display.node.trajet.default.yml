@@ -5,10 +5,14 @@ dependencies:
   config:
     - field.field.node.trajet.field_body
     - field.field.node.trajet.field_chapo
+    - field.field.node.trajet.field_coordinates
+    - field.field.node.trajet.field_coordinates_travel
     - field.field.node.trajet.field_thematiques
     - field.field.node.trajet.field_vignette
     - node.type.trajet
   module:
+    - geolocation
+    - geolocation_geometry
     - text
     - user
 id: node.trajet.default
@@ -29,6 +33,21 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 102
+    region: content
+  field_coordinates:
+    type: geolocation_latlng
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 105
+    region: content
+  field_coordinates_travel:
+    type: geolocation_geometry_data
+    label: above
+    settings:
+      geometry_format: geojson
+    third_party_settings: {  }
+    weight: 106
     region: content
   field_thematiques:
     type: entity_reference_label
