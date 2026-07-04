@@ -94,3 +94,5 @@ web/modules/custom/gentil_documentation/doc/**/*
 web/modules/custom/gentil_testing_guide
 
 scripts
+AGENTS.md
+open.site/environments/include.settings.inc
