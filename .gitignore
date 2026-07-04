@@ -96,3 +96,6 @@ web/modules/custom/gentil_testing_guide
 scripts
 AGENTS.md
 open.site/environments/include.settings.inc
+
+# Identifiants locaux de l'utilisateur de test API (jamais versionnés)
+open.site/.ddev-apptest-credentials
