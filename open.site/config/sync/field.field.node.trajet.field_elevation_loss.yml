@@ -1,0 +1,23 @@
+uuid: 8c2344fb-b0d2-4f80-9619-eeeae747102f
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_elevation_loss
+    - node.type.trajet
+id: node.trajet.field_elevation_loss
+field_name: field_elevation_loss
+entity_type: node
+bundle: trajet
+label: 'Dénivelé négatif (m)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

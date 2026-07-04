@@ -1,0 +1,10 @@
+use opencar api:
+  title: "Utiliser l'API OpenCar"
+  description: "Accéder aux endpoints de l'API mobile (/opencar/api/v1/*)."
+record opencar trips:
+  title: 'Enregistrer des trajets OpenCar'
+  description: 'Créer et modifier ses propres trajets et points de mesure via l’API mobile.'
+administer opencar:
+  title: 'Administrer OpenCar'
+  description: 'Accès complet à tous les trajets et points de mesure, quel que soit le propriétaire.'
+  restrict access: true

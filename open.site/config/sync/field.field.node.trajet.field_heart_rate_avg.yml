@@ -1,0 +1,23 @@
+uuid: c9681ad7-2241-4e64-af80-f24570968108
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_heart_rate_avg
+    - node.type.trajet
+id: node.trajet.field_heart_rate_avg
+field_name: field_heart_rate_avg
+entity_type: node
+bundle: trajet
+label: 'Fréquence cardiaque moyenne (bpm)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

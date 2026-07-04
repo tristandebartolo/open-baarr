@@ -1,0 +1,20 @@
+uuid: 021f9c0d-270b-4905-a291-fd34ef08e674
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_battery_end
+field_name: field_battery_end
+entity_type: node
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

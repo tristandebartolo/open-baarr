@@ -1,0 +1,18 @@
+uuid: e4c3ee51-7c0e-4f46-ac73-552c8a544cf9
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_elevation_gain
+field_name: field_elevation_gain
+entity_type: node
+type: float
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

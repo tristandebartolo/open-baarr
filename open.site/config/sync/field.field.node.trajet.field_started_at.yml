@@ -1,0 +1,19 @@
+uuid: 12a39d5f-3da8-4376-91ca-cf49a6c83f89
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_started_at
+    - node.type.trajet
+id: node.trajet.field_started_at
+field_name: field_started_at
+entity_type: node
+bundle: trajet
+label: 'Débuté le'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: timestamp

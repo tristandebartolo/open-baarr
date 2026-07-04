@@ -1,0 +1,36 @@
+uuid: 2e8d8316-d524-4cac-992c-f38f043b5aea
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+    - options
+id: node.field_feeling
+field_name: field_feeling
+entity_type: node
+type: list_integer
+settings:
+  allowed_values:
+    -
+      value: 1
+      label: 'Très mauvais'
+    -
+      value: 2
+      label: Mauvais
+    -
+      value: 3
+      label: Moyen
+    -
+      value: 4
+      label: Bon
+    -
+      value: 5
+      label: Excellent
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,14 @@
+uuid: 05bded0a-dbc6-4cbf-8415-b932cd81163d
+langcode: fr
+status: true
+dependencies:
+  config:
+    - user.role.opencar_app_user
+  module:
+    - user
+id: user_add_role_action.opencar_app_user
+label: 'Ajouter le rôle Utilisateur app OpenCar aux utilisateurs sélectionnés'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: opencar_app_user

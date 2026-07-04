@@ -4,12 +4,35 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.tiny
+    - field.field.node.trajet.field_activity_type
+    - field.field.node.trajet.field_battery_end
+    - field.field.node.trajet.field_battery_start
     - field.field.node.trajet.field_body
+    - field.field.node.trajet.field_calories
     - field.field.node.trajet.field_chapo
     - field.field.node.trajet.field_coordinates
     - field.field.node.trajet.field_coordinates_travel
+    - field.field.node.trajet.field_device_info
+    - field.field.node.trajet.field_distance
+    - field.field.node.trajet.field_duration
+    - field.field.node.trajet.field_duration_total
+    - field.field.node.trajet.field_elevation_gain
+    - field.field.node.trajet.field_elevation_loss
+    - field.field.node.trajet.field_ended_at
+    - field.field.node.trajet.field_fatigue
+    - field.field.node.trajet.field_feeling
+    - field.field.node.trajet.field_galerie
+    - field.field.node.trajet.field_heart_rate_avg
+    - field.field.node.trajet.field_heart_rate_max
+    - field.field.node.trajet.field_hydration
+    - field.field.node.trajet.field_speed_avg
+    - field.field.node.trajet.field_speed_max
+    - field.field.node.trajet.field_started_at
+    - field.field.node.trajet.field_steps
     - field.field.node.trajet.field_thematiques
+    - field.field.node.trajet.field_trip_status
     - field.field.node.trajet.field_vignette
+    - field.field.node.trajet.field_weight
     - image.style.large
     - node.type.trajet
   module:
@@ -60,7 +83,30 @@ content:
     weight: 0
     region: content
 hidden:
+  field_activity_type: true
+  field_battery_end: true
+  field_battery_start: true
   field_body: true
+  field_calories: true
   field_coordinates_travel: true
+  field_device_info: true
+  field_distance: true
+  field_duration: true
+  field_duration_total: true
+  field_elevation_gain: true
+  field_elevation_loss: true
+  field_ended_at: true
+  field_fatigue: true
+  field_feeling: true
+  field_galerie: true
+  field_heart_rate_avg: true
+  field_heart_rate_max: true
+  field_hydration: true
+  field_speed_avg: true
+  field_speed_max: true
+  field_started_at: true
+  field_steps: true
+  field_trip_status: true
+  field_weight: true
   langcode: true
   links: true

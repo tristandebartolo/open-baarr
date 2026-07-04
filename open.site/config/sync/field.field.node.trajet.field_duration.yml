@@ -1,0 +1,23 @@
+uuid: be6a21dd-2059-4266-8511-359ab6b46d13
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_duration
+    - node.type.trajet
+id: node.trajet.field_duration
+field_name: field_duration
+entity_type: node
+bundle: trajet
+label: 'Durée en mouvement (s)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

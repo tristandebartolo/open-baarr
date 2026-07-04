@@ -1,0 +1,21 @@
+uuid: a3975487-a824-4ca8-b9c8-703dbd59ef59
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_fatigue
+    - node.type.trajet
+  module:
+    - options
+id: node.trajet.field_fatigue
+field_name: field_fatigue
+entity_type: node
+bundle: trajet
+label: 'Fatigue (1–5)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_integer

@@ -52,6 +52,7 @@ module:
   mysql: 0
   navigation: 0
   node: 0
+  opencar_core: 0
   options: 0
   page_cache: 0
   path: 0

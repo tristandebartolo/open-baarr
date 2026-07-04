@@ -1,0 +1,21 @@
+uuid: 3315250d-ad16-49d4-91bb-2b05aaa3306b
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_feeling
+    - node.type.trajet
+  module:
+    - options
+id: node.trajet.field_feeling
+field_name: field_feeling
+entity_type: node
+bundle: trajet
+label: 'Ressenti (1–5)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_integer

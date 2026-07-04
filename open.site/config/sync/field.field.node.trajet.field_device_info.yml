@@ -1,0 +1,19 @@
+uuid: d2c95d17-8c8e-4fd1-b786-57224b2b7a92
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_device_info
+    - node.type.trajet
+id: node.trajet.field_device_info
+field_name: field_device_info
+entity_type: node
+bundle: trajet
+label: Appareil
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

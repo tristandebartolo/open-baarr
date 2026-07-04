@@ -1,0 +1,23 @@
+uuid: ccb25200-bfd8-48bb-ae83-a1d9b974c214
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_galerie
+    - node.type.trajet
+id: node.trajet.field_galerie
+field_name: field_galerie
+entity_type: node
+bundle: trajet
+label: Galerie
+description: ''
+required: null
+translatable: null
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:media'
+  handler_settings:
+    target_bundles:
+      none: none
+field_type: entity_reference

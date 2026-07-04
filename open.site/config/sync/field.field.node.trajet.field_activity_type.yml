@@ -1,0 +1,21 @@
+uuid: 24b975e5-a00d-4d92-8cd1-1450e14fa8ca
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_activity_type
+    - node.type.trajet
+  module:
+    - options
+id: node.trajet.field_activity_type
+field_name: field_activity_type
+entity_type: node
+bundle: trajet
+label: "Type d'activité"
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

@@ -1,0 +1,23 @@
+uuid: 1e1e7b6e-2387-418e-94e3-a44ccf2e7bb1
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_speed_max
+    - node.type.trajet
+id: node.trajet.field_speed_max
+field_name: field_speed_max
+entity_type: node
+bundle: trajet
+label: 'Vitesse maximale (m/s)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

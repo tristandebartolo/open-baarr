@@ -1,0 +1,23 @@
+uuid: ae3559e2-7bb8-49d8-b8c9-9b1366cd2811
+langcode: fr
+status: true
+dependencies:
+  config:
+    - node.type.trajet
+  module:
+    - node
+id: trajet
+label: Trajet
+type: 'canonical_entities:node'
+pattern: '/trajet/[node:field_thematiques:0]/[node:title]'
+selection_criteria:
+  89c749ab-b522-46b1-b68e-59e629fdcb83:
+    id: 'entity_bundle:node'
+    negate: false
+    context_mapping:
+      node: node
+    bundles:
+      trajet: trajet
+selection_logic: and
+weight: -5
+relationships: {  }

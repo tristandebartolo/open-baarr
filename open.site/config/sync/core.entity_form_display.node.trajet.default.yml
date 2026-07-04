@@ -3,12 +3,35 @@ langcode: fr
 status: true
 dependencies:
   config:
+    - field.field.node.trajet.field_activity_type
+    - field.field.node.trajet.field_battery_end
+    - field.field.node.trajet.field_battery_start
     - field.field.node.trajet.field_body
+    - field.field.node.trajet.field_calories
     - field.field.node.trajet.field_chapo
     - field.field.node.trajet.field_coordinates
     - field.field.node.trajet.field_coordinates_travel
+    - field.field.node.trajet.field_device_info
+    - field.field.node.trajet.field_distance
+    - field.field.node.trajet.field_duration
+    - field.field.node.trajet.field_duration_total
+    - field.field.node.trajet.field_elevation_gain
+    - field.field.node.trajet.field_elevation_loss
+    - field.field.node.trajet.field_ended_at
+    - field.field.node.trajet.field_fatigue
+    - field.field.node.trajet.field_feeling
+    - field.field.node.trajet.field_galerie
+    - field.field.node.trajet.field_heart_rate_avg
+    - field.field.node.trajet.field_heart_rate_max
+    - field.field.node.trajet.field_hydration
+    - field.field.node.trajet.field_speed_avg
+    - field.field.node.trajet.field_speed_max
+    - field.field.node.trajet.field_started_at
+    - field.field.node.trajet.field_steps
     - field.field.node.trajet.field_thematiques
+    - field.field.node.trajet.field_trip_status
     - field.field.node.trajet.field_vignette
+    - field.field.node.trajet.field_weight
     - node.type.trajet
   module:
     - geolocation
@@ -27,6 +50,26 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_activity_type:
+    type: options_select
+    weight: 137
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_battery_end:
+    type: number
+    weight: 157
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_battery_start:
+    type: number
+    weight: 156
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
   field_body:
     type: text_textarea_with_summary
     weight: 131
@@ -36,6 +79,13 @@ content:
       summary_rows: 3
       placeholder: ''
       show_summary: false
+    third_party_settings: {  }
+  field_calories:
+    type: number
+    weight: 151
+    region: content
+    settings:
+      placeholder: ''
     third_party_settings: {  }
   field_chapo:
     type: string_textarea
@@ -57,6 +107,122 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_device_info:
+    type: string_textfield
+    weight: 158
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_distance:
+    type: number
+    weight: 141
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_duration:
+    type: number
+    weight: 146
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_duration_total:
+    type: number
+    weight: 147
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_elevation_gain:
+    type: number
+    weight: 142
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_elevation_loss:
+    type: number
+    weight: 143
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_ended_at:
+    type: datetime_timestamp
+    weight: 140
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_fatigue:
+    type: options_select
+    weight: 155
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_feeling:
+    type: options_select
+    weight: 154
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_galerie:
+    type: media_library_widget
+    weight: 159
+    region: content
+    settings:
+      media_types: {  }
+    third_party_settings: {  }
+  field_heart_rate_avg:
+    type: number
+    weight: 148
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_heart_rate_max:
+    type: number
+    weight: 149
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_hydration:
+    type: number
+    weight: 153
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_speed_avg:
+    type: number
+    weight: 144
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_speed_max:
+    type: number
+    weight: 145
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_started_at:
+    type: datetime_timestamp
+    weight: 139
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_steps:
+    type: number
+    weight: 150
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
   field_thematiques:
     type: entity_reference_autocomplete
     weight: 134
@@ -67,12 +233,25 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_trip_status:
+    type: options_select
+    weight: 138
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_vignette:
     type: media_library_widget
     weight: 133
     region: content
     settings:
       media_types: {  }
+    third_party_settings: {  }
+  field_weight:
+    type: number
+    weight: 152
+    region: content
+    settings:
+      placeholder: ''
     third_party_settings: {  }
   langcode:
     type: language_select

@@ -1,0 +1,11 @@
+name: 'OpenCar Core'
+type: module
+description: 'Modèle de données OpenCar : trajets et points de mesure.'
+package: OpenCar
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:media
+  - drupal:datetime
+  - drupal:options
+  - geolocation:geolocation_geometry

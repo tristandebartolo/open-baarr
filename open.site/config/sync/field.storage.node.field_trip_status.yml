@@ -1,0 +1,33 @@
+uuid: 025427a8-991b-4753-8af0-c52e4743025f
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+    - options
+id: node.field_trip_status
+field_name: field_trip_status
+entity_type: node
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: draft
+      label: Brouillon
+    -
+      value: recording
+      label: "En cours d'enregistrement"
+    -
+      value: paused
+      label: 'En pause'
+    -
+      value: completed
+      label: Terminé
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

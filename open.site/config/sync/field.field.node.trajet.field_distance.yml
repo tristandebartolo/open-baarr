@@ -1,0 +1,23 @@
+uuid: be281aa4-843b-417a-b4d4-c51b7e81e6dc
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_distance
+    - node.type.trajet
+id: node.trajet.field_distance
+field_name: field_distance
+entity_type: node
+bundle: trajet
+label: 'Distance (m)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

@@ -1,0 +1,23 @@
+uuid: 755b7545-f923-48e9-8233-208fce65fa66
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_battery_end
+    - node.type.trajet
+id: node.trajet.field_battery_end
+field_name: field_battery_end
+entity_type: node
+bundle: trajet
+label: "Batterie à l'arrivée (%)"
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

@@ -3,16 +3,40 @@ langcode: fr
 status: true
 dependencies:
   config:
+    - field.field.node.trajet.field_activity_type
+    - field.field.node.trajet.field_battery_end
+    - field.field.node.trajet.field_battery_start
     - field.field.node.trajet.field_body
+    - field.field.node.trajet.field_calories
     - field.field.node.trajet.field_chapo
     - field.field.node.trajet.field_coordinates
     - field.field.node.trajet.field_coordinates_travel
+    - field.field.node.trajet.field_device_info
+    - field.field.node.trajet.field_distance
+    - field.field.node.trajet.field_duration
+    - field.field.node.trajet.field_duration_total
+    - field.field.node.trajet.field_elevation_gain
+    - field.field.node.trajet.field_elevation_loss
+    - field.field.node.trajet.field_ended_at
+    - field.field.node.trajet.field_fatigue
+    - field.field.node.trajet.field_feeling
+    - field.field.node.trajet.field_galerie
+    - field.field.node.trajet.field_heart_rate_avg
+    - field.field.node.trajet.field_heart_rate_max
+    - field.field.node.trajet.field_hydration
+    - field.field.node.trajet.field_speed_avg
+    - field.field.node.trajet.field_speed_max
+    - field.field.node.trajet.field_started_at
+    - field.field.node.trajet.field_steps
     - field.field.node.trajet.field_thematiques
+    - field.field.node.trajet.field_trip_status
     - field.field.node.trajet.field_vignette
+    - field.field.node.trajet.field_weight
     - node.type.trajet
   module:
     - geolocation
     - geolocation_geometry
+    - options
     - text
     - user
 id: node.trajet.default
@@ -20,12 +44,48 @@ targetEntityType: node
 bundle: trajet
 mode: default
 content:
+  field_activity_type:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 107
+    region: content
+  field_battery_end:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 127
+    region: content
+  field_battery_start:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 126
+    region: content
   field_body:
     type: text_default
     label: above
     settings: {  }
     third_party_settings: {  }
     weight: 101
+    region: content
+  field_calories:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 121
     region: content
   field_chapo:
     type: basic_string
@@ -49,6 +109,186 @@ content:
     third_party_settings: {  }
     weight: 106
     region: content
+  field_device_info:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 128
+    region: content
+  field_distance:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 111
+    region: content
+  field_duration:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 116
+    region: content
+  field_duration_total:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 117
+    region: content
+  field_elevation_gain:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 112
+    region: content
+  field_elevation_loss:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 113
+    region: content
+  field_ended_at:
+    type: timestamp
+    label: above
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 110
+    region: content
+  field_fatigue:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 125
+    region: content
+  field_feeling:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 124
+    region: content
+  field_galerie:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 129
+    region: content
+  field_heart_rate_avg:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 118
+    region: content
+  field_heart_rate_max:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 119
+    region: content
+  field_hydration:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 123
+    region: content
+  field_speed_avg:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 114
+    region: content
+  field_speed_max:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 115
+    region: content
+  field_started_at:
+    type: timestamp
+    label: above
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 109
+    region: content
+  field_steps:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 120
+    region: content
   field_thematiques:
     type: entity_reference_label
     label: above
@@ -56,6 +296,13 @@ content:
       link: true
     third_party_settings: {  }
     weight: 104
+    region: content
+  field_trip_status:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 108
     region: content
   field_vignette:
     type: entity_reference_entity_view
@@ -65,6 +312,17 @@ content:
       link: false
     third_party_settings: {  }
     weight: 103
+    region: content
+  field_weight:
+    type: number_decimal
+    label: above
+    settings:
+      thousand_separator: ''
+      decimal_separator: .
+      scale: 2
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 122
     region: content
   links:
     settings: {  }

@@ -1,0 +1,23 @@
+uuid: 667d3897-884d-4a1e-97ed-94b74be37c88
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_calories
+    - node.type.trajet
+id: node.trajet.field_calories
+field_name: field_calories
+entity_type: node
+bundle: trajet
+label: 'Calories (kcal)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

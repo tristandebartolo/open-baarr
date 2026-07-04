@@ -1,0 +1,14 @@
+uuid: 2fb8cbdf-98f8-4630-a1b8-b21b393cd533
+langcode: fr
+status: true
+dependencies:
+  config:
+    - user.role.opencar_app_user
+  module:
+    - user
+id: user_remove_role_action.opencar_app_user
+label: 'Enlever le rôle Utilisateur app OpenCar des utilisateurs sélectionnés'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: opencar_app_user

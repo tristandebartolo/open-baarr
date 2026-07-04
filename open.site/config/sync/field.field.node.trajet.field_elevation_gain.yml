@@ -1,0 +1,23 @@
+uuid: d912bb2f-4583-4165-86b3-1310a46ff774
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_elevation_gain
+    - node.type.trajet
+id: node.trajet.field_elevation_gain
+field_name: field_elevation_gain
+entity_type: node
+bundle: trajet
+label: 'Dénivelé positif (m)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

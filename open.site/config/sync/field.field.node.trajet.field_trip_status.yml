@@ -1,0 +1,21 @@
+uuid: 9a0aeff7-1e53-479d-a0e0-12a29430ee3c
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_trip_status
+    - node.type.trajet
+  module:
+    - options
+id: node.trajet.field_trip_status
+field_name: field_trip_status
+entity_type: node
+bundle: trajet
+label: 'Statut du trajet'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

@@ -1,0 +1,20 @@
+uuid: 6d3a1f8b-d1d0-4807-91b2-9d24c971a9a7
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_heart_rate_max
+field_name: field_heart_rate_max
+entity_type: node
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

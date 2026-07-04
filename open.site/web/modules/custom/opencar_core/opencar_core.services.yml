@@ -1,0 +1,13 @@
+services:
+  opencar_core.track_point_repository:
+    class: Drupal\opencar_core\Service\TrackPointRepository
+    arguments: ['@database']
+  opencar_core.trip_metrics_calculator:
+    class: Drupal\opencar_core\Service\TripMetricsCalculator
+  opencar_core.trip_geometry_builder:
+    class: Drupal\opencar_core\Service\TripGeometryBuilder
+  opencar_core.gpx_generator:
+    class: Drupal\opencar_core\Service\GpxGenerator
+  opencar_core.trip_stats:
+    class: Drupal\opencar_core\Service\TripStatsService
+    arguments: ['@database', '@datetime.time']

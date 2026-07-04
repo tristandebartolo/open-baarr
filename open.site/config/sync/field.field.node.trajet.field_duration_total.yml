@@ -1,0 +1,23 @@
+uuid: 4d3160f1-2193-4683-afa3-1cd7480c57c2
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_duration_total
+    - node.type.trajet
+id: node.trajet.field_duration_total
+field_name: field_duration_total
+entity_type: node
+bundle: trajet
+label: 'Durée totale (s)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

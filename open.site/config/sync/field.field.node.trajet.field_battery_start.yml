@@ -1,0 +1,23 @@
+uuid: 249d9fcb-3e31-4349-accf-0299a1d052be
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_battery_start
+    - node.type.trajet
+id: node.trajet.field_battery_start
+field_name: field_battery_start
+entity_type: node
+bundle: trajet
+label: 'Batterie au départ (%)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

@@ -1,0 +1,18 @@
+uuid: 013c76a4-50b7-4811-9506-1520336ad98d
+langcode: fr
+status: true
+dependencies:
+  module:
+    - opencar_core
+  enforced:
+    module:
+      - opencar_core
+_core:
+  default_config_hash: uOfSAur4i16wFX7dll4i86-C9x4sC3lARDO_uuImPGQ
+id: opencar_app_user
+label: 'Utilisateur app OpenCar'
+weight: 3
+is_admin: false
+permissions:
+  - 'record opencar trips'
+  - 'use opencar api'

@@ -1,0 +1,19 @@
+uuid: 007b5aa9-c9fa-4e7b-9423-d0b92c7d6535
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_ended_at
+    - node.type.trajet
+id: node.trajet.field_ended_at
+field_name: field_ended_at
+entity_type: node
+bundle: trajet
+label: 'Terminé le'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: timestamp

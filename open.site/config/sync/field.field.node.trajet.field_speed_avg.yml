@@ -1,0 +1,23 @@
+uuid: 3392cbc2-0715-451c-90b1-5548376718e6
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_speed_avg
+    - node.type.trajet
+id: node.trajet.field_speed_avg
+field_name: field_speed_avg
+entity_type: node
+bundle: trajet
+label: 'Vitesse moyenne (m/s)'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

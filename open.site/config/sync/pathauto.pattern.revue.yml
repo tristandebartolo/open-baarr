@@ -1,0 +1,23 @@
+uuid: 7e02a5c4-6d48-4dec-9b39-e013d064abb2
+langcode: fr
+status: true
+dependencies:
+  config:
+    - node.type.article
+  module:
+    - node
+id: revue
+label: Revue
+type: 'canonical_entities:node'
+pattern: '/revue/[node:field_thematiques:0]/[node:title]'
+selection_criteria:
+  f77bd0a0-75db-4d2d-8bee-40bccec00ee1:
+    id: 'entity_bundle:node'
+    negate: false
+    context_mapping:
+      node: node
+    bundles:
+      article: article
+selection_logic: and
+weight: -5
+relationships: {  }

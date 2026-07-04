@@ -1,0 +1,23 @@
+uuid: 5a6cef56-3712-49ad-9ed4-fd132fa96d20
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_steps
+    - node.type.trajet
+id: node.trajet.field_steps
+field_name: field_steps
+entity_type: node
+bundle: trajet
+label: Pas
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer
