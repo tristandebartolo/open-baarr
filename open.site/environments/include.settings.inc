@@ -39,12 +39,12 @@ $environment = 'local';
  */
 switch ($_SERVER["SERVER_NAME"] ?? '') {
   // Preprod environment.
-  case 'preprod.mini.baarr.fr':
+  case 'preprod.open.baarr.fr':
     $environment = 'preprod';
     break;
 
   // Prod environment.
-  case 'mini.baarr.fr':
+  case 'open.baarr.fr':
     $environment = 'prod';
     break;
 
@@ -63,7 +63,6 @@ if (getenv('IS_DDEV_PROJECT') === 'true') {
  * Load common services definition file.
  */
 $settings['container_yamls'][] = __DIR__ . "/$environment/services.yml";
-
 /**
  * Include settings.
  */

@@ -10,7 +10,7 @@ tmp/
 .DS_Store
 .DS_Store**
 .agent/
-
+db
 # Ignore vendor dependencies and scripts
 /vendor
 /composer.phar
