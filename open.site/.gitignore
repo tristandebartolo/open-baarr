@@ -3,7 +3,6 @@ archive
 .mutagen*
 dump
 
-composer.lock
 private/
 tmp/
 
@@ -33,7 +32,11 @@ db
 /web/modules/contrib/
 /web/themes/contrib/
 /web/profiles/contrib/
-/web/libraries/
+# Libraries : ignorées sauf les vendors auto-hébergés (non gérés par composer,
+# nécessaires en prod : carte et graphiques des trajets).
+/web/libraries/*
+!/web/libraries/leaflet/
+!/web/libraries/chartjs/
 console/
 
 # Ignore sensitive information

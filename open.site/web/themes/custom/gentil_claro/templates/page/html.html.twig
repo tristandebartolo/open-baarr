@@ -9,6 +9,18 @@
 <!DOCTYPE html>
 <html{{html_attributes}}>
 	<head>
+		{# Anti-flash (FOUC) : applique la préférence dark/light stockée AVANT
+		   le chargement des CSS. Doit rester inline et en tout premier. #}
+		<script>
+			(function () {
+				try {
+					var theme = localStorage.getItem('gentil_claro.theme.v1');
+					if (theme === 'dark' || theme === 'light') {
+						document.documentElement.setAttribute('data-theme', theme);
+					}
+				} catch (e) {}
+			})();
+		</script>
 		<head-placeholder token="{{ placeholder_token|raw }}">
     <title>{{ head_title|safe_join(' | ') }}</title>
     <css-placeholder token="{{ placeholder_token|raw }}">

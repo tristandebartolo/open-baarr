@@ -108,7 +108,7 @@
     return chart;
   }
 
-  darkScheme.addEventListener('change', function () {
+  function refreshChartsTheme() {
     charts.forEach(function (entry) {
       var colors = themeColors(entry.canvas);
       entry.chart.options.scales.x.ticks.color = colors.text;
@@ -116,7 +116,11 @@
       entry.chart.options.scales.y.grid.color = colors.grid;
       entry.chart.update('none');
     });
-  });
+  }
+
+  darkScheme.addEventListener('change', refreshChartsTheme);
+  // Bascule manuelle via le bouton dark/light du thème.
+  window.addEventListener('oc-theme-change', refreshChartsTheme);
 
   Drupal.behaviors.opencarTrajetCharts = {
     attach: function (context) {

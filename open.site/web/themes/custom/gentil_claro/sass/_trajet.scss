@@ -4,8 +4,51 @@
    de stats, graphiques. Mobile-first, dark/light via custom properties.
    ========================================================================== */
 
-.oc-trajet,
-.oc-trajet-card {
+/* Tokens dark (valeurs de open.app/src/constants/theme.ts). */
+@mixin oc-dark-tokens {
+  --oc-bg: #000000;
+  --oc-surface: #212225;
+  --oc-surface-selected: #2e3135;
+  --oc-text: #ffffff;
+  --oc-text-secondary: #b0b4ba;
+  --oc-border: rgba(176, 180, 186, 0.2);
+}
+
+/* Habillage sombre du chrome du site (nav, fond de page, footer) et de la
+   carte. Appliqué uniquement en dark — le design light existant reste
+   intouché. */
+@mixin oc-dark-site {
+  body {
+    background: var(--oc-bg);
+    color: var(--oc-text);
+  }
+
+  .gntl-nav,
+  .gntl-main,
+  .gntl-main-page {
+    background: var(--oc-bg);
+    color: var(--oc-text);
+  }
+
+  /* Tuiles OSM assombries (pattern standard Leaflet). */
+  .oc-hero-map .leaflet-layer,
+  .oc-hero-map .leaflet-control-zoom,
+  .oc-hero-map .leaflet-control-layers,
+  .oc-hero-map .leaflet-control-attribution {
+    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  }
+
+  /* Bouton de bascule : soleil visible, lune masquée. */
+  .oc-theme-toggle__sun {
+    display: block;
+  }
+
+  .oc-theme-toggle__moon {
+    display: none;
+  }
+}
+
+:root {
   /* Tokens light (valeurs de open.app/src/constants/theme.ts). */
   --oc-bg: #ffffff;
   --oc-surface: #f0f0f3;
@@ -20,19 +63,56 @@
   --oc-radius-card: 16px;
   --oc-radius-sheet: 24px;
   /* --oc-activity est posé en inline style par le template (couleur du type). */
+}
 
+/* Préférence explicite de l'utilisateur (bouton du banner, localStorage). */
+html[data-theme='dark'] {
+  @include oc-dark-tokens;
+  @include oc-dark-site;
+}
+
+/* Sinon, suivi du système — sauf si l'utilisateur a forcé le light. */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) {
+    @include oc-dark-tokens;
+    @include oc-dark-site;
+  }
+}
+
+.oc-trajet,
+.oc-trajet-card {
   color: var(--oc-text);
 }
 
-@media (prefers-color-scheme: dark) {
-  .oc-trajet,
-  .oc-trajet-card {
-    --oc-bg: #000000;
-    --oc-surface: #212225;
-    --oc-surface-selected: #2e3135;
-    --oc-text: #ffffff;
-    --oc-text-secondary: #b0b4ba;
-    --oc-border: rgba(176, 180, 186, 0.2);
+/* --------------------------------------------------------------------------
+   Bouton dark/light du banner.
+   -------------------------------------------------------------------------- */
+
+.oc-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--oc-surface-selected);
+  }
+
+  /* Light : lune visible (cliquer = passer en sombre). */
+  &__sun {
+    display: none;
+  }
+
+  &__moon {
+    display: block;
   }
 }
 
@@ -94,15 +174,6 @@ html.oc-map-noscroll {
   background: var(--oc-marker, #208aef);
   border: 3px solid #ffffff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-
-@media (prefers-color-scheme: dark) {
-  .oc-hero-map .leaflet-layer,
-  .oc-hero-map .leaflet-control-zoom,
-  .oc-hero-map .leaflet-control-layers,
-  .oc-hero-map .leaflet-control-attribution {
-    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-  }
 }
 
 .oc-hero-vignette img {

@@ -11,10 +11,11 @@ use Drupal\opencar_core\Service\TrackPointRepository;
  * Construit les séries des graphiques d'un trajet (vitesse, altitude, FC).
  *
  * Les points de mesure (un par seconde) sont lus en base via
- * TrackPointRepository puis downsamplés à ~200 points par l'algorithme LTTB
- * (Largest Triangle Three Buckets), comme dans l'app mobile. Les séries sont
- * fournies en paires {x, y} prêtes pour Chart.js : x en secondes depuis le
- * départ, vitesse en km/h.
+ * TrackPointRepository puis downsamplés à ~200 points par échantillonnage
+ * régulier — le même algorithme que l'app mobile (open.app/src/utils/chart.ts),
+ * pour un rendu identique des courbes. Les séries sont fournies en paires
+ * {x, y} prêtes pour Chart.js : x en secondes depuis le départ, vitesse en
+ * km/h.
  */
 final class TrajetChartDataBuilder {
 
@@ -58,7 +59,7 @@ final class TrajetChartDataBuilder {
       if (count($data) < 2) {
         continue;
       }
-      $series[$key] = $this->downsampleLttb($data, $maxPoints);
+      $series[$key] = $this->downsample($data, $maxPoints);
       $summary[$key] = $this->summarize($key, $data);
     }
 
@@ -73,63 +74,29 @@ final class TrajetChartDataBuilder {
   }
 
   /**
-   * Downsampling LTTB : préserve la forme visuelle de la courbe.
+   * Échantillonnage régulier, identique à downsample() de l'app mobile.
    *
    * @param list<array{x: float, y: float}> $data
    *   Série ordonnée par x croissant.
    *
    * @return list<array{x: float, y: float}>
-   *   Au plus $threshold points, premier et dernier conservés.
+   *   Au plus $target (+1 pour le dernier) points, dernier point conservé.
    */
-  private function downsampleLttb(array $data, int $threshold): array {
+  private function downsample(array $data, int $target): array {
     $count = count($data);
-    if ($threshold >= $count || $threshold < 3) {
+    if ($count <= $target || $target < 2) {
       return $data;
     }
 
-    $sampled = [$data[0]];
-    $bucketSize = ($count - 2) / ($threshold - 2);
-    $previousIndex = 0;
-
-    for ($i = 0; $i < $threshold - 2; $i++) {
-      // Moyenne du bucket suivant (point d'ancrage du triangle).
-      $rangeStart = (int) floor(($i + 1) * $bucketSize) + 1;
-      $rangeEnd = min((int) floor(($i + 2) * $bucketSize) + 1, $count);
-      $avgX = 0.0;
-      $avgY = 0.0;
-      $rangeLength = $rangeEnd - $rangeStart;
-      for ($j = $rangeStart; $j < $rangeEnd; $j++) {
-        $avgX += $data[$j]['x'];
-        $avgY += $data[$j]['y'];
-      }
-      if ($rangeLength > 0) {
-        $avgX /= $rangeLength;
-        $avgY /= $rangeLength;
-      }
-
-      // Point du bucket courant qui maximise l'aire du triangle.
-      $bucketStart = (int) floor($i * $bucketSize) + 1;
-      $bucketEnd = min((int) floor(($i + 1) * $bucketSize) + 1, $count - 1);
-      $pointAx = $data[$previousIndex]['x'];
-      $pointAy = $data[$previousIndex]['y'];
-      $maxArea = -1.0;
-      $maxIndex = $bucketStart;
-      for ($j = $bucketStart; $j < $bucketEnd; $j++) {
-        $area = abs(
-          ($pointAx - $avgX) * ($data[$j]['y'] - $pointAy)
-          - ($pointAx - $data[$j]['x']) * ($avgY - $pointAy)
-        ) / 2;
-        if ($area > $maxArea) {
-          $maxArea = $area;
-          $maxIndex = $j;
-        }
-      }
-
-      $sampled[] = $data[$maxIndex];
-      $previousIndex = $maxIndex;
+    $step = $count / $target;
+    $sampled = [];
+    for ($i = 0; $i < $target; $i++) {
+      $sampled[] = $data[(int) floor($i * $step)];
     }
-
-    $sampled[] = $data[$count - 1];
+    $last = $data[$count - 1];
+    if (end($sampled) !== $last) {
+      $sampled[] = $last;
+    }
     return $sampled;
   }
 
