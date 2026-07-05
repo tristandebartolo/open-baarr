@@ -1,3 +1,5 @@
+import * as QuickActions from 'expo-quick-actions';
+import { useQuickActionRouting } from 'expo-quick-actions/router';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -18,11 +20,27 @@ export default function RootLayout() {
   const status = useAuthStore((state) => state.status);
   const restore = useAuthStore((state) => state.restore);
 
+  // Appui long sur l'icône → navigation vers la route de l'action.
+  useQuickActionRouting();
+
   useEffect(() => {
     void restore();
     // Trajet actif interrompu (app tuée en cours d'enregistrement) :
     // reprise du suivi et des stats, indépendamment de la session.
     void useRecordStore.getState().restore();
+
+    // Raccourci statique (jamais mis à jour dynamiquement — pas de requête,
+    // préservation batterie) : l'écran Enregistrer restaure de lui-même
+    // l'enregistrement en cours, ou permet d'en créer un.
+    void QuickActions.setItems([
+      {
+        id: 'record',
+        title: 'Enregistrer un trajet',
+        subtitle: 'Reprendre ou démarrer',
+        icon: 'symbol:record.circle',
+        params: { href: '/(tabs)/record' },
+      },
+    ]);
   }, [restore]);
 
   useEffect(() => {

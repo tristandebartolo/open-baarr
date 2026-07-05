@@ -247,7 +247,8 @@ export default function RecordScreen() {
         )}
 
         {active && trip !== null && collapsed && (
-          // Mode réduit : une seule ligne, la carte reste lisible.
+          // Mode réduit : une seule ligne, la carte reste lisible — avec
+          // pause/reprendre accessibles sans déplier.
           <View style={styles.collapsedRow}>
             <Pressable accessibilityLabel="Déplier les informations" onPress={handleToggleCollapsed} hitSlop={8}>
               <Ionicons name="chevron-up" size={20} color={TEXT} />
@@ -256,6 +257,28 @@ export default function RecordScreen() {
               {formatDistance(distanceM)} · {formatDuration(movingMs)} · {formatSpeed(speedMs)}
               {phase === 'paused' ? ' · en pause' : ''}
             </Text>
+            {phase === 'recording' && (
+              <Pressable
+                accessibilityLabel="Mettre en pause"
+                onPress={() => void pause()}
+                style={({ pressed }) => [
+                  styles.collapsedButton,
+                  { backgroundColor: OVERLAY_ELEMENT, opacity: pressed ? 0.7 : 1 },
+                ]}>
+                <Ionicons name="pause" size={18} color={TEXT} />
+              </Pressable>
+            )}
+            {phase === 'paused' && (
+              <Pressable
+                accessibilityLabel="Reprendre l’enregistrement"
+                onPress={() => void resume()}
+                style={({ pressed }) => [
+                  styles.collapsedButton,
+                  { backgroundColor: Palette.accent, opacity: pressed ? 0.7 : 1 },
+                ]}>
+                <Ionicons name="play" size={18} color={TEXT} />
+              </Pressable>
+            )}
             <SyncPill syncing={syncing} unsyncedCount={unsyncedCount} />
           </View>
         )}
@@ -491,6 +514,13 @@ const styles = StyleSheet.create({
   },
   collapsedStats: {
     flex: 1,
+  },
+  collapsedButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     flex: 1,
