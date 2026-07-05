@@ -100,6 +100,9 @@ export const photosQueue = sqliteTable(
     localUri: text('local_uri').notNull(),
     lat: real('lat'),
     lng: real('lng'),
+    /** Métadonnées saisies à l'ajout (field_description / field_copyright). */
+    description: text('description'),
+    copyright: text('copyright'),
     /** Epoch ms de la prise de vue. */
     takenAt: integer('taken_at_ms'),
     attempts: integer('attempts').notNull().default(0),

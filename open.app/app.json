@@ -62,6 +62,12 @@
       ],
       "expo-sharing",
       [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "open.app enregistre dans votre pellicule les photos prises pendant un trajet."
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "open.app accède à vos photos pour les joindre à un trajet.",

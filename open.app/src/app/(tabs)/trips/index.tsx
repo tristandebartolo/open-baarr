@@ -7,7 +7,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, SectionList, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  SectionList,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,6 +22,8 @@ import { ACTIVITY_COLORS, ACTIVITY_ICONS } from '@/constants/activities';
 import { Palette, Spacing } from '@/constants/theme';
 import { countUnsyncedPoints } from '@/db/queries';
 import { useTheme } from '@/hooks/use-theme';
+import { syncNow } from '@/services/sync';
+import { useSyncStore } from '@/stores/sync-store';
 import { fetchTrips, type TripSummary } from '@/services/trips';
 import { formatDateTime, formatDistance, formatDuration, formatMonthYear } from '@/utils/format';
 
@@ -34,6 +43,7 @@ export default function TripsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const syncing = useSyncStore((s) => s.syncing);
 
   const loadFirstPage = useCallback(async () => {
     try {
@@ -63,6 +73,12 @@ export default function TripsScreen() {
     setRefreshing(true);
     await loadFirstPage();
     setRefreshing(false);
+  };
+
+  // Forçage manuel depuis le bandeau « en attente ».
+  const handleSyncNow = async () => {
+    await syncNow('manuel');
+    await loadFirstPage();
   };
 
   const handleEndReached = async () => {
@@ -110,10 +126,24 @@ export default function TripsScreen() {
         ListHeaderComponent={
           <>
             {pendingPoints > 0 && (
-              <ThemedText type="small" style={styles.pending}>
-                {pendingPoints} point{pendingPoints > 1 ? 's' : ''} en attente de synchronisation
-                sur cet appareil.
-              </ThemedText>
+              <Pressable
+                accessibilityRole="button"
+                disabled={syncing}
+                onPress={() => void handleSyncNow()}
+                style={({ pressed }) => [
+                  styles.pendingBanner,
+                  { backgroundColor: Palette.warning + '22', opacity: pressed ? 0.7 : 1 },
+                ]}>
+                {syncing ? (
+                  <ActivityIndicator size="small" color={Palette.warning} />
+                ) : (
+                  <Ionicons name="sync" size={16} color={Palette.warning} />
+                )}
+                <ThemedText type="small" style={styles.pending}>
+                  {pendingPoints} point{pendingPoints > 1 ? 's' : ''} en attente — toucher pour
+                  synchroniser
+                </ThemedText>
+              </Pressable>
             )}
             {error !== null && (
               <ThemedText type="small" style={styles.error}>
@@ -247,9 +277,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two,
     paddingVertical: 2,
   },
+  pendingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    marginBottom: Spacing.two,
+  },
   pending: {
     color: Palette.warning,
-    marginBottom: Spacing.two,
+    flexShrink: 1,
   },
   error: {
     color: Palette.danger,

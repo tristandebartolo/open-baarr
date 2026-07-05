@@ -442,6 +442,8 @@ export async function enqueuePhoto(photo: {
   localUri: string;
   lat: number | null;
   lng: number | null;
+  description: string | null;
+  copyright: string | null;
   takenAt: number;
 }): Promise<void> {
   const db = await getDb();

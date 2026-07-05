@@ -78,9 +78,9 @@ final class TripNormalizer {
   }
 
   /**
-   * URLs absolues des photos de la galerie du trajet.
+   * URLs absolues et métadonnées des photos de la galerie du trajet.
    *
-   * @return list<array{id: int, uuid: string, url: string}>
+   * @return list<array<string, mixed>>
    *   Une entrée par media image référencé dans field_galerie.
    */
   private function photos(NodeInterface $trip): array {
@@ -92,21 +92,59 @@ final class TripNormalizer {
       if (!$media instanceof MediaInterface) {
         continue;
       }
-      $sourceField = $media->getSource()->getConfiguration()['source_field'] ?? NULL;
-      if ($sourceField === NULL || !$media->hasField($sourceField)) {
-        continue;
+      $photo = $this->normalizePhoto($media);
+      if ($photo !== NULL) {
+        $photos[] = $photo;
       }
-      $file = $media->get($sourceField)->entity;
-      if (!$file instanceof FileInterface || $file->getFileUri() === NULL) {
-        continue;
-      }
-      $photos[] = [
-        'id' => (int) $media->id(),
-        'uuid' => (string) $media->uuid(),
-        'url' => $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri()),
-      ];
     }
     return $photos;
+  }
+
+  /**
+   * Normalise un media image (photo de trajet) en tableau JSON.
+   *
+   * @return array{id: int, uuid: string, url: string, name: string, description: string|null, copyright: string|null, coordinates: array{lat: float, lng: float}|null}|null
+   *   NULL si le media n'a pas de fichier source exploitable.
+   */
+  public function normalizePhoto(MediaInterface $media): ?array {
+    $sourceField = $media->getSource()->getConfiguration()['source_field'] ?? NULL;
+    if ($sourceField === NULL || !$media->hasField($sourceField)) {
+      return NULL;
+    }
+    $file = $media->get($sourceField)->entity;
+    if (!$file instanceof FileInterface || $file->getFileUri() === NULL) {
+      return NULL;
+    }
+
+    $coordinates = NULL;
+    if ($media->hasField('field_coordinates') && !$media->get('field_coordinates')->isEmpty()) {
+      $item = $media->get('field_coordinates')->first();
+      $lat = $item?->get('lat')->getValue();
+      $lng = $item?->get('lng')->getValue();
+      if ($lat !== NULL && $lng !== NULL) {
+        $coordinates = ['lat' => (float) $lat, 'lng' => (float) $lng];
+      }
+    }
+
+    return [
+      'id' => (int) $media->id(),
+      'uuid' => (string) $media->uuid(),
+      'url' => $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri()),
+      'name' => (string) $media->label(),
+      'description' => $this->mediaStringValue($media, 'field_description'),
+      'copyright' => $this->mediaStringValue($media, 'field_copyright'),
+      'coordinates' => $coordinates,
+    ];
+  }
+
+  /**
+   * Valeur chaîne d'un champ mono-valeur d'un media, NULL si absent ou vide.
+   */
+  private function mediaStringValue(MediaInterface $media, string $field): ?string {
+    if (!$media->hasField($field) || $media->get($field)->isEmpty()) {
+      return NULL;
+    }
+    return (string) $media->get($field)->value;
   }
 
   /**

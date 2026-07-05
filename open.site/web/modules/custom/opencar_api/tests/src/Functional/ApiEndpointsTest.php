@@ -205,6 +205,12 @@ final class ApiEndpointsTest extends BrowserTestBase {
     // Payload rejeté strictement.
     $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['feeling' => 12]);
     $this->assertSame(422, $response->getStatusCode());
+
+    // Photos : media inconnu → 404 (pas de fuite), y compris pour un autre
+    // compte sur le trajet d'autrui.
+    $mediaUuid = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+    $this->assertSame(404, $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid/photos/$mediaUuid", ['description' => 'x'])->getStatusCode());
+    $this->assertSame(404, $this->apiRequest($this->userB, 'DELETE', "/trips/$uuid/photos/$mediaUuid")->getStatusCode());
   }
 
   /**

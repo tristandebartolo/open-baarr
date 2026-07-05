@@ -190,6 +190,53 @@ final class PayloadValidator {
   }
 
   /**
+   * Valide le payload de PATCH /trips/{uuid}/photos/{media_uuid}.
+   *
+   * @param array<mixed> $payload
+   *   Le payload décodé.
+   *
+   * @return array<string, mixed>
+   *   Uniquement les clés fournies, normalisées. `coordinates` vaut
+   *   ['lat' => float, 'lng' => float] ou NULL (effacement).
+   */
+  public function validatePhotoUpdate(array $payload): array {
+    $this->rejectUnknownKeys($payload, ['name', 'description', 'copyright', 'lat', 'lng']);
+    if ($payload === []) {
+      throw new UnprocessableEntityHttpException('Payload vide : au moins un champ à modifier est requis.');
+    }
+    $errors = [];
+    $changes = [];
+
+    if (array_key_exists('name', $payload)) {
+      if (!is_string($payload['name']) || trim($payload['name']) === '' || mb_strlen($payload['name']) > 255) {
+        $errors[] = 'name : chaîne non vide de 255 caractères maximum requise.';
+      }
+      else {
+        $changes['name'] = trim($payload['name']);
+      }
+    }
+    if (array_key_exists('description', $payload)) {
+      $changes['description'] = $this->optionalString($payload, 'description', 1000, $errors);
+    }
+    if (array_key_exists('copyright', $payload)) {
+      $changes['copyright'] = $this->optionalString($payload, 'copyright', 255, $errors);
+    }
+    if (array_key_exists('lat', $payload) || array_key_exists('lng', $payload)) {
+      $lat = $this->optionalFloat($payload, 'lat', -90.0, 90.0, $errors);
+      $lng = $this->optionalFloat($payload, 'lng', -180.0, 180.0, $errors);
+      if (!array_key_exists('lat', $payload) || !array_key_exists('lng', $payload) || (($lat === NULL) !== ($lng === NULL))) {
+        $errors[] = 'lat/lng : fournir les deux valeurs (ou null toutes les deux pour effacer).';
+      }
+      else {
+        $changes['coordinates'] = $lat === NULL || $lng === NULL ? NULL : ['lat' => $lat, 'lng' => $lng];
+      }
+    }
+
+    $this->throwIfErrors($errors);
+    return $changes;
+  }
+
+  /**
    * Valide le payload de PATCH /trips/{uuid}/status.
    *
    * @param array<mixed> $payload

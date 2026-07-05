@@ -49,7 +49,18 @@ export type TripPhoto = {
   id: number;
   uuid: string;
   url: string;
+  name: string;
+  description: string | null;
+  copyright: string | null;
+  coordinates: { lat: number; lng: number } | null;
 };
+
+/** Champs modifiables d'une photo (PATCH /trips/{uuid}/photos/{media_uuid}). */
+export type TripPhotoPatch = Partial<{
+  name: string;
+  description: string | null;
+  copyright: string | null;
+}>;
 
 export type TripDetail = TripSummary & {
   /** Chapo (field_chapo, texte court d'introduction). */
@@ -125,6 +136,24 @@ export function patchTrip(uuid: string, patch: TripPatch): Promise<TripDetail> {
 /** Suppression définitive côté serveur (204 ; les points suivent par hook). */
 export function deleteTrip(uuid: string): Promise<void> {
   return apiFetch<void>(`/opencar/api/v1/trips/${uuid}`, { method: 'DELETE' });
+}
+
+export function patchTripPhoto(
+  tripUuid: string,
+  mediaUuid: string,
+  patch: TripPhotoPatch,
+): Promise<TripPhoto> {
+  return apiFetch<TripPhoto>(`/opencar/api/v1/trips/${tripUuid}/photos/${mediaUuid}`, {
+    method: 'PATCH',
+    body: patch,
+  });
+}
+
+/** Détache la photo du trajet et supprime le media + fichier (204). */
+export function deleteTripPhoto(tripUuid: string, mediaUuid: string): Promise<void> {
+  return apiFetch<void>(`/opencar/api/v1/trips/${tripUuid}/photos/${mediaUuid}`, {
+    method: 'DELETE',
+  });
 }
 
 export function fetchStatsSummary(

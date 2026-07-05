@@ -103,6 +103,32 @@ opencar_api.trip_photos:
   options:
     _auth: ['basic_auth']
 
+opencar_api.trip_photo_update:
+  path: '/opencar/api/v1/trips/{uuid}/photos/{media_uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripPhotoController::update'
+  methods: [PATCH]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+    media_uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.trip_photo_delete:
+  path: '/opencar/api/v1/trips/{uuid}/photos/{media_uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\TripPhotoController::delete'
+  methods: [DELETE]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+    media_uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
 opencar_api.trip_gpx:
   path: '/opencar/api/v1/trips/{uuid}/gpx'
   defaults:

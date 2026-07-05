@@ -11,8 +11,9 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
+import type { ImagePickerAsset } from 'expo-image-picker';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,21 +27,32 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { CartesianChart, Line } from 'victory-native';
 
+import { PhotoFormModal, type PhotoFormValues } from '@/components/photo-form';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ACTIVITY_COLORS, ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
 import { Palette, Spacing } from '@/constants/theme';
-import { deleteLocalTrip, getTrip, getTripPoints, updateTripTitle } from '@/db/queries';
+import {
+  countUnsyncedPhotos,
+  deleteLocalTrip,
+  getTrip,
+  getTripPoints,
+  updateTripTitle,
+} from '@/db/queries';
 import type { TripRow } from '@/db/schema';
 import { useTheme } from '@/hooks/use-theme';
 import { fetchTripTrack, shareTripGpx } from '@/services/gpx';
-import { deleteLocalPhoto } from '@/services/photos';
+import { deleteLocalPhoto, pickLibraryPhoto, queueTripPhoto } from '@/services/photos';
+import { syncNow } from '@/services/sync';
 import {
   deleteTrip,
+  deleteTripPhoto,
   fetchTripDetail,
   patchTrip,
+  patchTripPhoto,
   type TripDetail,
   type TripPatch,
+  type TripPhoto,
 } from '@/services/trips';
 import { useRecordStore } from '@/stores/record-store';
 import { chartFont, downsample } from '@/utils/chart';
@@ -306,6 +318,15 @@ export default function TripDetailScreen() {
             </ThemedText>
           )}
 
+          {localTrip?.syncError != null && (
+            <View style={[styles.syncErrorBox, { backgroundColor: Palette.warning + '22' }]}>
+              <Ionicons name="warning-outline" size={16} color={Palette.warning} />
+              <ThemedText type="small" style={styles.syncErrorText}>
+                Synchronisation en échec : {localTrip.syncError}
+              </ThemedText>
+            </View>
+          )}
+
           {detail !== null && (
             <>
               <View style={styles.header}>
@@ -455,7 +476,18 @@ export default function TripDetailScreen() {
 
               {tab === 'notes' && <NotesForm detail={detail} onSaved={setDetail} />}
 
-              {tab === 'galerie' && <Gallery photos={detail.photos} />}
+              {tab === 'galerie' && (
+                <Gallery
+                  detail={detail}
+                  canAdd={localTrip !== null}
+                  lastPosition={
+                    track.length > 0
+                      ? { lat: track[track.length - 1].lat, lng: track[track.length - 1].lng }
+                      : null
+                  }
+                  onDetailChanged={setDetail}
+                />
+              )}
 
               <View style={styles.actions}>
                 {canResume && (
@@ -810,32 +842,201 @@ function NotesForm({
   );
 }
 
-/** Onglet Galerie : grille 2 colonnes des photos du trajet. */
-function Gallery({ photos }: { photos: TripDetail['photos'] }) {
+/**
+ * Onglet Galerie : grille 2 colonnes des photos serveur (édition/suppression
+ * du media) + ajout depuis la bibliothèque (file locale, envoyée par la
+ * sync — réservé aux trajets enregistrés sur cet appareil : la file SQLite
+ * référence la table locale des trajets).
+ */
+function Gallery({
+  detail,
+  canAdd,
+  lastPosition,
+  onDetailChanged,
+}: {
+  detail: TripDetail;
+  canAdd: boolean;
+  lastPosition: { lat: number; lng: number } | null;
+  onDetailChanged: (detail: TripDetail) => void;
+}) {
   const theme = useTheme();
-  if (photos.length === 0) {
-    return (
-      <View style={styles.galleryEmpty}>
-        <Ionicons name="images-outline" size={40} color={theme.textSecondary} />
-        <ThemedText type="small" themeColor="textSecondary" style={styles.galleryEmptyHint}>
-          Aucune photo pour ce trajet. Les photos se prennent pendant l’enregistrement, depuis
-          l’écran Enregistrer.
-        </ThemedText>
-      </View>
-    );
-  }
+  const [pendingCount, setPendingCount] = useState(0);
+  const [pendingAsset, setPendingAsset] = useState<ImagePickerAsset | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState<TripPhoto | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const refreshPending = useCallback(async () => {
+    setPendingCount(await countUnsyncedPhotos(detail.uuid));
+  }, [detail.uuid]);
+
+  // setState après await uniquement, le linter ne peut pas le voir.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refreshPending();
+  }, [refreshPending]);
+
+  const handleAdd = async () => {
+    const result = await pickLibraryPhoto();
+    if (result.status === 'ok') {
+      setPendingAsset(result.asset);
+    } else if (result.status === 'permission-denied') {
+      setMessage('Accès à la bibliothèque refusé.');
+    }
+  };
+
+  const handleAddMeta = async (values: PhotoFormValues) => {
+    if (pendingAsset === null) {
+      return;
+    }
+    try {
+      await queueTripPhoto(detail.uuid, pendingAsset, lastPosition, values);
+      setMessage('Photo ajoutée : envoi à la prochaine synchronisation.');
+      await refreshPending();
+      void syncNow('photo ajoutée');
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Ajout impossible.');
+    } finally {
+      setPendingAsset(null);
+    }
+  };
+
+  const handleEdit = async (values: PhotoFormValues) => {
+    if (editingPhoto === null) {
+      return;
+    }
+    setBusy(true);
+    try {
+      const updated = await patchTripPhoto(detail.uuid, editingPhoto.uuid, {
+        description: values.description,
+        copyright: values.copyright,
+      });
+      onDetailChanged({
+        ...detail,
+        photos: detail.photos.map((p) => (p.uuid === updated.uuid ? updated : p)),
+      });
+      setEditingPhoto(null);
+      setMessage(null);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Modification impossible.');
+      setEditingPhoto(null);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDelete = (photo: TripPhoto) => {
+    Alert.alert('Supprimer la photo', 'La photo sera retirée du trajet et supprimée du site.', [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            try {
+              await deleteTripPhoto(detail.uuid, photo.uuid);
+              onDetailChanged({
+                ...detail,
+                photos: detail.photos.filter((p) => p.uuid !== photo.uuid),
+              });
+            } catch (e) {
+              setMessage(e instanceof Error ? e.message : 'Suppression impossible.');
+            }
+          })();
+        },
+      },
+    ]);
+  };
+
   return (
-    <View style={styles.galleryGrid}>
-      {photos.map((photo) => (
-        <Image
-          key={photo.uuid}
-          source={{ uri: photo.url }}
-          style={styles.galleryPhoto}
-          contentFit="cover"
-          transition={150}
+    <>
+      {canAdd ? (
+        <Pressable
+          onPress={() => void handleAdd()}
+          style={({ pressed }) => [
+            styles.addPhotoButton,
+            { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
+          ]}>
+          <Ionicons name="add" size={20} color={Palette.accent} />
+          <ThemedText type="smallBold">Ajouter une photo</ThemedText>
+        </Pressable>
+      ) : (
+        <ThemedText type="small" themeColor="textSecondary">
+          L’ajout de photos n’est possible que pour les trajets enregistrés sur cet appareil.
+        </ThemedText>
+      )}
+
+      {pendingCount > 0 && (
+        <ThemedText type="small" style={styles.galleryPending}>
+          {pendingCount} photo{pendingCount > 1 ? 's' : ''} en attente de synchronisation.
+        </ThemedText>
+      )}
+      {message !== null && (
+        <ThemedText type="small" themeColor="textSecondary">
+          {message}
+        </ThemedText>
+      )}
+
+      {detail.photos.length === 0 && pendingCount === 0 ? (
+        <View style={styles.galleryEmpty}>
+          <Ionicons name="images-outline" size={40} color={theme.textSecondary} />
+          <ThemedText type="small" themeColor="textSecondary" style={styles.galleryEmptyHint}>
+            Aucune photo pour ce trajet. Prenez-en pendant l’enregistrement, ou ajoutez-en depuis
+            la bibliothèque.
+          </ThemedText>
+        </View>
+      ) : (
+        <View style={styles.galleryGrid}>
+          {detail.photos.map((photo) => (
+            <View key={photo.uuid} style={styles.galleryItem}>
+              <Image
+                source={{ uri: photo.url }}
+                style={styles.galleryPhoto}
+                contentFit="cover"
+                transition={150}
+              />
+              {photo.description !== null && (
+                <ThemedText type="small" themeColor="textSecondary" numberOfLines={2}>
+                  {photo.description}
+                </ThemedText>
+              )}
+              <View style={styles.galleryActions}>
+                <Pressable onPress={() => setEditingPhoto(photo)} hitSlop={8}>
+                  <Ionicons name="pencil" size={18} color={theme.textSecondary} />
+                </Pressable>
+                <Pressable onPress={() => handleDelete(photo)} hitSlop={8}>
+                  <Ionicons name="trash-outline" size={18} color={Palette.danger} />
+                </Pressable>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {pendingAsset !== null && (
+        <PhotoFormModal
+          visible
+          title="Détails de la photo"
+          initial={{ description: null, copyright: null }}
+          submitLabel="Enregistrer"
+          skipLabel="Passer"
+          onSubmit={(values) => void handleAddMeta(values)}
+          onDismiss={() => void handleAddMeta({ description: null, copyright: null })}
         />
-      ))}
-    </View>
+      )}
+      {editingPhoto !== null && (
+        <PhotoFormModal
+          visible
+          title="Modifier la photo"
+          initial={{ description: editingPhoto.description, copyright: editingPhoto.copyright }}
+          submitLabel="Enregistrer"
+          skipLabel="Annuler"
+          busy={busy}
+          onSubmit={(values) => void handleEdit(values)}
+          onDismiss={() => setEditingPhoto(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -1287,11 +1488,31 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
-  galleryPhoto: {
+  galleryItem: {
     flexBasis: '47%',
     flexGrow: 1,
+    gap: Spacing.one,
+  },
+  galleryPhoto: {
+    width: '100%',
     aspectRatio: 1,
     borderRadius: 16,
+  },
+  galleryActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.three,
+  },
+  galleryPending: {
+    color: Palette.warning,
+  },
+  addPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.one,
+    borderRadius: 12,
+    paddingVertical: Spacing.two + 2,
   },
   galleryEmpty: {
     alignItems: 'center',
@@ -1357,5 +1578,17 @@ const styles = StyleSheet.create({
   },
   error: {
     color: Palette.danger,
+  },
+  syncErrorBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.two,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  syncErrorText: {
+    color: Palette.warning,
+    flexShrink: 1,
   },
 });

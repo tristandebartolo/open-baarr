@@ -9,10 +9,12 @@
  */
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Polyline } from 'react-native-maps';
 
+import { PhotoFormModal, type PhotoFormValues } from '@/components/photo-form';
 import { ThemedView } from '@/components/themed-view';
 import {
   ACTIVITY_COLORS,
@@ -22,7 +24,7 @@ import {
 } from '@/constants/activities';
 import { Palette, Spacing } from '@/constants/theme';
 import type { ActivityType } from '@/db/schema';
-import { captureTripPhoto } from '@/services/photos';
+import { queueTripPhoto, takeTripPhoto } from '@/services/photos';
 import { useRecordStore } from '@/stores/record-store';
 import { useSyncStore } from '@/stores/sync-store';
 import { formatDistance, formatDuration, formatSpeed } from '@/utils/format';
@@ -37,6 +39,8 @@ export default function RecordScreen() {
   const mapRef = useRef<MapView>(null);
   const [activityType, setActivityType] = useState<ActivityType>('car');
   const [photoMessage, setPhotoMessage] = useState<string | null>(null);
+  /** Photo capturée en attente de ses métadonnées (modale ouverte). */
+  const [pendingPhoto, setPendingPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
 
   const phase = useRecordStore((s) => s.phase);
   const trip = useRecordStore((s) => s.trip);
@@ -71,25 +75,41 @@ export default function RecordScreen() {
   const busy = phase === 'starting' || phase === 'stopping';
   const trackColor = trip !== null ? ACTIVITY_COLORS[trip.activityType] : Palette.accent;
 
-  // Photo géolocalisée pendant le trajet → photos_queue (upload par la sync).
+  // Photo géolocalisée pendant le trajet : capture (+ pellicule) puis
+  // modale de métadonnées → photos_queue (upload par la sync).
   const handlePhoto = async () => {
     if (trip === null) {
       return;
     }
     try {
-      const result = await captureTripPhoto(
-        trip.uuid,
-        lastPoint !== null ? { lat: lastPoint.lat, lng: lastPoint.lng } : null,
-      );
-      setPhotoMessage(
-        result === 'queued'
-          ? 'Photo ajoutée au trajet (envoi à la prochaine sync).'
-          : result === 'permission-denied'
-            ? 'Accès à l’appareil photo refusé.'
-            : null,
-      );
+      const result = await takeTripPhoto();
+      if (result.status === 'ok') {
+        setPendingPhoto(result.asset);
+      } else if (result.status === 'permission-denied') {
+        setPhotoMessage('Accès à l’appareil photo refusé.');
+      }
     } catch (e) {
       setPhotoMessage(e instanceof Error ? e.message : 'Photo impossible.');
+    }
+  };
+
+  const handlePhotoMeta = async (values: PhotoFormValues) => {
+    if (trip === null || pendingPhoto === null) {
+      setPendingPhoto(null);
+      return;
+    }
+    try {
+      await queueTripPhoto(
+        trip.uuid,
+        pendingPhoto,
+        lastPoint !== null ? { lat: lastPoint.lat, lng: lastPoint.lng } : null,
+        values,
+      );
+      setPhotoMessage('Photo ajoutée au trajet (envoi à la prochaine sync).');
+    } catch (e) {
+      setPhotoMessage(e instanceof Error ? e.message : 'Photo impossible.');
+    } finally {
+      setPendingPhoto(null);
     }
   };
 
@@ -248,6 +268,18 @@ export default function RecordScreen() {
           </View>
         )}
       </View>
+
+      {pendingPhoto !== null && (
+        <PhotoFormModal
+          visible
+          title="Détails de la photo"
+          initial={{ description: null, copyright: null }}
+          submitLabel="Enregistrer"
+          skipLabel="Passer"
+          onSubmit={(values) => void handlePhotoMeta(values)}
+          onDismiss={() => void handlePhotoMeta({ description: null, copyright: null })}
+        />
+      )}
     </ThemedView>
   );
 }

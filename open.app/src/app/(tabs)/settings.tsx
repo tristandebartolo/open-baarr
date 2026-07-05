@@ -1,11 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Palette, Spacing } from '@/constants/theme';
+import { countUnsyncedPhotos, countUnsyncedPoints } from '@/db/queries';
 import { useTheme } from '@/hooks/use-theme';
+import { syncNow } from '@/services/sync';
 import { useAuthStore } from '@/stores/auth-store';
+import { useSyncStore } from '@/stores/sync-store';
+import { formatDateTime } from '@/utils/format';
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -17,6 +29,12 @@ export default function SettingsScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [pending, setPending] = useState<{ points: number; photos: number } | null>(null);
+
+  const syncing = useSyncStore((s) => s.syncing);
+  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
+  const lastError = useSyncStore((s) => s.lastError);
+  const lastResult = useSyncStore((s) => s.lastResult);
 
   const loadProfile = async () => {
     try {
@@ -25,6 +43,24 @@ export default function SettingsScreen() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Profil indisponible.');
     }
+  };
+
+  const loadPending = useCallback(async () => {
+    const [points, photos] = await Promise.all([countUnsyncedPoints(), countUnsyncedPhotos()]);
+    setPending({ points, photos });
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadPending();
+    }, [loadPending]),
+  );
+
+  // Déclencheur manuel : le résultat du run (erreur serveur comprise) est
+  // affiché tel quel — c'est l'outil de diagnostic de la sync.
+  const handleSyncNow = async () => {
+    await syncNow('manuel');
+    await loadPending();
   };
 
   // Profil absent (démarrage hors-ligne) : nouvelle tentative à l'ouverture de l'écran.
@@ -68,6 +104,46 @@ export default function SettingsScreen() {
           </ThemedText>
         )}
 
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.syncTitle}>
+          SYNCHRONISATION
+        </ThemedText>
+        <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+          <Row
+            label="Points en attente"
+            value={pending !== null ? String(pending.points) : '—'}
+          />
+          <Row
+            label="Photos en attente"
+            value={pending !== null ? String(pending.photos) : '—'}
+          />
+          <Row
+            label="Dernière synchronisation"
+            value={lastSyncAt !== null ? formatDateTime(Math.floor(lastSyncAt / 1000)) : '—'}
+          />
+          <Row label="Dernier résultat" value={lastResult ?? '—'} />
+        </View>
+        {lastError !== null && (
+          <ThemedText type="small" style={styles.error}>
+            Erreur : {lastError}
+          </ThemedText>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          disabled={syncing}
+          style={({ pressed }) => [
+            styles.syncButton,
+            { backgroundColor: Palette.accent, opacity: pressed || syncing ? 0.7 : 1 },
+          ]}
+          onPress={() => void handleSyncNow()}>
+          {syncing ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <ThemedText type="smallBold" style={styles.syncButtonLabel}>
+              Synchroniser maintenant
+            </ThemedText>
+          )}
+        </Pressable>
+
         <Pressable
           accessibilityRole="button"
           style={[styles.logoutButton, { backgroundColor: theme.backgroundElement }]}
@@ -104,6 +180,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: Spacing.one,
     marginLeft: Spacing.two,
+  },
+  syncTitle: {
+    marginTop: Spacing.four,
+    marginBottom: Spacing.one,
+    marginLeft: Spacing.two,
+  },
+  syncButton: {
+    borderRadius: 12,
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginTop: Spacing.two,
+  },
+  syncButtonLabel: {
+    color: '#ffffff',
   },
   card: {
     borderRadius: 12,

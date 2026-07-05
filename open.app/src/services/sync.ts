@@ -225,6 +225,12 @@ async function pushPhotos(trip: TripRow): Promise<number> {
       form.append('lat', String(photo.lat));
       form.append('lng', String(photo.lng));
     }
+    if (photo.description !== null) {
+      form.append('description', photo.description);
+    }
+    if (photo.copyright !== null) {
+      form.append('copyright', photo.copyright);
+    }
     if (photo.takenAt !== null) {
       form.append('taken_at', String(toEpochSeconds(photo.takenAt)));
     }
@@ -260,16 +266,31 @@ export function syncNow(reason: string): Promise<SyncResult> {
   return currentRun;
 }
 
+/** Résumé lisible d'un run pour l'écran Réglages. */
+function describeResult(result: SyncResult): string {
+  if (result.skipped === 'offline') {
+    return 'hors ligne — synchronisation reportée';
+  }
+  if (result.aborted !== undefined) {
+    return `interrompue : ${result.aborted}`;
+  }
+  return `${result.pointsSynced} point${result.pointsSynced > 1 ? 's' : ''}, ${result.photosSynced} photo${result.photosSynced > 1 ? 's' : ''}, ${result.tripsSynced} trajet${result.tripsSynced > 1 ? 's' : ''}`;
+}
+
 async function runSync(reason: string): Promise<SyncResult> {
   const result: SyncResult = { reason, tripsSynced: 0, pointsSynced: 0, photosSynced: 0 };
 
   const network = await Network.getNetworkStateAsync().catch(() => null);
   if (network !== null && (network.isInternetReachable === false || network.isConnected === false)) {
-    return { ...result, skipped: 'offline' };
+    const skipped: SyncResult = { ...result, skipped: 'offline' };
+    const store = useSyncStore.getState();
+    store.setResult(store.lastSyncAt ?? Date.now(), store.lastError, describeResult(skipped));
+    return skipped;
   }
 
   const pending = await getTripsNeedingSync();
   if (pending.length === 0) {
+    useSyncStore.getState().setResult(Date.now(), null, 'rien à synchroniser');
     return result;
   }
 
@@ -307,7 +328,7 @@ async function runSync(reason: string): Promise<SyncResult> {
     }
   }
 
-  useSyncStore.getState().setResult(Date.now(), blockingError);
+  useSyncStore.getState().setResult(Date.now(), blockingError, describeResult(result));
   return result;
 }
 
