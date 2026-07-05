@@ -32,7 +32,7 @@
 
 import * as Network from 'expo-network';
 
-import { ApiError, apiFetch, apiUpload } from '@/services/api';
+import { ApiError, apiFetch, apiUploadFile } from '@/services/api';
 import {
   countUnsyncedPoints,
   getTrip,
@@ -206,36 +206,42 @@ async function pushCompletedStatus(trip: TripRow): Promise<void> {
   await updateTripSyncState(fresh.uuid, { syncedStatus: 'completed' });
 }
 
-/** Nom/type de fichier pour le multipart RN à partir de l'URI locale. */
-function photoFilePart(photo: PhotoQueueRow): { uri: string; name: string; type: string } {
-  const name = photo.localUri.split('/').pop() ?? `photo-${photo.id}.jpg`;
-  const ext = /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? 'jpg';
-  const type = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
-  return { uri: photo.localUri, name, type };
+/** Type MIME de la photo à partir de l'extension de sa copie locale. */
+function photoMimeType(photo: PhotoQueueRow): string {
+  const ext = /\.([a-z0-9]+)$/i.exec(photo.localUri)?.[1]?.toLowerCase() ?? 'jpg';
+  return ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
 }
 
-/** 5. Upload des photos en attente (une par une, échec non bloquant). */
+/**
+ * 5. Upload des photos en attente (une par une, échec non bloquant).
+ *
+ * Via l'UploadTask natif d'expo-file-system : le fetch d'Expo ne supporte
+ * pas la convention RN {uri, name, type} dans FormData.
+ */
 async function pushPhotos(trip: TripRow): Promise<number> {
   let pushed = 0;
   for (const photo of await getUnsyncedPhotos(trip.uuid)) {
-    const form = new FormData();
-    // RN sérialise {uri, name, type} en partie fichier multipart.
-    form.append('file', photoFilePart(photo) as unknown as Blob);
+    const fields: Record<string, string> = {};
     if (photo.lat !== null && photo.lng !== null) {
-      form.append('lat', String(photo.lat));
-      form.append('lng', String(photo.lng));
+      fields.lat = String(photo.lat);
+      fields.lng = String(photo.lng);
     }
     if (photo.description !== null) {
-      form.append('description', photo.description);
+      fields.description = photo.description;
     }
     if (photo.copyright !== null) {
-      form.append('copyright', photo.copyright);
+      fields.copyright = photo.copyright;
     }
     if (photo.takenAt !== null) {
-      form.append('taken_at', String(toEpochSeconds(photo.takenAt)));
+      fields.taken_at = String(toEpochSeconds(photo.takenAt));
     }
     try {
-      await apiUpload(`/opencar/api/v1/trips/${trip.uuid}/photos`, form);
+      await apiUploadFile(
+        `/opencar/api/v1/trips/${trip.uuid}/photos`,
+        photo.localUri,
+        photoMimeType(photo),
+        fields,
+      );
       await markPhotoSynced(photo.id);
       deleteLocalPhoto(photo.localUri);
       pushed += 1;

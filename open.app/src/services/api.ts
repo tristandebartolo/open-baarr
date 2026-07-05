@@ -6,7 +6,13 @@
  *   du routing Drupal. Seule la route GPX se consomme sans (`format: false`).
  * - 401 sur la session courante → handler `onUnauthorized` (purge des
  *   identifiants → retour à l'écran login).
+ * - Upload de fichier : UploadTask natif d'expo-file-system (streaming
+ *   multipart depuis le disque) — le fetch WinterCG d'Expo ne supporte PAS
+ *   la convention RN `{uri, name, type}` dans FormData (« Unsupported
+ *   FormDataPart implementation »).
  */
+
+import { File, UploadType } from 'expo-file-system';
 
 export type Credentials = {
   /** URL https:// du serveur, sans slash final. */
@@ -125,8 +131,6 @@ async function extractErrorMessage(response: Response): Promise<string> {
  * la galerie. */
 const NETWORK_RETRIES = 2;
 const DEFAULT_TIMEOUT_MS = 30000;
-/** Uploads multipart : transferts longs sur réseau mobile. */
-const UPLOAD_TIMEOUT_MS = 120000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -134,7 +138,7 @@ function sleep(ms: number): Promise<void> {
 
 async function rawFetch(
   path: string,
-  options: ApiFetchOptions & { formData?: FormData; accept?: string },
+  options: ApiFetchOptions & { accept?: string },
 ): Promise<Response> {
   const credentials = options.credentials ?? sessionCredentials;
   if (!credentials) {
@@ -142,7 +146,7 @@ async function rawFetch(
   }
 
   const url = buildUrl(credentials.serverUrl, path, options.query, options.format ?? true);
-  const timeoutMs = options.formData !== undefined ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+  const timeoutMs = DEFAULT_TIMEOUT_MS;
 
   let response: Response | null = null;
   let lastNetworkError: unknown = null;
@@ -155,12 +159,9 @@ async function rawFetch(
         headers: {
           Authorization: basicAuthHeader(credentials),
           Accept: options.accept ?? 'application/json',
-          // multipart : fetch pose lui-même le Content-Type avec la boundary.
           ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         },
-        body:
-          options.formData ??
-          (options.body !== undefined ? JSON.stringify(options.body) : undefined),
+        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
         signal: controller.signal,
       });
       break;
@@ -214,8 +215,71 @@ export async function apiFetchText(path: string, accept = 'application/gpx+xml')
   return response.text();
 }
 
-/** POST multipart/form-data (upload de photo). */
-export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
-  const response = await rawFetch(path, { method: 'POST', formData });
-  return (await response.json()) as T;
+/**
+ * POST multipart/form-data d'un fichier local (photo) via l'UploadTask
+ * natif : le fichier part en streaming depuis le disque, les champs texte
+ * accompagnent dans `parameters`. Mêmes retries réseau que rawFetch.
+ */
+export async function apiUploadFile<T>(
+  path: string,
+  fileUri: string,
+  mimeType: string,
+  fields: Record<string, string>,
+): Promise<T> {
+  const credentials = sessionCredentials;
+  if (!credentials) {
+    throw new ApiError(401, 'Aucun identifiant enregistré.');
+  }
+  const url = buildUrl(credentials.serverUrl, path, undefined, true);
+
+  let result: { status: number; body: string } | null = null;
+  let lastNetworkError: unknown = null;
+  for (let attempt = 0; attempt <= NETWORK_RETRIES; attempt++) {
+    const task = new File(fileUri).createUploadTask(url, {
+      httpMethod: 'POST',
+      uploadType: UploadType.MULTIPART,
+      fieldName: 'file',
+      mimeType,
+      parameters: fields,
+      headers: {
+        Authorization: basicAuthHeader(credentials),
+        Accept: 'application/json',
+      },
+    });
+    try {
+      // uploadAsync résout aussi pour les statuts non-2xx ; il ne rejette
+      // que sur erreur réseau, lecture de fichier impossible ou annulation.
+      result = await task.uploadAsync();
+      break;
+    } catch (e) {
+      lastNetworkError = e;
+      if (attempt < NETWORK_RETRIES) {
+        await sleep(700 * (attempt + 1));
+      }
+    } finally {
+      task.release();
+    }
+  }
+  if (result === null) {
+    const cause = lastNetworkError instanceof Error ? lastNetworkError.message : 'erreur réseau';
+    throw new ApiError(0, `Serveur injoignable après ${NETWORK_RETRIES + 1} tentatives (${cause}).`);
+  }
+
+  if (result.status === 401) {
+    onUnauthorized?.();
+    throw new ApiError(401, 'Identifiants refusés par le serveur.');
+  }
+  if (result.status < 200 || result.status >= 300) {
+    let message = `Erreur ${result.status}`;
+    try {
+      const payload = JSON.parse(result.body) as { message?: unknown };
+      if (typeof payload.message === 'string' && payload.message !== '') {
+        message = payload.message;
+      }
+    } catch {
+      // corps non JSON : on garde le statut HTTP.
+    }
+    throw new ApiError(result.status, message);
+  }
+  return JSON.parse(result.body) as T;
 }
