@@ -1,0 +1,19 @@
+uuid: 8d9f7f53-e800-431d-a6f3-29c9e4f0daa9
+langcode: fr
+status: true
+dependencies:
+  module:
+    - geolocation
+    - media
+id: media.field_coordinates
+field_name: field_coordinates
+entity_type: media
+type: geolocation
+settings: {  }
+module: geolocation
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

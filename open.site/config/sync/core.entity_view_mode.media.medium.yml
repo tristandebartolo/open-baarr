@@ -1,0 +1,11 @@
+uuid: f03f122b-70ed-4e06-ab61-0dd6e3b20a8a
+langcode: fr
+status: true
+dependencies:
+  module:
+    - media
+id: media.medium
+label: Medium
+description: null
+targetEntityType: media
+cache: true

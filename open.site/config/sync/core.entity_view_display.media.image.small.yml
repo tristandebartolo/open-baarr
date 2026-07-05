@@ -1,57 +1,63 @@
-uuid: 1c4b116a-7d8f-4705-9443-ab128f010352
+uuid: 2e8fd654-47fc-4026-a6d3-d85229d74e99
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.media.small
     - field.field.media.image.field_coordinates
     - field.field.media.image.field_copyright
     - field.field.media.image.field_description
     - field.field.media.image.field_media_image
-    - image.style.large
+    - image.style.medium
     - media.type.image
   module:
     - geolocation
     - image
+    - layout_builder
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
 _core:
   default_config_hash: 73xaTNkI5J6sfFcBmNYeuk070X3mQS_iwwWaPYyfG2M
-id: media.image.default
+id: media.image.small
 targetEntityType: media
 bundle: image
-mode: default
+mode: small
 content:
   field_coordinates:
     type: geolocation_latlng
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    weight: 3
     region: content
   field_copyright:
     type: string
-    label: above
+    label: hidden
     settings:
       link_to_entity: false
       link_rel: canonical
     third_party_settings: {  }
-    weight: 4
+    weight: 2
     region: content
   field_description:
     type: basic_string
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 3
+    weight: 1
     region: content
   field_media_image:
     type: image
     label: visually_hidden
     settings:
       image_link: ''
-      image_style: large
+      image_style: medium
       image_loading:
         attribute: lazy
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
 hidden:
   created: true

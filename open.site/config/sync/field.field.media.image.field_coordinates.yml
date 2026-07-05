@@ -1,0 +1,21 @@
+uuid: 4dd342bb-aa17-49f7-a1a2-4d60563838fd
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_coordinates
+    - media.type.image
+  module:
+    - geolocation
+id: media.image.field_coordinates
+field_name: field_coordinates
+entity_type: media
+bundle: image
+label: Coordinates
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: geolocation

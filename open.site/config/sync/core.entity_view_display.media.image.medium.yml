@@ -1,8 +1,9 @@
-uuid: 1c4b116a-7d8f-4705-9443-ab128f010352
+uuid: d2f2fed7-2cc7-4f5b-8466-0e623c687a02
 langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.media.medium
     - field.field.media.image.field_coordinates
     - field.field.media.image.field_copyright
     - field.field.media.image.field_description
@@ -12,35 +13,40 @@ dependencies:
   module:
     - geolocation
     - image
+    - layout_builder
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
 _core:
   default_config_hash: 73xaTNkI5J6sfFcBmNYeuk070X3mQS_iwwWaPYyfG2M
-id: media.image.default
+id: media.image.medium
 targetEntityType: media
 bundle: image
-mode: default
+mode: medium
 content:
   field_coordinates:
     type: geolocation_latlng
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    weight: 3
     region: content
   field_copyright:
     type: string
-    label: above
+    label: hidden
     settings:
       link_to_entity: false
       link_rel: canonical
     third_party_settings: {  }
-    weight: 4
+    weight: 2
     region: content
   field_description:
     type: basic_string
-    label: above
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 3
+    weight: 1
     region: content
   field_media_image:
     type: image
@@ -51,7 +57,7 @@ content:
       image_loading:
         attribute: lazy
     third_party_settings: {  }
-    weight: 1
+    weight: 0
     region: content
 hidden:
   created: true
