@@ -9,7 +9,7 @@ _core:
 id: gentil_claro_primary_admin_actions
 theme: gentil_claro
 region: header_top
-weight: -5
+weight: -7
 provider: null
 plugin: local_actions_block
 settings:
