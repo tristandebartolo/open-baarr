@@ -351,6 +351,28 @@ html.oc-map-noscroll {
 }
 
 /* --------------------------------------------------------------------------
+   Listing /trajets (vue trajets) : grille responsive mobile-first.
+   -------------------------------------------------------------------------- */
+
+.view-trajets .view-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .view-trajets .view-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .view-trajets .view-content {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------------------
    Carte de listing (/trajets, view mode card).
    -------------------------------------------------------------------------- */
 
