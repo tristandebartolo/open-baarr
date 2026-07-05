@@ -48,6 +48,7 @@ function opencar_display_preprocess_page(array &$variables): void {
     '#name' => 'trajets',
     '#display_id' => 'embed_front',
   ];
+  $variables['front_road'] = $builder->roadTrips();
   $variables['front_stats'] = $builder->statTiles();
   $variables['front_articles'] = $builder->recentArticles();
 

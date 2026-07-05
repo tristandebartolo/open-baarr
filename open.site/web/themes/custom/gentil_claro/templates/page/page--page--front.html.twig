@@ -39,6 +39,42 @@
 			</div>
 		</section>
 
+		{# La route : timeline horizontale des derniers trajets. #}
+		{% if front_road %}
+			<section class="oc-front-section oc-road-section">
+				<div class="uk-container">
+					<header class="oc-front-section__header">
+						<h2 class="oc-front-section__title">{{ 'La route'|t }}</h2>
+						<a class="oc-front-section__more" href="/trajets">{{ 'Tous les trajets'|t }} <span uk-icon="icon: arrow-right; ratio: 0.8" aria-hidden="true"></span></a>
+					</header>
+				</div>
+				<div class="oc-road" role="region" aria-label="{{ 'Derniers trajets sur la route'|t }}" tabindex="0">
+					<ul class="oc-road__track" uk-scrollspy="target: > li; cls: uk-animation-slide-bottom-small; delay: 120">
+						{% for stop in front_road %}
+							<li class="oc-road__stop oc-road__stop--{{ loop.index is odd ? 'up' : 'down' }}" style="--oc-activity: {{ stop.activity.color }}">
+								<a class="oc-road__card" href="{{ stop.url }}">
+									{% if stop.date %}
+										<span class="oc-road__date">{{ stop.date }}</span>
+									{% endif %}
+									<span class="oc-road__title">{{ stop.title }}</span>
+									<span class="oc-road__stats">
+										{% if stop.distance %}
+											<span><span uk-icon="icon: move; ratio: 0.6" aria-hidden="true"></span> {{ stop.distance }}</span>
+										{% endif %}
+										{% if stop.duration %}
+											<span><span uk-icon="icon: clock; ratio: 0.6" aria-hidden="true"></span> {{ stop.duration }}</span>
+										{% endif %}
+									</span>
+									<span class="oc-road__activity">{{ stop.activity.label }}</span>
+								</a>
+								<span class="oc-road__dot" aria-hidden="true"></span>
+							</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</section>
+		{% endif %}
+
 		{# Derniers trajets. #}
 		<section class="oc-front-section oc-front-trips">
 			<div class="uk-container">
@@ -71,7 +107,7 @@
 			<section class="oc-front-section oc-front-baselines">
 				<div class="uk-container">
 					<header class="oc-front-section__header">
-						<h2 class="oc-front-section__title">{{ 'Baselines'|t }}</h2>
+						<h2 class="oc-front-section__title">{{ 'Notes'|t }}</h2>
 					</header>
 					<ul class="oc-baselines">
 						{% for baseline in front_baselines %}

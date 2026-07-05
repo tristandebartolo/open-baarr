@@ -104,6 +104,53 @@ final class FrontPageBuilder {
   }
 
   /**
+   * Étapes de la timeline « route » : les derniers trajets publiés.
+   *
+   * @return list<array{url: string, title: string, date: string|null, activity: array{type: string|null, label: string, color: string}, distance: string|null, duration: string|null}>
+   *   Du plus récent au plus ancien, vide si aucun trajet publié.
+   */
+  public function roadTrips(int $limit = 10): array {
+    $storage = $this->entityTypeManager->getStorage('node');
+    $nids = $storage->getQuery()
+      ->accessCheck(TRUE)
+      ->condition('type', 'trajet')
+      ->condition('status', 1)
+      ->sort('field_started_at', 'DESC')
+      ->range(0, $limit)
+      ->execute();
+
+    $stops = [];
+    foreach ($storage->loadMultiple($nids) as $trajet) {
+      if (!$trajet instanceof NodeInterface) {
+        continue;
+      }
+      $activityType = $trajet->hasField('field_activity_type') && !$trajet->get('field_activity_type')->isEmpty()
+        ? (string) $trajet->get('field_activity_type')->value
+        : NULL;
+      $distance = $trajet->hasField('field_distance') && !$trajet->get('field_distance')->isEmpty()
+        ? $this->statsPresenter->formatDistance((float) $trajet->get('field_distance')->value)
+        : NULL;
+      $duration = $trajet->hasField('field_duration') && !$trajet->get('field_duration')->isEmpty()
+        ? $this->statsPresenter->formatDuration((int) $trajet->get('field_duration')->value)
+        : NULL;
+
+      $stops[] = [
+        'url' => $trajet->toUrl()->toString(),
+        'title' => (string) $trajet->label(),
+        'date' => $this->statsPresenter->formatDateTime($trajet, 'field_started_at'),
+        'activity' => [
+          'type' => $activityType,
+          'label' => $this->statsPresenter->activityLabel($activityType),
+          'color' => $this->statsPresenter->activityColor($activityType),
+        ],
+        'distance' => $distance,
+        'duration' => $duration,
+      ];
+    }
+    return $stops;
+  }
+
+  /**
    * Tuiles de chiffres clés publics (format du partial trajet-stat-tile).
    *
    * @return list<array{id: string, label: string, value: string, icon: string, hero: bool}>

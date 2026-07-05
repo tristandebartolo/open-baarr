@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "open.app",
+    "name": "OpenBaarr",
     "slug": "open.app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -52,9 +52,9 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "open.app utilise votre position pour tracer vos trajets sur la carte.",
-          "locationAlwaysAndWhenInUsePermission": "open.app enregistre votre position en arrière-plan pendant un trajet, même écran éteint.",
-          "locationAlwaysPermission": "open.app enregistre votre position en arrière-plan pendant un trajet, même écran éteint.",
+          "locationWhenInUsePermission": "OpenBaarr utilise votre position pour tracer vos trajets sur la carte.",
+          "locationAlwaysAndWhenInUsePermission": "OpenBaarr enregistre votre position en arrière-plan pendant un trajet, même écran éteint.",
+          "locationAlwaysPermission": "OpenBaarr enregistre votre position en arrière-plan pendant un trajet, même écran éteint.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
@@ -64,20 +64,20 @@
       [
         "expo-media-library",
         {
-          "savePhotosPermission": "open.app enregistre dans votre pellicule les photos prises pendant un trajet."
+          "savePhotosPermission": "OpenBaarr enregistre dans votre pellicule les photos prises pendant un trajet."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "open.app accède à vos photos pour les joindre à un trajet.",
-          "cameraPermission": "open.app utilise l’appareil photo pour prendre des photos pendant un trajet."
+          "photosPermission": "OpenBaarr accède à vos photos pour les joindre à un trajet.",
+          "cameraPermission": "OpenBaarr utilise l’appareil photo pour prendre des photos pendant un trajet."
         }
       ],
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "open.app lit votre fréquence cardiaque, vos pas et vos calories pour enrichir vos trajets.",
+          "NSHealthShareUsageDescription": "OpenBaarr lit votre fréquence cardiaque, vos pas et vos calories pour enrichir vos trajets.",
           "NSHealthUpdateUsageDescription": false
         }
       ],

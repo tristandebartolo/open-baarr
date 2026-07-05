@@ -180,6 +180,175 @@ html[data-theme='dark'] {
 }
 
 /* --------------------------------------------------------------------------
+   La route : timeline horizontale des derniers trajets.
+   Bande asphalte + pointillés centraux, jalons colorés par activité,
+   cartes alternées dessus/dessous (dès 640px), scroll horizontal snappé.
+   -------------------------------------------------------------------------- */
+
+.oc-road {
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding: 8px 0 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--oc-border) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--oc-border);
+    border-radius: 3px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--oc-accent);
+    outline-offset: -2px;
+  }
+
+  &__track {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    min-width: max-content;
+    position: relative;
+    margin: 0;
+    padding: 16px 24px;
+    gap: 20px;
+
+    /* La route : asphalte + ligne pointillée centrale. */
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 6px;
+      transform: translateY(-50%);
+      border-radius: 3px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0 14px,
+          var(--oc-bg) 14px 26px
+        ) center / 100% 2px no-repeat,
+        color-mix(in srgb, var(--oc-text) 16%, transparent);
+    }
+  }
+
+  /* Étape : grille symétrique carte / jalon / carte — le jalon (rangée
+     centrale) est toujours exactement sur la ligne, sans transform (les
+     animations uk-scrollspy restent sûres). */
+  &__stop {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: 1fr 16px 1fr;
+    justify-items: center;
+    align-items: center;
+    width: 200px;
+    flex: none;
+    scroll-snap-align: center;
+    margin: 0;
+  }
+
+  /* Jalon : borne colorée posée sur la ligne. */
+  &__dot {
+    grid-row: 2;
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--oc-activity, var(--oc-accent));
+    box-shadow:
+      0 0 0 3px var(--oc-bg),
+      0 0 0 6px color-mix(in srgb, var(--oc-activity, var(--oc-accent)) 25%, transparent);
+  }
+
+  &__card {
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--oc-radius-card);
+    background: var(--oc-surface);
+    border: 1px solid var(--oc-border);
+    text-decoration: none;
+    color: var(--oc-text);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: none;
+      color: var(--oc-text);
+      transform: translateY(-3px);
+      border-color: var(--oc-activity, var(--oc-accent));
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  &__date {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--oc-text-secondary);
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--oc-text-secondary);
+  }
+
+  &__activity {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--oc-activity, var(--oc-accent));
+  }
+
+  /* Carte sous la route pour les étapes paires. */
+  &__stop--down .oc-road__card {
+    grid-row: 3;
+    align-self: start;
+    margin-bottom: 0;
+    margin-top: 14px;
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-road__stop {
+    width: 240px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-road__card {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Mur des baselines (citations, Playfair Display).
    -------------------------------------------------------------------------- */
 

@@ -69,7 +69,7 @@ async function startLocationUpdates(activityType: ActivityType): Promise<void> {
     pausesUpdatesAutomatically: false,
     foregroundService: {
       notificationTitle: 'Trajet en cours',
-      notificationBody: 'open.app enregistre votre position.',
+      notificationBody: 'OpenBaarr enregistre votre position.',
       notificationColor: '#208AEF',
     },
   });
