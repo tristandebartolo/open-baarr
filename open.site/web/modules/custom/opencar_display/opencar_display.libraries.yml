@@ -30,6 +30,15 @@ trajet-icons:
   dependencies:
     - core/drupal
 
+# Consentement RGPD des cartes (intégration douce avec le module cookies).
+map-consent:
+  version: VERSION
+  js:
+    js/map-consent.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+
 # Carte décorative du hero de la page d'accueil (non interactive).
 front-hero:
   version: VERSION
@@ -40,6 +49,7 @@ front-hero:
     - core/once
     - core/drupalSettings
     - opencar_display/leaflet
+    - opencar_display/map-consent
 
 # Carte du tracé (héro + plein écran, préférences en localStorage).
 trajet-map:
@@ -52,6 +62,7 @@ trajet-map:
     - core/drupalSettings
     - opencar_display/leaflet
     - opencar_display/trajet-icons
+    - opencar_display/map-consent
 
 # Graphiques vitesse / altitude / fréquence cardiaque.
 trajet-charts:

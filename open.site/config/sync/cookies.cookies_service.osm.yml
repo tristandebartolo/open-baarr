@@ -1,0 +1,19 @@
+uuid: 5ff70ce6-6496-4603-b25a-36b90561a72f
+langcode: fr
+status: true
+dependencies: {  }
+id: osm
+label: 'Cartes OpenStreetMap'
+group: cartes
+info:
+  value: "<p>Les cartes des trajets utilisent les fonds OpenStreetMap et OpenTopoMap. Aucun cookie n'est déposé, mais votre adresse IP est transmise aux serveurs de tuiles lors du chargement de la carte.</p>"
+  format: basic_html
+consentRequired: true
+purpose: 'Affichage des tracés GPS des trajets sur un fond de carte'
+placeholderMainText: "Cette carte est masquée tant que le service « Cartes OpenStreetMap » n'a pas été accepté."
+placeholderAcceptText: 'Autoriser les cartes'
+processor: 'OpenStreetMap Foundation'
+processorContact: ''
+processorUrl: 'https://www.openstreetmap.org'
+processorPrivacyPolicyUrl: 'https://osmfoundation.org/wiki/Privacy_Policy'
+processorCookiePolicyUrl: ''

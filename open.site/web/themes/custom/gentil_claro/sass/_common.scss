@@ -355,3 +355,11 @@ a:focus {
   padding: 0;
   list-style: none;
 }
+
+.uk-text-lead {
+  color: var(--oc-text-secondary) !important;
+}
+
+.gntl-offcanvas-menu .item-list ul li, .gntl-offcanvas-menu .menu-item {
+  list-style: none;
+}

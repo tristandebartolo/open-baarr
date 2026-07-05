@@ -6,12 +6,13 @@
 
 /* Tokens dark (valeurs de open.app/src/constants/theme.ts). */
 @mixin oc-dark-tokens {
-  --oc-bg: #000000;
+  --oc-bg: #343434;
   --oc-surface: #212225;
   --oc-surface-selected: #2e3135;
   --oc-text: #ffffff;
   --oc-text-secondary: #b0b4ba;
   --oc-border: rgba(176, 180, 186, 0.2);
+  --oc-accent: #ec6a6a;
 }
 
 /* Habillage sombre du chrome du site (nav, fond de page, footer) et de la
@@ -56,7 +57,7 @@
   --oc-text: #000000;
   --oc-text-secondary: #60646c;
   --oc-border: rgba(96, 100, 108, 0.15);
-  --oc-accent: #208aef;
+  --oc-accent: #dd4d4d;
   --oc-danger: #d64545;
   --oc-altitude: #7a5af8;
   --oc-success: #2e8b57;
@@ -64,6 +65,8 @@
   --oc-radius-sheet: 24px;
   /* --oc-activity est posé en inline style par le template (couleur du type). */
 }
+
+
 
 /* Préférence explicite de l'utilisateur (bouton du banner, localStorage). */
 html[data-theme='dark'] {
@@ -147,7 +150,7 @@ html.oc-map-noscroll {
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 1000;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -189,7 +192,6 @@ html.oc-map-noscroll {
 .oc-sheet {
   position: relative;
   z-index: 2;
-  margin-top: -24px;
   padding: 24px 0 48px;
   border-radius: var(--oc-radius-sheet) var(--oc-radius-sheet) 0 0;
   background: var(--oc-bg);

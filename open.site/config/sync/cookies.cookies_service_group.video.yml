@@ -1,0 +1,11 @@
+uuid: df56879f-5bbe-4acd-bbba-8a1c984eba8a
+langcode: fr
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: w1WnCmP2Xfgx24xbx5u9T27XLF_ZFw5R0MlO-eDDPpQ
+id: video
+label: Vidéos
+weight: 40
+title: Vidéo
+details: "Les services de partage de vidéo permettent d'enrichir le site de contenu multimédia et augmentent sa visibilité."

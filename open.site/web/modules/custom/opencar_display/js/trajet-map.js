@@ -174,7 +174,9 @@
         var settings = (drupalSettings.opencarDisplay || {}).maps || {};
         var config = settings[element.getAttribute('data-opencar-map')];
         if (config && window.L) {
-          initMap(element, config);
+          Drupal.opencarMapConsent(element, function () {
+            initMap(element, config);
+          });
         }
       });
     }

@@ -4,7 +4,6 @@ global-styling:
     base:
       css/gentil-claro.css: {}
   js:
-    js/cookies_media.js: {}
     js/gentil-claro.js: {}
     js/theme-toggle.js: {}
     js/gntl-offcanvas.js: {}

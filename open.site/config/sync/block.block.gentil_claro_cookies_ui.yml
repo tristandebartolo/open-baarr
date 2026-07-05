@@ -1,0 +1,20 @@
+uuid: d9644f4f-a8b9-4a7e-9d15-d3f468bd4379
+langcode: fr
+status: true
+dependencies:
+  module:
+    - cookies
+  theme:
+    - gentil_claro
+id: gentil_claro_cookies_ui
+theme: gentil_claro
+region: footer
+weight: 99
+provider: null
+plugin: cookies_ui_block
+settings:
+  id: cookies_ui_block
+  label: 'Cookies UI'
+  label_display: '0'
+  provider: cookies
+visibility: {  }

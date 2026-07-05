@@ -35,6 +35,9 @@ function opencar_display_preprocess_page(array &$variables): void {
   if ($hero !== NULL) {
     $variables['#attached']['library'][] = 'opencar_display/front-hero';
     $variables['#attached']['drupalSettings']['opencarDisplay']['frontHero'] = $hero['settings'];
+    if (\Drupal::moduleHandler()->moduleExists('cookies')) {
+      $variables['#attached']['library'][] = 'cookies/cookies.lib';
+    }
   }
 
   $variables['front_trips'] = [
@@ -123,6 +126,11 @@ function opencar_display_preprocess_node(array &$variables): void {
   $variables['trajet_map'] = $mapData !== NULL ? ['id' => $mapId] : NULL;
   if ($mapData !== NULL) {
     $variables['#attached']['library'][] = 'opencar_display/trajet-map';
+    // Overlay « contenu bloqué » du module cookies (si installé) : fournit
+    // jQuery.fn.cookiesOverlay utilisé par map-consent.js.
+    if (\Drupal::moduleHandler()->moduleExists('cookies')) {
+      $variables['#attached']['library'][] = 'cookies/cookies.lib';
+    }
     $variables['#attached']['drupalSettings']['opencarDisplay']['maps'][$mapId] = [
       'geojson' => $mapData['geojson'],
       'color' => $statsPresenter->activityColor($activityType),

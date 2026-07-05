@@ -37,6 +37,7 @@ db
 /web/libraries/*
 !/web/libraries/leaflet/
 !/web/libraries/chartjs/
+!/web/libraries/cookiesjsr/
 console/
 
 # Ignore sensitive information

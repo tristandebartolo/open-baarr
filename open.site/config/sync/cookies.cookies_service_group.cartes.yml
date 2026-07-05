@@ -1,0 +1,9 @@
+uuid: c3f0031f-574b-452b-a028-d5bbd32abef7
+langcode: fr
+status: true
+dependencies: {  }
+id: cartes
+label: Cartes
+weight: 30
+title: Cartes
+details: 'Les fonds de carte (OpenStreetMap, OpenTopoMap) affichant les tracés des trajets sont chargés depuis des serveurs tiers : votre adresse IP leur est transmise lors du chargement des tuiles.'

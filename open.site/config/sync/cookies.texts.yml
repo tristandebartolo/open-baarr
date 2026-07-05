@@ -1,0 +1,31 @@
+langcode: fr
+bannerText: "Ce site utilise des services tiers qui peuvent déposer des cookies ou transférer des données : cartes OpenStreetMap (tracés des trajets) et vidéos (YouTube, Vimeo). En choisissant « Tout accepter », vous consentez à l'ensemble de ces services. Vous pouvez accepter ou refuser chaque service individuellement et revenir sur votre choix à tout moment via « Réglages des cookies »."
+privacyPolicy: 'Politique de confidentialité'
+privacyUri: ''
+imprint: 'Mentions légales'
+imprintUri: ''
+cookieDocs: 'Documentation des cookies'
+cookieDocsUri: /cookies/documentation
+officialWebsite: 'Site officiel'
+denyAll: 'Tout refuser'
+alwaysActive: 'Toujours actif'
+settings: 'Réglages des cookies'
+acceptAll: 'Tout accepter'
+requiredCookies: 'Cookies requis'
+cookieSettings: 'Réglages des cookies'
+close: Fermer
+readMore: 'En savoir plus'
+allowed: Autorisé
+denied: Refusé
+settingsAllServices: 'Réglages pour tous les services'
+saveSettings: Enregistrer
+default_langcode: fr
+disclaimerText: 'Les informations sur les cookies peuvent évoluer chez les fournisseurs de services. Nous mettons cette documentation à jour régulièrement.'
+disclaimerTextPosition: above
+processorDetailsLabel: 'Coordonnées du prestataire'
+processorLabel: Société
+processorWebsiteUrlLabel: 'Site de la société'
+processorPrivacyPolicyUrlLabel: 'Politique de confidentialité de la société'
+processorCookiePolicyUrlLabel: 'Politique cookies de la société'
+processorContactLabel: 'Contact protection des données'
+placeholderAcceptAllText: 'Accepter tous les cookies'

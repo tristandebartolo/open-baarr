@@ -1,77 +1,95 @@
+/* ==========================================================================
+   Consentement cookies (module cookies / cookiesjsr).
+   Bannière, dialogue de réglages et overlays de contenu bloqué, alignés sur
+   les tokens --oc-* (dark/light automatique, voir _trajet.scss).
+   ========================================================================== */
 
+/* Bannière basse. */
 .cookiesjsr-banner {
+  background: var(--oc-surface) !important;
+  color: var(--oc-text) !important;
+  font-size: 0.9rem;
+  border-top: 1px solid var(--oc-border) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+
   &.active {
     width: 100% !important;
     margin: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
-    border-top: 10px solid #8e8e8ea1 !important;
+
     .cookiesjsr-banner--action {
       display: flex;
       flex-direction: column;
+      gap: 6px;
     }
-    /* Mobile */
-    @media (max-width: 960px) {
-      margin: 0 !important;
-      width: 100% !important;
-      bottom: 0 !important;
-    }
+  }
+
+  .cookiesjsr-banner--text {
+    color: var(--oc-text);
+  }
+
+  .cookiesjsr-links a {
+    color: var(--oc-accent);
   }
 }
 
-.cookiesjsr-service-group.active .cookiesjsr-service-group--content,
-.cookiesjsr-btn.cookiesjsr-settings,
-.cookiesjsr-banner {
-  background-color: #ffffff !important;
-  color: black;
-  font-size: .9rem;
+/* Dialogue de réglages. */
+.cookiesjsr-layer {
+  background: var(--oc-bg) !important;
+  color: var(--oc-text) !important;
+  border-radius: var(--oc-radius-card);
+
+  .cookiesjsr-layer--title,
+  .cookiesjsr-layer--label-all {
+    color: var(--oc-text);
+  }
 }
 
+.cookiesjsr-service-group.active .cookiesjsr-service-group--content {
+  background: var(--oc-bg) !important;
+  color: var(--oc-text) !important;
+  font-size: 0.9rem;
+}
+
+.cookiesjsr-service-groups .cookiesjsr-service-group {
+  > button {
+    color: var(--oc-text) !important;
+    background: var(--oc-surface) !important;
+  }
+
+  .cookiesjsr-links a {
+    color: var(--oc-accent) !important;
+  }
+
+  &.active > button {
+    color: var(--oc-text) !important;
+    background: var(--oc-surface-selected) !important;
+  }
+}
+
+/* Boutons. */
 .cookiesjsr-btn {
-  background-color: #ffffff !important;
-  border: 2px solid #000000 !important;
-  margin: 6px 0px 0px 0px;
+  background: var(--oc-surface) !important;
+  border: 1px solid var(--oc-border) !important;
+  color: var(--oc-text) !important;
+  border-radius: var(--oc-radius-card) !important;
+  margin: 6px 0 0;
   white-space: nowrap;
   width: 100%;
-}
+  cursor: pointer;
 
-.cookiesjsr-switch {
-  background-color: #a80000;
-}
-.cookiesjsr-btn.invert,
-.cookiesjsr-btn.important {
-  background-color: #fff !important;
-  border-color: #040404 !important;
-  color: #000000 !important;
-}
-
-
-.cookiesjsr-service-groups {
-  .cookiesjsr-service-group {
-    > button {
-      color: #494949 !important;
-    }
-    .cookiesjsr-links {
-      a {
-        color: #000000 !important;
-      }
-    }
-    &.active {
-      > button {
-        color: #494949 !important;
-        background-color: #e5e5e5 !important;
-      }
-    }
+  &.invert,
+  &.important {
+    background: var(--oc-accent) !important;
+    border-color: var(--oc-accent) !important;
+    color: #ffffff !important;
   }
 }
 
-
-.cookiesjsr-layer--wrapper {
-
-}
-
+/* Voile derrière le dialogue. */
 .cookiesjsr-layer--overlay {
-  background: rgba(0, 0, 0, 0.534);
+  background: rgba(0, 0, 0, 0.55);
   height: 100vh;
   left: 0;
   position: fixed;
@@ -80,13 +98,132 @@
   z-index: 314159;
 }
 
+/* Overlay « contenu bloqué » (cartes Leaflet, vidéos oEmbed).
+   Généré par cookiesOverlay() du module (cookies.lib.js). */
+.cookies-fallback--wrap {
+  position: relative;
+  min-height: 220px;
+  height: 100%;
+}
 
-.cookiesjsr--app:has(.cookiesjsr-banner.active) {
-  background: rgba(0, 0, 0, 0.534);
-  height: 100vh;
-  left: 0;
-  position: fixed;
+.cookies-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: var(--oc-surface);
+  color: var(--oc-text);
+  border-radius: var(--oc-radius-card);
+
+  .cookies-fallback--text {
+    max-width: 36em;
+    color: var(--oc-text-secondary);
+  }
+
+  .cookies-fallback--btn {
+    padding: 12px 20px;
+    border: 0;
+    border-radius: var(--oc-radius-card);
+    background: var(--oc-accent);
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .cookies-fallback--link {
+    font-size: 0.85rem;
+    color: var(--oc-accent);
+  }
+}
+
+/* Dans la carte héro d'un trajet et le hero d'accueil, l'overlay occupe le
+   conteneur bord à bord (pas de radius). */
+.oc-hero-map .cookies-fallback,
+.oc-front-hero .cookies-fallback {
+  border-radius: 0;
+}
+
+
+.cookies-fallback--wrap.disabled{
+  z-index: 11;
+}
+
+.brr-frontpage .oc-front-hero .cookies-fallback--wrap.disabled{
+  position: absolute;
+  width: 100%;
+  z-index: 3;
   top: 0;
-  width: 100vw;
-  z-index: 314159;
+  right: 0;
+  left: 0;
+  z-index: 3;
+}
+
+
+
+
+.cookies-fallback--text {
+  color: inherit;
+  font-size: .9rem;
+}
+.cookies-fallback--btn {
+  margin: 0;
+}
+
+.brr-frontpage .oc-front-hero .cookies-fallback--text {
+  color: inherit;
+  font-size: .7rem;
+}
+
+.brr-frontpage .oc-front-hero .cookies-fallback {
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 40px;
+  text-align: left;
+  border: 0px solid;
+  border-bottom: 3px solid;
+}
+
+.brr-frontpage .oc-front-hero .cookies-fallback--btn {
+  color: #fff;
+  text-transform: uppercase;
+  padding: 0 2em;
+  margin: 1rem 0;
+  font-size: .8rem;
+  min-height: 3em;
+}
+
+
+.cookiesjsr-layer--header {
+  background: var(--oc-bg,#fff);
+  border-bottom: 1px solid #e4e5e6;
+  border-bottom: 1px solid var(--layer-border-color,#e4e5e6);
+}
+
+.cookiesjsr-layer--body {
+  background: var(--oc-surface-selected,#fff);
+}
+.cookiesjsr-layer--footer {
+  background: var(--oc-surface,#fff);
+}
+
+.cookiesjsr-service-group.active {
+  border-bottom: 5px solid var(--oc-accent,#208aef);
+}
+
+.cookiesjsr-layer--actions {
+  gap: 15px;
+}
+
+.cookiesjsr-service--always-on span {
+  background-color: var(--oc-surface-selected,#fff);
 }

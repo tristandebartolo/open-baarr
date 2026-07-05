@@ -1,0 +1,11 @@
+uuid: 31728016-675b-4080-b1cc-b1760c666017
+langcode: fr
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: w9uS0Ktbh58ffWxW1ue_MKgB_he6iZPMx2Pc6tN4K4o
+id: social
+label: 'Social Plugins'
+weight: 20
+title: 'Social Plugins'
+details: 'Social media widgets provide additional content originally published on third party platforms.'
