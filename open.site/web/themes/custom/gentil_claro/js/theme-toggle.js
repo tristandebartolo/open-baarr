@@ -41,17 +41,21 @@
     button.setAttribute('aria-pressed', dark ? 'true' : 'false');
   }
 
+  function updateAllLabels() {
+    document.querySelectorAll('[data-oc-theme-toggle]').forEach(updateLabel);
+  }
+
+  // Plusieurs boutons coexistent (navbar + offcanvas) : on synchronise
+  // l'état de tous à chaque bascule ou changement système.
+  window.addEventListener('oc-theme-change', updateAllLabels);
+  darkScheme.addEventListener('change', updateAllLabels);
+
   Drupal.behaviors.gentilThemeToggle = {
     attach: function (context) {
       once('gentil-theme-toggle', '[data-oc-theme-toggle]', context).forEach(function (button) {
         updateLabel(button);
         button.addEventListener('click', function () {
           applyTheme(effectiveTheme() === 'dark' ? 'light' : 'dark');
-          updateLabel(button);
-        });
-        // Si aucune préférence explicite, suivre les changements du système.
-        darkScheme.addEventListener('change', function () {
-          updateLabel(button);
         });
       });
     }

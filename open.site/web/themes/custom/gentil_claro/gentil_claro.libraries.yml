@@ -7,6 +7,7 @@ global-styling:
     js/cookies_media.js: {}
     js/gentil-claro.js: {}
     js/theme-toggle.js: {}
+    js/gntl-offcanvas.js: {}
   dependencies:
     - core/drupal
     - core/drupal.ajax

@@ -1,0 +1,218 @@
+/* ==========================================================================
+   Page d'accueil premium + bannière du listing /trajets.
+   Mobile-first, dark/light via tokens --oc-* (voir _trajet.scss).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Hero : carte du dernier trajet en fond, contenu par-dessus.
+   -------------------------------------------------------------------------- */
+
+.oc-front-hero {
+  position: relative;
+  min-height: clamp(420px, 70vh, 640px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: var(--oc-surface);
+
+  &__map {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      background: var(--oc-surface);
+    }
+
+    .leaflet-tile {
+      filter: grayscale(0.25) brightness(0.85);
+    }
+  }
+
+  &__veil {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--oc-bg) 20%, transparent) 0%,
+      color-mix(in srgb, var(--oc-bg) 55%, transparent) 55%,
+      var(--oc-bg) 100%
+    );
+    pointer-events: none;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    padding-top: 96px;
+    padding-bottom: 48px;
+  }
+
+  &__title {
+    margin: 0 0 8px;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    line-height: 1.1;
+    color: var(--oc-text);
+  }
+
+  &__baseline {
+    margin: 0 0 24px;
+    max-width: 34em;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--oc-text-secondary);
+  }
+}
+
+/* Assombrissement renforcé des tuiles en dark (double pattern data-theme /
+   prefers-color-scheme, cohérent avec _trajet.scss). */
+@mixin oc-front-hero-dark {
+  .oc-front-hero__map .leaflet-tile {
+    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.55);
+  }
+}
+
+html[data-theme='dark'] {
+  @include oc-front-hero-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) {
+    @include oc-front-hero-dark;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Boutons.
+   -------------------------------------------------------------------------- */
+
+.oc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border: 0;
+  border-radius: var(--oc-radius-card);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &--primary {
+    background: var(--oc-accent);
+    color: #ffffff;
+
+    &:hover,
+    &:focus-visible {
+      color: #ffffff;
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--oc-accent) 35%, transparent);
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Sections de l'accueil.
+   -------------------------------------------------------------------------- */
+
+.oc-front-section {
+  padding: 40px 0;
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    color: var(--oc-text);
+  }
+
+  &__more {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--oc-accent);
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-front-section {
+    padding: 56px 0;
+  }
+}
+
+/* Grilles trips / articles : même rythme que .view-trajets .view-content. */
+.oc-front-trips .view-content,
+.oc-front-articles__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .oc-front-trips .view-content,
+  .oc-front-articles__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-front-trips .view-content,
+  .oc-front-articles__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.oc-front-stats__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Bannière du listing /trajets.
+   -------------------------------------------------------------------------- */
+
+.oc-listing-hero {
+  background:
+    radial-gradient(120% 140% at 85% 0%, color-mix(in srgb, var(--oc-accent) 12%, transparent) 0%, transparent 55%),
+    var(--oc-surface);
+  border-bottom: 1px solid var(--oc-border);
+  padding: clamp(32px, 7vw, 72px) 0;
+  margin-bottom: 32px;
+
+  &__kicker {
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--oc-accent);
+  }
+
+  &__title {
+    margin: 0 0 10px;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    color: var(--oc-text);
+  }
+
+  &__desc {
+    max-width: 40em;
+    color: var(--oc-text-secondary);
+
+    p {
+      margin: 0;
+    }
+  }
+}

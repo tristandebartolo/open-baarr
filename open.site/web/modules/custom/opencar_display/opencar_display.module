@@ -10,6 +10,56 @@ declare(strict_types=1);
 use Drupal\node\NodeInterface;
 
 /**
+ * Implements hook_preprocess_page().
+ *
+ * Prépare les sections dynamiques de la page d'accueil : hero carte du
+ * dernier trajet publié, derniers trajets (display embed de la vue trajets),
+ * chiffres clés publics et articles récents.
+ */
+function opencar_display_preprocess_page(array &$variables): void {
+  if (!\Drupal::service('path.matcher')->isFrontPage()) {
+    return;
+  }
+
+  /** @var \Drupal\opencar_display\Service\FrontPageBuilder $builder */
+  $builder = \Drupal::service('opencar_display.front_page_builder');
+  $site = \Drupal::config('system.site');
+
+  $hero = $builder->hero();
+  $variables['front_hero'] = [
+    'has_map' => $hero !== NULL,
+    'title' => $site->get('name'),
+    'baseline' => $site->get('slogan') ?: t('Suivi de trajets GPS — carte, statistiques et photos.'),
+    'cta_url' => '/trajets',
+  ];
+  if ($hero !== NULL) {
+    $variables['#attached']['library'][] = 'opencar_display/front-hero';
+    $variables['#attached']['drupalSettings']['opencarDisplay']['frontHero'] = $hero['settings'];
+  }
+
+  $variables['front_trips'] = [
+    '#type' => 'view',
+    '#name' => 'trajets',
+    '#display_id' => 'embed_front',
+  ];
+  $variables['front_stats'] = $builder->statTiles();
+  $variables['front_articles'] = $builder->recentArticles();
+
+  // Render array imprimé par le template : fait buller les cache tags des
+  // variables Twig pures (hero, tuiles de stats) et du nom/slogan du site.
+  $tags = ['node_list:trajet', 'node_list:article', 'config:system.site'];
+  if ($hero !== NULL) {
+    $tags[] = 'node:' . $hero['nid'];
+  }
+  $variables['front_cacheability'] = [
+    '#cache' => [
+      'tags' => $tags,
+      'contexts' => ['user.node_grants:view'],
+    ],
+  ];
+}
+
+/**
  * Implements hook_preprocess_node().
  *
  * Prépare les variables du template node--trajet--full : tuiles de stats,

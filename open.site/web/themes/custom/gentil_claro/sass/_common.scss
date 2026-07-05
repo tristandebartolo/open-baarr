@@ -10,7 +10,7 @@
 
 body {
   font-size: 1.2em !important;
-  color: #000000 !important;
+  color: var(--oc-text);
 }
 
 h1,
@@ -21,7 +21,7 @@ h5,
 h6 {
   overflow-wrap: break-word;
   font-family: "Numans", sans-serif !important;
-  color: #000000;
+  color: var(--oc-text);
   a {
     overflow-wrap: break-word;
   }
@@ -35,7 +35,7 @@ h2 {
 }
 
 a {
-  color: #000000;
+  color: var(--oc-text-secondary);
 }
 
 div#drupal-off-canvas-wrapper {
@@ -202,7 +202,7 @@ h5,
 h6 {
   overflow-wrap: break-word;
   font-family: arial !important;
-  color: #000002 !important;
+  color: var(--oc-text);
   text-transform: uppercase !important;
   font-weight: 900 !important;
   font-style: oblique !important;

@@ -30,6 +30,17 @@ trajet-icons:
   dependencies:
     - core/drupal
 
+# Carte décorative du hero de la page d'accueil (non interactive).
+front-hero:
+  version: VERSION
+  js:
+    js/front-hero-map.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings
+    - opencar_display/leaflet
+
 # Carte du tracé (héro + plein écran, préférences en localStorage).
 trajet-map:
   version: VERSION

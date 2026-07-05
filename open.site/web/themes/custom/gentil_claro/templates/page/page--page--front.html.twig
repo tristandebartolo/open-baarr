@@ -1,16 +1,84 @@
+{#
+/**
+ * @file
+ * Page d'accueil premium.
+ *
+ * Sections dynamiques injectées par opencar_display_preprocess_page() :
+ * - front_hero : { has_map, title, baseline, cta_url }
+ * - front_trips : vue trajets, display embed_front (3 cartes)
+ * - front_stats : tuiles de chiffres clés publics (partial trajet-stat-tile)
+ * - front_articles : derniers articles en view mode card
+ * - front_cacheability : render array portant les cache tags des sections
+ *
+ * Le contenu éditorial du node d'accueil (page.content) n'est volontairement
+ * pas rendu : l'accueil est entièrement composé de sections dynamiques.
+ */
+#}
 {# Menu #}
 {% include directory ~ '/templates/partials/gntl-menu.html.twig' %}
 <div class="gntl-main">
 	<main id="contenu-principal">
-		<div
-			class="gntl-main-page uk-section uk-padding-remove-vertical">
-			{# Msg #}
-			{% if page.msg %}
-				{{ page.msg }}
+		{{ front_cacheability }}
+		{% if page.msg %}
+			<div class="uk-container">{{ page.msg }}</div>
+		{% endif %}
+
+		{# Hero : carte du dernier trajet publié en fond, contenu par-dessus. #}
+		<section class="oc-front-hero">
+			{% if front_hero.has_map %}
+				<div class="oc-front-hero__map" data-opencar-front-hero aria-hidden="true"></div>
 			{% endif %}
-			{# Content #}
-			{{ page.content }}
-		</div>
+			<div class="oc-front-hero__veil" aria-hidden="true"></div>
+			<div class="oc-front-hero__content uk-container">
+				<h1 class="oc-front-hero__title">{{ front_hero.title }}</h1>
+				<p class="oc-front-hero__baseline">{{ front_hero.baseline }}</p>
+				<a class="oc-btn oc-btn--primary" href="{{ front_hero.cta_url }}">
+					{{ 'Voir les trajets'|t }}
+					<span uk-icon="icon: arrow-right" aria-hidden="true"></span>
+				</a>
+			</div>
+		</section>
+
+		{# Derniers trajets. #}
+		<section class="oc-front-section oc-front-trips">
+			<div class="uk-container">
+				<header class="oc-front-section__header">
+					<h2 class="oc-front-section__title">{{ 'Derniers trajets'|t }}</h2>
+					<a class="oc-front-section__more" href="/trajets">{{ 'Tous les trajets'|t }} <span uk-icon="icon: arrow-right; ratio: 0.8" aria-hidden="true"></span></a>
+				</header>
+				{{ front_trips }}
+			</div>
+		</section>
+
+		{# Chiffres clés publics. #}
+		{% if front_stats %}
+			<section class="oc-front-section oc-front-stats">
+				<div class="uk-container">
+					<header class="oc-front-section__header">
+						<h2 class="oc-front-section__title">{{ 'Chiffres clés'|t }}</h2>
+					</header>
+					<div class="oc-front-stats__grid">
+						{% for tile in front_stats %}
+							{% include '@gentil_claro/partials/trajet-stat-tile.html.twig' with { tile: tile } only %}
+						{% endfor %}
+					</div>
+				</div>
+			</section>
+		{% endif %}
+
+		{# Articles récents. #}
+		{% if front_articles %}
+			<section class="oc-front-section oc-front-articles">
+				<div class="uk-container">
+					<header class="oc-front-section__header">
+						<h2 class="oc-front-section__title">{{ 'Articles récents'|t }}</h2>
+					</header>
+					<div class="oc-front-articles__grid">
+						{{ front_articles }}
+					</div>
+				</div>
+			</section>
+		{% endif %}
 	</main>
 	{# Footer #}
 	{% include directory ~ '/templates/partials/gntl-footer.html.twig' %}
