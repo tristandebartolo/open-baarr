@@ -54,6 +54,7 @@ module:
   node: 0
   opencar_api: 0
   opencar_core: 0
+  opencar_display: 0
   options: 0
   page_cache: 0
   path: 0
