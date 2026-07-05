@@ -1,0 +1,26 @@
+uuid: e3925ec8-d7d0-44f3-af32-eb88ae694df1
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_body
+    - filter.format.full_html
+    - node.type.baseline
+  module:
+    - text
+id: node.baseline.field_body
+field_name: field_body
+entity_type: node
+bundle: baseline
+label: body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: false
+  required_summary: false
+  allowed_formats:
+    - full_html
+field_type: text_with_summary

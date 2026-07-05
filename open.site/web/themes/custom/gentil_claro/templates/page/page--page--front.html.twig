@@ -66,6 +66,25 @@
 			</section>
 		{% endif %}
 
+		{# Mur des baselines précédentes (la plus récente est dans le hero). #}
+		{% if front_baselines %}
+			<section class="oc-front-section oc-front-baselines">
+				<div class="uk-container">
+					<header class="oc-front-section__header">
+						<h2 class="oc-front-section__title">{{ 'Baselines'|t }}</h2>
+					</header>
+					<ul class="oc-baselines">
+						{% for baseline in front_baselines %}
+							<li class="oc-baselines__item">
+								<span class="oc-baselines__mark" aria-hidden="true">“</span>
+								<span class="oc-baselines__text">{{ baseline }}</span>
+							</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</section>
+		{% endif %}
+
 		{# Articles récents. #}
 		{% if front_articles %}
 			<section class="oc-front-section oc-front-articles">

@@ -66,6 +66,44 @@ final class FrontPageBuilder {
   }
 
   /**
+   * Baseline du hero : titre du dernier node « baseline » publié.
+   *
+   * @return string|null
+   *   Le titre, ou NULL si aucun node baseline publié (repli sur le slogan
+   *   du site côté preprocess).
+   */
+  public function baseline(): ?string {
+    $baselines = $this->baselines(1);
+    return $baselines[0] ?? NULL;
+  }
+
+  /**
+   * Titres des derniers nodes « baseline » publiés, du plus récent au plus
+   * ancien.
+   *
+   * @return list<string>
+   *   Les titres, vide si aucun node publié.
+   */
+  public function baselines(int $limit = 10): array {
+    $storage = $this->entityTypeManager->getStorage('node');
+    $nids = $storage->getQuery()
+      ->accessCheck(TRUE)
+      ->condition('type', 'baseline')
+      ->condition('status', 1)
+      ->sort('created', 'DESC')
+      ->range(0, $limit)
+      ->execute();
+
+    $titles = [];
+    foreach ($storage->loadMultiple($nids) as $node) {
+      if ($node instanceof NodeInterface) {
+        $titles[] = (string) $node->label();
+      }
+    }
+    return $titles;
+  }
+
+  /**
    * Tuiles de chiffres clés publics (format du partial trajet-stat-tile).
    *
    * @return list<array{id: string, label: string, value: string, icon: string, hero: bool}>

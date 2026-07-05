@@ -1,0 +1,21 @@
+uuid: 8c1f9b76-935a-42c5-b797-fb842e5419d1
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_coordinates
+    - node.type.baseline
+  module:
+    - geolocation
+id: node.baseline.field_coordinates
+field_name: field_coordinates
+entity_type: node
+bundle: baseline
+label: Coordinates
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: geolocation

@@ -4,7 +4,7 @@ langcode: fr
 uuid: ac74ee75-766c-4438-9b25-dd403a7f2cfb
 name: 'Open Baarr'
 mail: contact@baarr.fr
-slogan: ''
+slogan: "La France n'est pas un hôtel, mais ma voiture oui."
 page:
   403: /node/3
   404: /node/4

@@ -1,0 +1,34 @@
+uuid: d462c4dd-8bc3-4054-8056-ea453fbfacb3
+langcode: fr
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.list
+    - field.field.node.baseline.field_body
+    - field.field.node.baseline.field_coordinates
+    - field.field.node.baseline.field_thematiques
+    - node.type.baseline
+  module:
+    - user
+id: node.baseline.list
+targetEntityType: node
+bundle: baseline
+mode: list
+content:
+  field_thematiques:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  field_body: true
+  field_coordinates: true
+  langcode: true

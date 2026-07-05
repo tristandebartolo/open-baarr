@@ -26,12 +26,15 @@ function opencar_display_preprocess_page(array &$variables): void {
   $site = \Drupal::config('system.site');
 
   $hero = $builder->hero();
+  // La plus récente alimente le hero, les 10 suivantes le mur de baselines.
+  $baselines = $builder->baselines(11);
   $variables['front_hero'] = [
     'has_map' => $hero !== NULL,
     'title' => $site->get('name'),
-    'baseline' => $site->get('slogan') ?: t('Suivi de trajets GPS — carte, statistiques et photos.'),
+    'baseline' => $baselines[0] ?? ($site->get('slogan') ?: ''),
     'cta_url' => '/trajets',
   ];
+  $variables['front_baselines'] = array_slice($baselines, 1, 10);
   if ($hero !== NULL) {
     $variables['#attached']['library'][] = 'opencar_display/front-hero';
     $variables['#attached']['drupalSettings']['opencarDisplay']['frontHero'] = $hero['settings'];
@@ -50,7 +53,7 @@ function opencar_display_preprocess_page(array &$variables): void {
 
   // Render array imprimé par le template : fait buller les cache tags des
   // variables Twig pures (hero, tuiles de stats) et du nom/slogan du site.
-  $tags = ['node_list:trajet', 'node_list:article', 'config:system.site'];
+  $tags = ['node_list:trajet', 'node_list:article', 'node_list:baseline', 'config:system.site'];
   if ($hero !== NULL) {
     $tags[] = 'node:' . $hero['nid'];
   }

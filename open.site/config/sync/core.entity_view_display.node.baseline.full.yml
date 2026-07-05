@@ -1,0 +1,48 @@
+uuid: 1053e33a-0706-48a8-a6d0-bbdbb29e515e
+langcode: fr
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.full
+    - field.field.node.baseline.field_body
+    - field.field.node.baseline.field_coordinates
+    - field.field.node.baseline.field_thematiques
+    - node.type.baseline
+  module:
+    - geolocation
+    - text
+    - user
+id: node.baseline.full
+targetEntityType: node
+bundle: baseline
+mode: full
+content:
+  field_body:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_coordinates:
+    type: geolocation_latlng
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_thematiques:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  langcode: true

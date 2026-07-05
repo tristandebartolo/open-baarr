@@ -180,6 +180,90 @@ html[data-theme='dark'] {
 }
 
 /* --------------------------------------------------------------------------
+   Mur des baselines (citations, Playfair Display).
+   -------------------------------------------------------------------------- */
+
+.oc-baselines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+
+  &__item {
+    position: relative;
+    padding: 22px 20px 18px 26px;
+    border-radius: var(--oc-radius-card);
+    background: var(--oc-surface);
+    border: 1px solid var(--oc-border);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Liseré accent à gauche, façon citation. */
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--oc-accent), var(--oc-altitude));
+    }
+  }
+
+  &__mark {
+    position: absolute;
+    top: -8px;
+    right: 8px;
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    line-height: 1;
+    color: color-mix(in srgb, var(--oc-accent) 18%, transparent);
+    pointer-events: none;
+  }
+
+  &__text {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    line-height: 1.45;
+    color: var(--oc-text);
+  }
+}
+
+@media (min-width: 640px) {
+  .oc-baselines {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-baselines {
+    grid-template-columns: repeat(3, 1fr);
+
+    /* Rythme éditorial : la première citation s'étale sur deux colonnes. */
+    &__item:first-child {
+      grid-column: span 2;
+
+      .oc-baselines__text {
+        font-size: 1.35rem;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-baselines__item {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Bannière du listing /trajets.
    -------------------------------------------------------------------------- */
 

@@ -1,0 +1,16 @@
+uuid: 5fa69afd-240d-467c-853d-0c64c199b620
+langcode: fr
+status: true
+dependencies:
+  config:
+    - node.type.baseline
+  module:
+    - content_translation
+third_party_settings:
+  content_translation:
+    enabled: true
+id: node.baseline
+target_entity_type_id: node
+target_bundle: baseline
+default_langcode: site_default
+language_alterable: false
