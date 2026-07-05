@@ -120,7 +120,13 @@ export default function SettingsScreen() {
             label="Dernière synchronisation"
             value={lastSyncAt !== null ? formatDateTime(Math.floor(lastSyncAt / 1000)) : '—'}
           />
-          <Row label="Dernier résultat" value={lastResult ?? '—'} />
+          {/* Résultat sur plusieurs lignes : le message d'erreur complet compte. */}
+          <View style={styles.resultBlock}>
+            <ThemedText type="small" themeColor="textSecondary">
+              Dernier résultat
+            </ThemedText>
+            <ThemedText type="small">{lastResult ?? '—'}</ThemedText>
+          </View>
         </View>
         {lastError !== null && (
           <ThemedText type="small" style={styles.error}>
@@ -185,6 +191,10 @@ const styles = StyleSheet.create({
     marginTop: Spacing.four,
     marginBottom: Spacing.one,
     marginLeft: Spacing.two,
+  },
+  resultBlock: {
+    gap: 2,
+    paddingVertical: 12,
   },
   syncButton: {
     borderRadius: 12,

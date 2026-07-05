@@ -118,6 +118,20 @@ async function extractErrorMessage(response: Response): Promise<string> {
   return `Erreur ${response.status}`;
 }
 
+/** Tentatives supplémentaires sur erreur réseau pure (coupure 5G, keep-alive
+ * fermé en vol par le serveur…). Sans risque : tous les endpoints sont
+ * idempotents (uuid client, index unique des points) — seul un upload photo
+ * rejoué après une réponse perdue peut créer un doublon, supprimable depuis
+ * la galerie. */
+const NETWORK_RETRIES = 2;
+const DEFAULT_TIMEOUT_MS = 30000;
+/** Uploads multipart : transferts longs sur réseau mobile. */
+const UPLOAD_TIMEOUT_MS = 120000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function rawFetch(
   path: string,
   options: ApiFetchOptions & { formData?: FormData; accept?: string },
@@ -128,21 +142,46 @@ async function rawFetch(
   }
 
   const url = buildUrl(credentials.serverUrl, path, options.query, options.format ?? true);
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      method: options.method ?? 'GET',
-      headers: {
-        Authorization: basicAuthHeader(credentials),
-        Accept: options.accept ?? 'application/json',
-        // multipart : fetch pose lui-même le Content-Type avec la boundary.
-        ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      },
-      body:
-        options.formData ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
-    });
-  } catch {
-    throw new ApiError(0, 'Serveur injoignable. Vérifiez l’URL et la connexion réseau.');
+  const timeoutMs = options.formData !== undefined ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+
+  let response: Response | null = null;
+  let lastNetworkError: unknown = null;
+  for (let attempt = 0; attempt <= NETWORK_RETRIES; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      response = await fetch(url, {
+        method: options.method ?? 'GET',
+        headers: {
+          Authorization: basicAuthHeader(credentials),
+          Accept: options.accept ?? 'application/json',
+          // multipart : fetch pose lui-même le Content-Type avec la boundary.
+          ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body:
+          options.formData ??
+          (options.body !== undefined ? JSON.stringify(options.body) : undefined),
+        signal: controller.signal,
+      });
+      break;
+    } catch (e) {
+      lastNetworkError = e;
+      if (attempt < NETWORK_RETRIES) {
+        // Backoff court : les coupures mobiles se résorbent en général vite.
+        await sleep(700 * (attempt + 1));
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  if (response === null) {
+    const cause =
+      lastNetworkError instanceof Error && lastNetworkError.name === 'AbortError'
+        ? `délai dépassé (${Math.round(timeoutMs / 1000)} s)`
+        : lastNetworkError instanceof Error
+          ? lastNetworkError.message
+          : 'erreur réseau';
+    throw new ApiError(0, `Serveur injoignable après ${NETWORK_RETRIES + 1} tentatives (${cause}).`);
   }
 
   if (response.status === 401) {
