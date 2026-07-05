@@ -48,29 +48,65 @@
 						<a class="oc-front-section__more" href="/trajets">{{ 'Tous les trajets'|t }} <span uk-icon="icon: arrow-right; ratio: 0.8" aria-hidden="true"></span></a>
 					</header>
 				</div>
+				{#
+					Route sinueuse : chemin SVG en S calculé ici — les jalons sont sur
+					les crêtes (carte au-dessus) et les creux (carte au-dessous).
+					Géométrie : un point tous les `spacing` px, ondulation entre yTop
+					et yBottom, segments en courbes de Bézier à tangentes horizontales.
+				#}
+				{% set spacing = 260 %}
+				{% set margin = 150 %}
+				{% set y_top = 170 %}
+				{% set y_bottom = 310 %}
+				{% set svg_height = 480 %}
+				{% set svg_width = (margin * 2) + (spacing * (front_road|length - 1)) %}
+				{% set path = '' %}
+				{% for stop in front_road %}
+					{% set x = margin + loop.index0 * spacing %}
+					{% set y = loop.index0 is even ? y_top : y_bottom %}
+					{% if loop.first %}
+						{# La route entre dans le cadre par la gauche. #}
+						{% set path = 'M -20 ' ~ y ~ ' L ' ~ x ~ ' ' ~ y %}
+					{% else %}
+						{% set prev_y = loop.index0 is even ? y_bottom : y_top %}
+						{% set path = path ~ ' C ' ~ (x - spacing / 2) ~ ' ' ~ prev_y ~ ', ' ~ (x - spacing / 2) ~ ' ' ~ y ~ ', ' ~ x ~ ' ' ~ y %}
+					{% endif %}
+					{% if loop.last %}
+						{# ... et ressort par la droite. #}
+						{% set path = path ~ ' L ' ~ (svg_width + 20) ~ ' ' ~ y %}
+					{% endif %}
+				{% endfor %}
 				<div class="oc-road" role="region" aria-label="{{ 'Derniers trajets sur la route'|t }}" tabindex="0">
-					<ul class="oc-road__track" uk-scrollspy="target: > li; cls: uk-animation-slide-bottom-small; delay: 120">
-						{% for stop in front_road %}
-							<li class="oc-road__stop oc-road__stop--{{ loop.index is odd ? 'up' : 'down' }}" style="--oc-activity: {{ stop.activity.color }}">
-								<a class="oc-road__card" href="{{ stop.url }}">
-									{% if stop.date %}
-										<span class="oc-road__date">{{ stop.date }}</span>
-									{% endif %}
-									<span class="oc-road__title">{{ stop.title }}</span>
-									<span class="oc-road__stats">
-										{% if stop.distance %}
-											<span><span uk-icon="icon: move; ratio: 0.6" aria-hidden="true"></span> {{ stop.distance }}</span>
+					<div class="oc-road__track" style="width: {{ svg_width }}px; height: {{ svg_height }}px;">
+						<svg class="oc-road__svg" viewBox="0 0 {{ svg_width }} {{ svg_height }}" width="{{ svg_width }}" height="{{ svg_height }}" aria-hidden="true">
+							<path class="oc-road__asphalt" d="{{ path }}"/>
+							<path class="oc-road__centerline" d="{{ path }}"/>
+						</svg>
+						<ul class="oc-road__stops" uk-scrollspy="target: > li; cls: uk-animation-slide-bottom-small; delay: 120">
+							{% for stop in front_road %}
+								{% set x = margin + loop.index0 * spacing %}
+								{% set y = loop.index0 is even ? y_top : y_bottom %}
+								<li class="oc-road__stop oc-road__stop--{{ loop.index0 is even ? 'up' : 'down' }}" style="--oc-x: {{ x }}px; --oc-y: {{ y }}px; --oc-activity: {{ stop.activity.color }}">
+									<a class="oc-road__card" href="{{ stop.url }}">
+										{% if stop.date %}
+											<span class="oc-road__date">{{ stop.date }}</span>
 										{% endif %}
-										{% if stop.duration %}
-											<span><span uk-icon="icon: clock; ratio: 0.6" aria-hidden="true"></span> {{ stop.duration }}</span>
-										{% endif %}
-									</span>
-									<span class="oc-road__activity">{{ stop.activity.label }}</span>
-								</a>
-								<span class="oc-road__dot" aria-hidden="true"></span>
-							</li>
-						{% endfor %}
-					</ul>
+										<span class="oc-road__title">{{ stop.title }}</span>
+										<span class="oc-road__stats">
+											{% if stop.distance %}
+												<span><span uk-icon="icon: move; ratio: 0.6" aria-hidden="true"></span> {{ stop.distance }}</span>
+											{% endif %}
+											{% if stop.duration %}
+												<span><span uk-icon="icon: clock; ratio: 0.6" aria-hidden="true"></span> {{ stop.duration }}</span>
+											{% endif %}
+										</span>
+										<span class="oc-road__activity">{{ stop.activity.label }}</span>
+									</a>
+									<span class="oc-road__dot" aria-hidden="true"></span>
+								</li>
+							{% endfor %}
+						</ul>
+					</div>
 				</div>
 			</section>
 		{% endif %}

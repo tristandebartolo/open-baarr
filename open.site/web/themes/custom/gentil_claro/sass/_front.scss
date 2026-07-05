@@ -207,56 +207,65 @@ html[data-theme='dark'] {
     outline-offset: -2px;
   }
 
+  /* Piste : dimensions inline (calculées dans le template selon le nombre
+     d'étapes) ; le SVG de la route sinueuse la recouvre entièrement. */
   &__track {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    min-width: max-content;
     position: relative;
-    margin: 0;
-    padding: 16px 24px;
-    gap: 20px;
+    margin: 0 auto;
+  }
 
-    /* La route : asphalte + ligne pointillée centrale. */
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 6px;
-      transform: translateY(-50%);
-      border-radius: 3px;
-      background:
-        repeating-linear-gradient(
-          90deg,
-          transparent 0 14px,
-          var(--oc-bg) 14px 26px
-        ) center / 100% 2px no-repeat,
-        color-mix(in srgb, var(--oc-text) 16%, transparent);
+  &__svg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* La route : asphalte épais + ligne centrale pointillée (même chemin). */
+  &__asphalt {
+    fill: none;
+    stroke: color-mix(in srgb, var(--oc-text) 16%, transparent);
+    stroke-width: 12;
+    stroke-linecap: round;
+  }
+
+  &__centerline {
+    fill: none;
+    stroke: var(--oc-bg);
+    stroke-width: 2;
+    stroke-dasharray: 12 14;
+    stroke-linecap: round;
+  }
+
+  &__stops {
+    list-style: none;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Étape : ancrée au point (--oc-x, --oc-y) de la courbe ; le jalon est
+     centré sur ce point, la carte s'accroche au-dessus (crête) ou
+     au-dessous (creux). */
+  &__stop {
+    position: absolute;
+    left: var(--oc-x);
+    top: var(--oc-y);
+    width: 0;
+    height: 0;
+    margin: 0;
+    z-index: 1;
+
+    &:hover {
+      z-index: 3;
     }
   }
 
-  /* Étape : grille symétrique carte / jalon / carte — le jalon (rangée
-     centrale) est toujours exactement sur la ligne, sans transform (les
-     animations uk-scrollspy restent sûres). */
-  &__stop {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-rows: 1fr 16px 1fr;
-    justify-items: center;
-    align-items: center;
-    width: 200px;
-    flex: none;
-    scroll-snap-align: center;
-    margin: 0;
-  }
-
-  /* Jalon : borne colorée posée sur la ligne. */
+  /* Jalon : borne colorée posée sur la route. */
   &__dot {
-    grid-row: 2;
-    display: block;
+    position: absolute;
+    left: -8px;
+    top: -8px;
     width: 16px;
     height: 16px;
     border-radius: 50%;
@@ -267,13 +276,13 @@ html[data-theme='dark'] {
   }
 
   &__card {
-    grid-row: 1;
-    align-self: end;
-    margin-bottom: 14px;
+    position: absolute;
+    left: 0;
+    transform: translateX(-50%);
+    width: 224px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    width: 100%;
     padding: 14px 16px;
     border-radius: var(--oc-radius-card);
     background: var(--oc-surface);
@@ -286,10 +295,19 @@ html[data-theme='dark'] {
     &:focus-visible {
       text-decoration: none;
       color: var(--oc-text);
-      transform: translateY(-3px);
+      transform: translateX(-50%) translateY(-3px);
       border-color: var(--oc-activity, var(--oc-accent));
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
     }
+  }
+
+  /* Crête : carte au-dessus du jalon ; creux : au-dessous. */
+  &__stop--up .oc-road__card {
+    bottom: 24px;
+  }
+
+  &__stop--down .oc-road__card {
+    top: 24px;
   }
 
   &__date {
@@ -327,19 +345,6 @@ html[data-theme='dark'] {
     color: var(--oc-activity, var(--oc-accent));
   }
 
-  /* Carte sous la route pour les étapes paires. */
-  &__stop--down .oc-road__card {
-    grid-row: 3;
-    align-self: start;
-    margin-bottom: 0;
-    margin-top: 14px;
-  }
-}
-
-@media (min-width: 960px) {
-  .oc-road__stop {
-    width: 240px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
