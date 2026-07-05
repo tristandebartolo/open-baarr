@@ -1,0 +1,55 @@
+# Vendors auto-hébergés (web/libraries/, pas de CDN).
+leaflet:
+  remote: https://leafletjs.com
+  version: 1.9.4
+  license:
+    name: BSD-2-Clause
+    url: https://github.com/Leaflet/Leaflet/blob/main/LICENSE
+    gpl-compatible: true
+  css:
+    component:
+      /libraries/leaflet/leaflet.css: { minified: true }
+  js:
+    /libraries/leaflet/leaflet.js: { minified: true }
+
+chartjs:
+  remote: https://www.chartjs.org
+  version: 4.4.9
+  license:
+    name: MIT
+    url: https://github.com/chartjs/Chart.js/blob/master/LICENSE.md
+    gpl-compatible: true
+  js:
+    /libraries/chartjs/chart.umd.js: { minified: true }
+
+# Icônes UIkit custom des tuiles de stats (thermomètre, vent, flamme…).
+trajet-icons:
+  version: VERSION
+  js:
+    js/trajet-icons.js: {}
+  dependencies:
+    - core/drupal
+
+# Carte du tracé (héro + plein écran, préférences en localStorage).
+trajet-map:
+  version: VERSION
+  js:
+    js/trajet-map.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings
+    - opencar_display/leaflet
+    - opencar_display/trajet-icons
+
+# Graphiques vitesse / altitude / fréquence cardiaque.
+trajet-charts:
+  version: VERSION
+  js:
+    js/trajet-charts.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings
+    - opencar_display/chartjs
+    - opencar_display/trajet-icons

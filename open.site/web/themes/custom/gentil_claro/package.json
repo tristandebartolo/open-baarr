@@ -1,0 +1,13 @@
+{
+  "name": "gentil_claro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Thème Drupal gentil_claro — compilation Sass (Dart Sass, remplace Compass).",
+  "scripts": {
+    "build": "sass sass/gentil-claro.scss css/gentil-claro.css --style=compressed --no-source-map",
+    "watch": "sass --watch sass/gentil-claro.scss css/gentil-claro.css --style=expanded --embed-source-map"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0"
+  }
+}

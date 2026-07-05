@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * Tuile de statistique d'un trajet (design premium repris de l'app).
+ *
+ * Variables :
+ * - tile : { id, label, value, icon, hero } (voir TrajetStatsPresenter).
+ */
+#}
+<div class="oc-stat-tile{{ tile.hero ? ' oc-stat-tile--hero' }}">
+	<div class="oc-stat-tile__head">
+		<span class="oc-stat-tile__icon" uk-icon="icon: {{ tile.icon }}; ratio: 0.75" aria-hidden="true"></span>
+		<span class="oc-stat-tile__label">{{ tile.label }}</span>
+	</div>
+	<div class="oc-stat-tile__value">{{ tile.value }}</div>
+</div>

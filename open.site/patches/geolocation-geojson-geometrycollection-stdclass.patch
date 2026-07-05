@@ -1,0 +1,20 @@
+--- a/modules/geolocation_geometry/src/GeometryFormat/GeoJSON.php	2026-07-05 19:13:41
++++ b/modules/geolocation_geometry/src/GeometryFormat/GeoJSON.php	2026-07-05 19:14:05
+@@ -29,7 +29,7 @@
+     $json = json_decode($text);
+ 
+     if (is_object($json->geometry ?? FALSE)) {
+-      return static::geometryByText((string) $json->geometry);
++      return static::geometryByText(json_encode($json->geometry) ?: '');
+     }
+ 
+     if (!is_string($json->type ?? FALSE)) {
+@@ -102,7 +102,7 @@
+       case 'GeometryCollection':
+         $components = [];
+         foreach ($json->geometries as $geometry) {
+-          $components[] = static::geometryByText($geometry);
++          $components[] = static::geometryByText(json_encode($geometry) ?: '');
+         }
+         return new GeometryCollection($components);
+ 

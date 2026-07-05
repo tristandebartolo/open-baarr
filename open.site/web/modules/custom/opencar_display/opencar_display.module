@@ -1,0 +1,104 @@
+<?php
+
+/**
+ * @file
+ * Affichage web des trajets : variables de preprocess et librairies.
+ */
+
+declare(strict_types=1);
+
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_preprocess_node().
+ *
+ * Prépare les variables du template node--trajet--full : tuiles de stats,
+ * activité (label + couleur), données carte et séries des graphiques,
+ * injectées en drupalSettings pour les behaviors trajet-map / trajet-charts.
+ */
+function opencar_display_preprocess_node(array &$variables): void {
+  $node = $variables['node'];
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'trajet' || !in_array($variables['view_mode'], ['full', 'card'], TRUE)) {
+    return;
+  }
+
+  /** @var \Drupal\opencar_display\Service\TrajetStatsPresenter $statsPresenter */
+  $statsPresenter = \Drupal::service('opencar_display.trajet_stats_presenter');
+
+  // Le view mode card (listing) ne reçoit que l'activité et deux mini-stats.
+  if ($variables['view_mode'] === 'card') {
+    $activityType = $node->hasField('field_activity_type') && !$node->get('field_activity_type')->isEmpty()
+      ? (string) $node->get('field_activity_type')->value
+      : NULL;
+    $variables['trajet_activity'] = [
+      'type' => $activityType,
+      'label' => $statsPresenter->activityLabel($activityType),
+      'color' => $statsPresenter->activityColor($activityType),
+    ];
+    $variables['trajet_started_at'] = $statsPresenter->formatDateTime($node, 'field_started_at');
+    $tiles = $statsPresenter->build($node);
+    $variables['trajet_card_stats'] = array_values(array_filter(
+      $tiles,
+      static fn (array $tile): bool => in_array($tile['id'], ['distance', 'duration'], TRUE),
+    ));
+    return;
+  }
+  /** @var \Drupal\opencar_display\Service\TrajetMapDataBuilder $mapDataBuilder */
+  $mapDataBuilder = \Drupal::service('opencar_display.trajet_map_data_builder');
+  /** @var \Drupal\opencar_display\Service\TrajetChartDataBuilder $chartDataBuilder */
+  $chartDataBuilder = \Drupal::service('opencar_display.trajet_chart_data_builder');
+  /** @var \Drupal\opencar_display\Service\TrajetGalleryBuilder $galleryBuilder */
+  $galleryBuilder = \Drupal::service('opencar_display.trajet_gallery_builder');
+
+  $mapId = 'node-' . $node->id();
+  $activityType = $node->hasField('field_activity_type') && !$node->get('field_activity_type')->isEmpty()
+    ? (string) $node->get('field_activity_type')->value
+    : NULL;
+
+  $variables['trajet_activity'] = [
+    'type' => $activityType,
+    'label' => $statsPresenter->activityLabel($activityType),
+    'color' => $statsPresenter->activityColor($activityType),
+  ];
+  $variables['trajet_started_at'] = $statsPresenter->formatDateTime($node, 'field_started_at');
+
+  $tiles = $statsPresenter->build($node);
+  $variables['trajet_stats'] = [
+    'stats' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'stats')),
+    'health' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'health')),
+    'weather' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'weather')),
+  ];
+
+  $mapData = $mapDataBuilder->build($node);
+  $variables['trajet_map'] = $mapData !== NULL ? ['id' => $mapId] : NULL;
+  if ($mapData !== NULL) {
+    $variables['#attached']['library'][] = 'opencar_display/trajet-map';
+    $variables['#attached']['drupalSettings']['opencarDisplay']['maps'][$mapId] = [
+      'geojson' => $mapData['geojson'],
+      'color' => $statsPresenter->activityColor($activityType),
+      'start' => $mapData['start'],
+      'end' => $mapData['end'],
+    ];
+  }
+
+  $variables['trajet_gallery'] = $galleryBuilder->build($node);
+
+  $chartData = $chartDataBuilder->build($node);
+  $variables['trajet_charts'] = NULL;
+  if ($chartData !== NULL) {
+    $variables['trajet_charts'] = [
+      'id' => $mapId,
+      'keys' => array_keys($chartData['series']),
+      'summary' => $chartData['summary'],
+      'labels' => [
+        'speed' => t('Vitesse (km/h)'),
+        'altitude' => t('Altitude (m)'),
+        'heartRate' => t('Fréquence cardiaque (bpm)'),
+      ],
+    ];
+    $variables['#attached']['library'][] = 'opencar_display/trajet-charts';
+    $variables['#attached']['drupalSettings']['opencarDisplay']['charts'][$mapId] = [
+      'series' => $chartData['series'],
+    ];
+  }
+}

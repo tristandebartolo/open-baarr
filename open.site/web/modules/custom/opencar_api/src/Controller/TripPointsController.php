@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\opencar_api\Controller;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\IntegrityConstraintViolationException;
@@ -75,6 +76,12 @@ final class TripPointsController extends ControllerBase {
           throw $e;
         }
       }
+    }
+
+    if ($accepted > 0) {
+      // Les rendus web du trajet (carte, graphiques) dépendent des points :
+      // ils sont mis en cache sous le tag du node, invalidé ici.
+      Cache::invalidateTags(['node:' . $trip->id()]);
     }
 
     return new JsonResponse(['accepted' => $accepted, 'duplicates' => $duplicates]);

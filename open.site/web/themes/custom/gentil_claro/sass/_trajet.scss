@@ -1,0 +1,341 @@
+/* ==========================================================================
+   Trajets (opencar) — page détail + cartes de listing.
+   Design repris de l'app mobile : carte héro, feuille chevauchante, tuiles
+   de stats, graphiques. Mobile-first, dark/light via custom properties.
+   ========================================================================== */
+
+.oc-trajet,
+.oc-trajet-card {
+  /* Tokens light (valeurs de open.app/src/constants/theme.ts). */
+  --oc-bg: #ffffff;
+  --oc-surface: #f0f0f3;
+  --oc-surface-selected: #e0e1e6;
+  --oc-text: #000000;
+  --oc-text-secondary: #60646c;
+  --oc-border: rgba(96, 100, 108, 0.15);
+  --oc-accent: #208aef;
+  --oc-danger: #d64545;
+  --oc-altitude: #7a5af8;
+  --oc-success: #2e8b57;
+  --oc-radius-card: 16px;
+  --oc-radius-sheet: 24px;
+  /* --oc-activity est posé en inline style par le template (couleur du type). */
+
+  color: var(--oc-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  .oc-trajet,
+  .oc-trajet-card {
+    --oc-bg: #000000;
+    --oc-surface: #212225;
+    --oc-surface-selected: #2e3135;
+    --oc-text: #ffffff;
+    --oc-text-secondary: #b0b4ba;
+    --oc-border: rgba(176, 180, 186, 0.2);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Carte héro bord à bord + mode agrandi.
+   -------------------------------------------------------------------------- */
+
+.oc-hero-map {
+  position: relative;
+  height: clamp(280px, 45vh, 400px);
+
+  &__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--oc-surface);
+  }
+
+  &.is-expanded {
+    position: fixed;
+    inset: 0;
+    height: auto;
+    z-index: 1080;
+  }
+}
+
+html.oc-map-noscroll {
+  overflow: hidden;
+}
+
+.oc-map-expand {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(12, 14, 18, 0.55);
+  color: #ffffff;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(12, 14, 18, 0.75);
+  }
+}
+
+.oc-map-marker__dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--oc-marker, #208aef);
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  .oc-hero-map .leaflet-layer,
+  .oc-hero-map .leaflet-control-zoom,
+  .oc-hero-map .leaflet-control-layers,
+  .oc-hero-map .leaflet-control-attribution {
+    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  }
+}
+
+.oc-hero-vignette img {
+  width: 100%;
+  height: clamp(280px, 45vh, 400px);
+  object-fit: cover;
+}
+
+/* --------------------------------------------------------------------------
+   Feuille de contenu chevauchant la carte.
+   -------------------------------------------------------------------------- */
+
+.oc-sheet {
+  position: relative;
+  z-index: 2;
+  margin-top: -24px;
+  padding: 24px 0 48px;
+  border-radius: var(--oc-radius-sheet) var(--oc-radius-sheet) 0 0;
+  background: var(--oc-bg);
+}
+
+.oc-trajet-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.oc-activity-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--oc-activity, var(--oc-accent));
+  /* Fond = couleur d'activité + alpha, comme la pastille de l'app. */
+  background: color-mix(in srgb, var(--oc-activity, var(--oc-accent)) 14%, transparent);
+
+  &--small {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.oc-trajet-title {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.oc-trajet-meta {
+  margin: 2px 0 0;
+  color: var(--oc-text-secondary);
+  font-size: 0.9rem;
+}
+
+.oc-trajet-chapo {
+  margin-bottom: 24px;
+}
+
+.oc-section {
+  margin: 32px 0;
+}
+
+.oc-section-label {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--oc-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Tuiles de stats.
+   -------------------------------------------------------------------------- */
+
+.oc-stat-tile {
+  padding: 14px 16px;
+  border-radius: var(--oc-radius-card);
+  background: var(--oc-surface);
+
+  &--hero {
+    margin-bottom: 12px;
+
+    .oc-stat-tile__value {
+      font-size: 2rem;
+      line-height: 1.15;
+    }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    color: var(--oc-text-secondary);
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  &__value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--oc-text);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Graphiques.
+   -------------------------------------------------------------------------- */
+
+.oc-chart-card {
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: var(--oc-radius-card);
+  background: var(--oc-surface);
+
+  .oc-section-label {
+    margin-bottom: 8px;
+  }
+
+  &__canvas {
+    position: relative;
+    height: 180px;
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-chart-card__canvas {
+    height: 220px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Galerie.
+   -------------------------------------------------------------------------- */
+
+.oc-gallery {
+  &__item {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--oc-radius-card);
+
+    img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      transition: transform 0.25s ease;
+    }
+
+    &:hover img {
+      transform: scale(1.03);
+    }
+  }
+
+  &__caption {
+    margin: 6px 2px 0;
+    font-size: 0.85rem;
+    color: var(--oc-text-secondary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-gallery__item img {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Carte de listing (/trajets, view mode card).
+   -------------------------------------------------------------------------- */
+
+.oc-trajet-card {
+  overflow: hidden;
+  border-radius: var(--oc-radius-card);
+  background: var(--oc-surface);
+
+  &__media img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  &__body {
+    padding: 14px 16px 16px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.25;
+
+    a {
+      color: var(--oc-text);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--oc-activity, var(--oc-accent));
+      }
+    }
+  }
+
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    .uk-icon {
+      color: var(--oc-text-secondary);
+      margin-right: 4px;
+    }
+  }
+
+  &__chapo {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--oc-text-secondary);
+  }
+}

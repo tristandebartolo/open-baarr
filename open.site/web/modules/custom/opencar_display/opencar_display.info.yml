@@ -1,0 +1,10 @@
+name: 'OpenCar Display'
+type: module
+description: "Affichage web des trajets : carte du tracé, statistiques et graphiques."
+package: OpenCar
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:media
+  - drupal:image
+  - opencar_core:opencar_core
