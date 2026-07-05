@@ -49,33 +49,46 @@
 					</header>
 				</div>
 				{#
-					Route sinueuse : chemin SVG en S calculé ici — les jalons sont sur
-					les crêtes (carte au-dessus) et les creux (carte au-dessous).
-					Géométrie : un point tous les `spacing` px, ondulation entre yTop
-					et yBottom, segments en courbes de Bézier à tangentes horizontales.
+					Route sinueuse organique : chemin SVG calculé ici — les jalons sont
+					sur les crêtes (carte au-dessus) et les creux (carte au-dessous).
+					L'irrégularité est déterministe (motifs cyclés, pas d'aléatoire) :
+					espacements variables, hauteurs de crête/creux différentes à chaque
+					virage, poignées de Bézier asymétriques (virages plus ou moins
+					serrés). Tangentes horizontales aux jalons : la route reste fluide.
 				#}
-				{% set spacing = 260 %}
 				{% set margin = 150 %}
-				{% set y_top = 170 %}
-				{% set y_bottom = 310 %}
-				{% set svg_height = 480 %}
-				{% set svg_width = (margin * 2) + (spacing * (front_road|length - 1)) %}
-				{% set path = '' %}
+				{% set svg_height = 500 %}
+				{% set spacings = [250, 320, 230, 340, 270, 240, 300, 260, 330, 245] %}
+				{% set y_ups = [180, 160, 195, 165, 185] %}
+				{% set y_downs = [310, 338, 292, 325, 305] %}
+				{% set bends = [0.38, 0.62, 0.45, 0.58, 0.5, 0.65, 0.4, 0.55] %}
+
+				{# 1. Positions des jalons (x cumulés irréguliers, y cyclés). #}
+				{% set points = [] %}
+				{% set cursor_x = margin %}
 				{% for stop in front_road %}
-					{% set x = margin + loop.index0 * spacing %}
-					{% set y = loop.index0 is even ? y_top : y_bottom %}
-					{% if loop.first %}
-						{# La route entre dans le cadre par la gauche. #}
-						{% set path = 'M -20 ' ~ y ~ ' L ' ~ x ~ ' ' ~ y %}
-					{% else %}
-						{% set prev_y = loop.index0 is even ? y_bottom : y_top %}
-						{% set path = path ~ ' C ' ~ (x - spacing / 2) ~ ' ' ~ prev_y ~ ', ' ~ (x - spacing / 2) ~ ' ' ~ y ~ ', ' ~ x ~ ' ' ~ y %}
-					{% endif %}
-					{% if loop.last %}
-						{# ... et ressort par la droite. #}
-						{% set path = path ~ ' L ' ~ (svg_width + 20) ~ ' ' ~ y %}
+					{% set y = loop.index0 is even
+						? y_ups[(loop.index0 // 2) % (y_ups|length)]
+						: y_downs[(loop.index0 // 2) % (y_downs|length)] %}
+					{% set points = points|merge([{ x: cursor_x, y: y }]) %}
+					{% set cursor_x = cursor_x + spacings[loop.index0 % (spacings|length)] %}
+				{% endfor %}
+				{% set svg_width = points|last.x + margin %}
+
+				{# 2. Chemin : entrée par la gauche, Béziers asymétriques, sortie à droite. #}
+				{% set path = 'M -20 ' ~ points|first.y ~ ' L ' ~ points|first.x ~ ' ' ~ points|first.y %}
+				{% for point in points %}
+					{% if not loop.first %}
+						{% set prev = points[loop.index0 - 1] %}
+						{% set dx = point.x - prev.x %}
+						{% set bend = bends[loop.index0 % (bends|length)] %}
+						{% set path = path
+							~ ' C ' ~ (prev.x + dx * bend) ~ ' ' ~ prev.y
+							~ ', ' ~ (point.x - dx * (1 - bend)) ~ ' ' ~ point.y
+							~ ', ' ~ point.x ~ ' ' ~ point.y %}
 					{% endif %}
 				{% endfor %}
+				{% set path = path ~ ' L ' ~ (svg_width + 20) ~ ' ' ~ points|last.y %}
 				<div class="oc-road" role="region" aria-label="{{ 'Derniers trajets sur la route'|t }}" tabindex="0">
 					<div class="oc-road__track" style="width: {{ svg_width }}px; height: {{ svg_height }}px;">
 						<svg class="oc-road__svg" viewBox="0 0 {{ svg_width }} {{ svg_height }}" width="{{ svg_width }}" height="{{ svg_height }}" aria-hidden="true">
@@ -84,9 +97,8 @@
 						</svg>
 						<ul class="oc-road__stops" uk-scrollspy="target: > li; cls: uk-animation-slide-bottom-small; delay: 120">
 							{% for stop in front_road %}
-								{% set x = margin + loop.index0 * spacing %}
-								{% set y = loop.index0 is even ? y_top : y_bottom %}
-								<li class="oc-road__stop oc-road__stop--{{ loop.index0 is even ? 'up' : 'down' }}" style="--oc-x: {{ x }}px; --oc-y: {{ y }}px; --oc-activity: {{ stop.activity.color }}">
+								{% set point = points[loop.index0] %}
+								<li class="oc-road__stop oc-road__stop--{{ loop.index0 is even ? 'up' : 'down' }}" style="--oc-x: {{ point.x }}px; --oc-y: {{ point.y }}px; --oc-activity: {{ stop.activity.color }}">
 									<a class="oc-road__card" href="{{ stop.url }}">
 										{% if stop.date %}
 											<span class="oc-road__date">{{ stop.date }}</span>
