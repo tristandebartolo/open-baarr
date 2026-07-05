@@ -34,6 +34,7 @@ final class TripController extends ControllerBase {
    * Correspondance clé de payload → champ du node trajet.
    */
   private const UPDATE_FIELD_MAP = [
+    'chapo' => 'field_chapo',
     'activity_type' => 'field_activity_type',
     'started_at' => 'field_started_at',
     'ended_at' => 'field_ended_at',

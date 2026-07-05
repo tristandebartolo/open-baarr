@@ -111,8 +111,8 @@ final class PayloadValidator {
    */
   public function validateTripUpdate(array $payload): array {
     $allowed = [
-      'title', 'body', 'activity_type', 'started_at', 'ended_at', 'weight',
-      'feeling', 'fatigue', 'hydration', 'steps', 'calories',
+      'title', 'chapo', 'body', 'activity_type', 'started_at', 'ended_at',
+      'weight', 'feeling', 'fatigue', 'hydration', 'steps', 'calories',
       'heart_rate_avg', 'heart_rate_max', 'battery_start', 'battery_end',
       'device_info', 'published',
     ];
@@ -166,6 +166,9 @@ final class PayloadValidator {
       if (array_key_exists($key, $payload)) {
         $changes[$key] = $this->optionalInt($payload, $key, $min, $max, $errors);
       }
+    }
+    if (array_key_exists('chapo', $payload)) {
+      $changes['chapo'] = $this->optionalString($payload, 'chapo', 1000, $errors);
     }
     if (array_key_exists('body', $payload)) {
       $changes['body'] = $this->optionalString($payload, 'body', 10000, $errors);

@@ -91,7 +91,12 @@ final class ApiEndpointsTest extends BrowserTestBase {
       'entity_type' => 'node',
       'type' => 'timestamp',
     ])->save();
-    foreach (['field_activity_type', 'field_trip_status', 'field_started_at'] as $fieldName) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_chapo',
+      'entity_type' => 'node',
+      'type' => 'string_long',
+    ])->save();
+    foreach (['field_activity_type', 'field_trip_status', 'field_started_at', 'field_chapo'] as $fieldName) {
       FieldConfig::create([
         'field_name' => $fieldName,
         'entity_type' => 'node',
@@ -156,6 +161,12 @@ final class ApiEndpointsTest extends BrowserTestBase {
     // Booléen strict : "yes" refusé.
     $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['published' => 'yes']);
     $this->assertSame(422, $response->getStatusCode());
+
+    // Chapo (field_chapo) modifiable et relu au détail.
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['chapo' => 'Un résumé du trajet.']);
+    $this->assertSame(200, $response->getStatusCode());
+    $detail = json_decode((string) $response->getBody(), TRUE);
+    $this->assertSame('Un résumé du trajet.', $detail['chapo']);
 
     // Sans le rôle, pas d'écriture : 403.
     $response = $this->apiRequest($this->userNoRole, 'POST', '/trips', $payload);

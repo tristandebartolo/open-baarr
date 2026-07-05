@@ -52,6 +52,9 @@ export type TripPhoto = {
 };
 
 export type TripDetail = TripSummary & {
+  /** Chapo (field_chapo, texte court d'introduction). */
+  chapo: string | null;
+  /** Description (field_body, texte long). */
   body: string | null;
   diagnostic: {
     battery_start: number | null;
@@ -89,9 +92,11 @@ export type StatsSummary = {
   series: { date: string; distance: number; duration: number }[];
 };
 
-/** Champs modifiables depuis l'écran détail (titre, publication, santé manuelle). */
+/** Champs modifiables depuis l'écran détail (titre, notes, publication, santé manuelle). */
 export type TripPatch = Partial<{
   title: string;
+  chapo: string;
+  body: string;
   published: boolean;
   weight: number;
   feeling: number;

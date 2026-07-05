@@ -63,6 +63,7 @@ final class TripNormalizer {
     ];
 
     if ($detailed) {
+      $data['chapo'] = $this->stringValue($trip, 'field_chapo');
       $data['body'] = $this->stringValue($trip, 'field_body');
       $data['diagnostic'] = [
         'battery_start' => $this->intValue($trip, 'field_battery_start'),

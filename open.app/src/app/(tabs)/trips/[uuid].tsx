@@ -53,6 +53,16 @@ import {
   formatSpeed,
 } from '@/utils/format';
 
+/** Onglets de l'écran détail. */
+type TabKey = 'infos' | 'sante' | 'notes' | 'galerie';
+
+const TABS: { key: TabKey; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'infos', label: 'Infos', icon: 'stats-chart-outline' },
+  { key: 'sante', label: 'Santé', icon: 'heart-outline' },
+  { key: 'notes', label: 'Notes', icon: 'document-text-outline' },
+  { key: 'galerie', label: 'Galerie', icon: 'images-outline' },
+];
+
 /** Point de tracé unifié (SQLite local ou GPX serveur). */
 type TrackPoint = {
   lat: number;
@@ -72,6 +82,7 @@ export default function TripDetailScreen() {
 
   const [detail, setDetail] = useState<TripDetail | null>(null);
   const [localTrip, setLocalTrip] = useState<TripRow | null>(null);
+  const [tab, setTab] = useState<TabKey>('infos');
   const [track, setTrack] = useState<TrackPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -326,61 +337,83 @@ export default function TripDetailScreen() {
 
               <PublishRow detail={detail} onSaved={setDetail} onError={setError} />
 
-              <View style={[styles.distanceCard, { backgroundColor: theme.backgroundElement }]}>
-                <ThemedText type="small" themeColor="textSecondary" style={styles.metricLabel}>
-                  DISTANCE
-                </ThemedText>
-                <ThemedText type="subtitle">
-                  {detail.metrics.distance !== null
-                    ? formatDistance(detail.metrics.distance)
-                    : '—'}
-                </ThemedText>
-              </View>
+              <TabBar tab={tab} onChange={setTab} />
 
-              <View style={styles.metricsGrid}>
-                <Metric
-                  icon="time-outline"
-                  label="En mouvement"
-                  value={
-                    detail.metrics.duration !== null
-                      ? formatDuration(detail.metrics.duration * 1000)
-                      : '—'
-                  }
-                />
-                <Metric
-                  icon="hourglass-outline"
-                  label="Durée totale"
-                  value={
-                    detail.metrics.duration_total !== null
-                      ? formatDuration(detail.metrics.duration_total * 1000)
-                      : '—'
-                  }
-                />
-                <Metric
-                  icon="speedometer-outline"
-                  label="Vitesse moy."
-                  value={formatSpeed(detail.metrics.speed_avg)}
-                />
-                <Metric
-                  icon="flash-outline"
-                  label="Vitesse max"
-                  value={formatSpeed(detail.metrics.speed_max)}
-                />
-                <Metric
-                  icon="trending-up-outline"
-                  label="Dénivelé +"
-                  value={formatElevation(detail.metrics.elevation_gain)}
-                />
-                <Metric
-                  icon="trending-down-outline"
-                  label="Dénivelé −"
-                  value={formatElevation(detail.metrics.elevation_loss)}
-                />
-              </View>
+              {tab === 'infos' && (
+                <>
+                  <View
+                    style={[styles.distanceCard, { backgroundColor: theme.backgroundElement }]}>
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.metricLabel}>
+                      DISTANCE
+                    </ThemedText>
+                    <ThemedText type="subtitle">
+                      {detail.metrics.distance !== null
+                        ? formatDistance(detail.metrics.distance)
+                        : '—'}
+                    </ThemedText>
+                  </View>
 
-              {(detail.health.heart_rate_avg !== null ||
-                detail.health.steps !== null ||
-                detail.health.calories !== null) && (
+                  <View style={styles.metricsGrid}>
+                    <Metric
+                      icon="time-outline"
+                      label="En mouvement"
+                      value={
+                        detail.metrics.duration !== null
+                          ? formatDuration(detail.metrics.duration * 1000)
+                          : '—'
+                      }
+                    />
+                    <Metric
+                      icon="hourglass-outline"
+                      label="Durée totale"
+                      value={
+                        detail.metrics.duration_total !== null
+                          ? formatDuration(detail.metrics.duration_total * 1000)
+                          : '—'
+                      }
+                    />
+                    <Metric
+                      icon="speedometer-outline"
+                      label="Vitesse moy."
+                      value={formatSpeed(detail.metrics.speed_avg)}
+                    />
+                    <Metric
+                      icon="flash-outline"
+                      label="Vitesse max"
+                      value={formatSpeed(detail.metrics.speed_max)}
+                    />
+                    <Metric
+                      icon="trending-up-outline"
+                      label="Dénivelé +"
+                      value={formatElevation(detail.metrics.elevation_gain)}
+                    />
+                    <Metric
+                      icon="trending-down-outline"
+                      label="Dénivelé −"
+                      value={formatElevation(detail.metrics.elevation_loss)}
+                    />
+                  </View>
+
+                  {speedSeries.length > 1 && (
+                    <Chart
+                      title="VITESSE (KM/H)"
+                      data={speedSeries}
+                      color={Palette.accent}
+                      theme={theme}
+                    />
+                  )}
+                  {altitudeSeries.length > 1 && (
+                    <Chart
+                      title="ALTITUDE (M)"
+                      data={altitudeSeries}
+                      color={Palette.altitude}
+                      theme={theme}
+                    />
+                  )}
+                </>
+              )}
+
+              {tab === 'sante' && (
                 <>
                   <SectionTitle title="SANTÉ (CAPTEURS)" />
                   <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
@@ -406,54 +439,23 @@ export default function TripDetailScreen() {
                       }
                     />
                   </View>
+
+                  {heartSeries.length > 1 && (
+                    <Chart
+                      title="FRÉQUENCE CARDIAQUE (BPM)"
+                      data={heartSeries}
+                      color={Palette.danger}
+                      theme={theme}
+                    />
+                  )}
+
+                  <HealthForm detail={detail} onSaved={setDetail} />
                 </>
               )}
 
-              {speedSeries.length > 1 && (
-                <Chart
-                  title="VITESSE (KM/H)"
-                  data={speedSeries}
-                  color={Palette.accent}
-                  theme={theme}
-                />
-              )}
-              {altitudeSeries.length > 1 && (
-                <Chart
-                  title="ALTITUDE (M)"
-                  data={altitudeSeries}
-                  color={Palette.altitude}
-                  theme={theme}
-                />
-              )}
-              {heartSeries.length > 1 && (
-                <Chart
-                  title="FRÉQUENCE CARDIAQUE (BPM)"
-                  data={heartSeries}
-                  color={Palette.danger}
-                  theme={theme}
-                />
-              )}
+              {tab === 'notes' && <NotesForm detail={detail} onSaved={setDetail} />}
 
-              {detail.photos.length > 0 && (
-                <>
-                  <SectionTitle title="PHOTOS" />
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={styles.photosRow}>
-                      {detail.photos.map((photo) => (
-                        <Image
-                          key={photo.uuid}
-                          source={{ uri: photo.url }}
-                          style={styles.photo}
-                          contentFit="cover"
-                          transition={150}
-                        />
-                      ))}
-                    </View>
-                  </ScrollView>
-                </>
-              )}
-
-              <HealthForm detail={detail} onSaved={setDetail} />
+              {tab === 'galerie' && <Gallery photos={detail.photos} />}
 
               <View style={styles.actions}>
                 {canResume && (
@@ -667,6 +669,172 @@ function PublishRow({
           trackColor={{ true: Palette.success }}
         />
       )}
+    </View>
+  );
+}
+
+/** Barre d'onglets du détail (Infos / Santé / Notes / Galerie). */
+function TabBar({ tab, onChange }: { tab: TabKey; onChange: (tab: TabKey) => void }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.tabBar, { backgroundColor: theme.backgroundElement }]}>
+      {TABS.map((item) => {
+        const selected = item.key === tab;
+        return (
+          <Pressable
+            key={item.key}
+            accessibilityRole="tab"
+            onPress={() => onChange(item.key)}
+            style={[
+              styles.tabItem,
+              selected && { backgroundColor: theme.background },
+            ]}>
+            <Ionicons
+              name={item.icon}
+              size={15}
+              color={selected ? Palette.accent : theme.textSecondary}
+            />
+            <ThemedText
+              type="smallBold"
+              style={{ color: selected ? Palette.accent : theme.textSecondary }}>
+              {item.label}
+            </ThemedText>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Onglet Notes : chapo + description, PATCH direct (client autoritaire). */
+function NotesForm({
+  detail,
+  onSaved,
+}: {
+  detail: TripDetail;
+  onSaved: (detail: TripDetail) => void;
+}) {
+  const theme = useTheme();
+  const [chapo, setChapo] = useState(detail.chapo ?? '');
+  const [body, setBody] = useState(detail.body ?? '');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
+
+  const handleSave = async () => {
+    const trimmedChapo = chapo.trim();
+    const trimmedBody = body.trim();
+    if (trimmedChapo === '' && trimmedBody === '') {
+      setMessage({ text: 'Renseignez le chapo ou la description.', isError: true });
+      return;
+    }
+    if (trimmedChapo.length > 1000 || trimmedBody.length > 10000) {
+      setMessage({
+        text: 'Chapo : 1 000 caractères max, description : 10 000 caractères max.',
+        isError: true,
+      });
+      return;
+    }
+    setSaving(true);
+    try {
+      const patch: TripPatch = {};
+      if (trimmedChapo !== (detail.chapo ?? '')) {
+        patch.chapo = trimmedChapo;
+      }
+      if (trimmedBody !== (detail.body ?? '')) {
+        patch.body = trimmedBody;
+      }
+      if (Object.keys(patch).length > 0) {
+        onSaved(await patchTrip(detail.uuid, patch));
+      }
+      setMessage({ text: 'Notes enregistrées.', isError: false });
+    } catch (e) {
+      setMessage({
+        text: e instanceof Error ? e.message : 'Enregistrement impossible.',
+        isError: true,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputStyle = { backgroundColor: theme.backgroundSelected, color: theme.text };
+
+  return (
+    <>
+      <SectionTitle title="CHAPO" />
+      <TextInput
+        style={[styles.notesInput, styles.chapoInput, inputStyle]}
+        value={chapo}
+        onChangeText={setChapo}
+        multiline
+        maxLength={1000}
+        placeholder="Un court résumé du trajet…"
+        placeholderTextColor={theme.textSecondary}
+        editable={!saving}
+      />
+
+      <SectionTitle title="DESCRIPTION" />
+      <TextInput
+        style={[styles.notesInput, styles.bodyInput, inputStyle]}
+        value={body}
+        onChangeText={setBody}
+        multiline
+        maxLength={10000}
+        placeholder="Le récit du trajet, les conditions, les impressions…"
+        placeholderTextColor={theme.textSecondary}
+        editable={!saving}
+      />
+
+      {message !== null && (
+        <ThemedText
+          type="small"
+          style={{ color: message.isError ? Palette.danger : Palette.success }}>
+          {message.text}
+        </ThemedText>
+      )}
+
+      <Pressable
+        onPress={() => void handleSave()}
+        disabled={saving}
+        style={({ pressed }) => [
+          styles.saveButton,
+          { backgroundColor: theme.backgroundSelected, opacity: pressed || saving ? 0.7 : 1 },
+        ]}>
+        {saving ? (
+          <ActivityIndicator size="small" color={Palette.accent} />
+        ) : (
+          <ThemedText type="smallBold">Enregistrer les notes</ThemedText>
+        )}
+      </Pressable>
+    </>
+  );
+}
+
+/** Onglet Galerie : grille 2 colonnes des photos du trajet. */
+function Gallery({ photos }: { photos: TripDetail['photos'] }) {
+  const theme = useTheme();
+  if (photos.length === 0) {
+    return (
+      <View style={styles.galleryEmpty}>
+        <Ionicons name="images-outline" size={40} color={theme.textSecondary} />
+        <ThemedText type="small" themeColor="textSecondary" style={styles.galleryEmptyHint}>
+          Aucune photo pour ce trajet. Les photos se prennent pendant l’enregistrement, depuis
+          l’écran Enregistrer.
+        </ThemedText>
+      </View>
+    );
+  }
+  return (
+    <View style={styles.galleryGrid}>
+      {photos.map((photo) => (
+        <Image
+          key={photo.uuid}
+          source={{ uri: photo.url }}
+          style={styles.galleryPhoto}
+          contentFit="cover"
+          transition={150}
+        />
+      ))}
     </View>
   );
 }
@@ -1085,14 +1253,54 @@ const styles = StyleSheet.create({
     padding: Spacing.two,
     height: 180,
   },
-  photosRow: {
+  tabBar: {
     flexDirection: 'row',
+    borderRadius: 14,
+    padding: 3,
+    gap: 3,
+  },
+  tabItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.one,
+    borderRadius: 11,
+    paddingVertical: Spacing.two,
+  },
+  notesInput: {
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+    fontSize: 15,
+    lineHeight: 21,
+    textAlignVertical: 'top',
+  },
+  chapoInput: {
+    minHeight: 84,
+  },
+  bodyInput: {
+    minHeight: 180,
+  },
+  galleryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.two,
   },
-  photo: {
-    width: 160,
-    height: 160,
+  galleryPhoto: {
+    flexBasis: '47%',
+    flexGrow: 1,
+    aspectRatio: 1,
     borderRadius: 16,
+  },
+  galleryEmpty: {
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.five,
+  },
+  galleryEmptyHint: {
+    textAlign: 'center',
+    paddingHorizontal: Spacing.four,
   },
   form: {
     paddingVertical: Spacing.three,
