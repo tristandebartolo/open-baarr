@@ -1,0 +1,18 @@
+{# Menu #}
+{% include directory ~ '/templates/partials/gntl-menu.html.twig' %}
+<div class="gntl-main">
+	<main id="contenu-principal">
+		{# Breadcrumb #}
+		{% if show_breadcrumb %}
+			{% include directory ~ '/templates/partials/gntl-breadcrumb.html.twig' %}
+		{% endif %}
+		{# Msg #}
+    {% if page.msg %}
+      {{ page.msg }}
+    {% endif %}
+    {# Content #}
+    {{ page.content }}
+	</main>
+	{# Footer #}
+	{% include directory ~ '/templates/partials/gntl-footer.html.twig' %}
+</div>
