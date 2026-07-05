@@ -7,3 +7,6 @@ services:
   opencar_api.trip_normalizer:
     class: Drupal\opencar_api\Service\TripNormalizer
     arguments: ['@opencar_core.track_point_repository', '@file_url_generator']
+  opencar_api.thematique_resolver:
+    class: Drupal\opencar_api\Service\ThematiqueResolver
+    arguments: ['@entity_type.manager']

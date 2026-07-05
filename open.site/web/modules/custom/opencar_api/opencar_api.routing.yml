@@ -140,6 +140,63 @@ opencar_api.trip_gpx:
   options:
     _auth: ['basic_auth']
 
+opencar_api.baseline_create:
+  path: '/opencar/api/v1/baselines'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\BaselineController::createBaseline'
+  methods: [POST]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.baseline_list:
+  path: '/opencar/api/v1/baselines'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\BaselineController::list'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    _format: json
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.baseline_update:
+  path: '/opencar/api/v1/baselines/{uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\BaselineController::update'
+  methods: [PATCH]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.baseline_delete:
+  path: '/opencar/api/v1/baselines/{uuid}'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\BaselineController::delete'
+  methods: [DELETE]
+  requirements:
+    _permission: 'use opencar api,record opencar trips'
+    _format: json
+    uuid: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+  options:
+    _auth: ['basic_auth']
+
+opencar_api.thematiques_search:
+  path: '/opencar/api/v1/thematiques'
+  defaults:
+    _controller: '\Drupal\opencar_api\Controller\BaselineController::searchThematiques'
+  methods: [GET]
+  requirements:
+    _permission: 'use opencar api'
+    _format: json
+  options:
+    _auth: ['basic_auth']
+
 opencar_api.stats_summary:
   path: '/opencar/api/v1/stats/summary'
   defaults:

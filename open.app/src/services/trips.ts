@@ -51,6 +51,8 @@ export type TripSummary = {
   metrics: TripMetrics;
   weather: TripWeather;
   health: TripHealth;
+  /** Termes du vocabulaire « thematiques ». */
+  thematiques: { id: number; name: string }[];
   created: number;
   changed: number;
 };
@@ -119,6 +121,8 @@ export type TripPatch = Partial<{
   chapo: string;
   body: string;
   published: boolean;
+  /** Noms des termes — remplacement complet du champ. */
+  thematiques: string[];
   weight: number;
   feeling: number;
   fatigue: number;

@@ -7,6 +7,7 @@ namespace Drupal\Tests\opencar_api\Functional;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\user\UserInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -22,7 +23,7 @@ final class ApiEndpointsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['node', 'opencar_api'];
+  protected static $modules = ['node', 'taxonomy', 'geolocation', 'opencar_api'];
 
   /**
    * {@inheritdoc}
@@ -113,6 +114,34 @@ final class ApiEndpointsTest extends BrowserTestBase {
         'bundle' => 'trajet',
       ])->save();
     }
+
+    // Baselines + thématiques (vocabulaire partagé trajet/baseline).
+    $this->drupalCreateContentType(['type' => 'baseline', 'name' => 'Baseline']);
+    Vocabulary::create(['vid' => 'thematiques', 'name' => 'Thématiques'])->save();
+    FieldStorageConfig::create([
+      'field_name' => 'field_thematiques',
+      'entity_type' => 'node',
+      'type' => 'entity_reference',
+      'settings' => ['target_type' => 'taxonomy_term'],
+      'cardinality' => -1,
+    ])->save();
+    foreach (['trajet', 'baseline'] as $bundle) {
+      FieldConfig::create([
+        'field_name' => 'field_thematiques',
+        'entity_type' => 'node',
+        'bundle' => $bundle,
+      ])->save();
+    }
+    FieldStorageConfig::create([
+      'field_name' => 'field_coordinates',
+      'entity_type' => 'node',
+      'type' => 'geolocation',
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_coordinates',
+      'entity_type' => 'node',
+      'bundle' => 'baseline',
+    ])->save();
 
     $this->userA = $this->drupalCreateUser();
     $this->userB = $this->drupalCreateUser();
@@ -230,6 +259,48 @@ final class ApiEndpointsTest extends BrowserTestBase {
     $mediaUuid = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
     $this->assertSame(404, $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid/photos/$mediaUuid", ['description' => 'x'])->getStatusCode());
     $this->assertSame(404, $this->apiRequest($this->userB, 'DELETE', "/trips/$uuid/photos/$mediaUuid")->getStatusCode());
+
+    // Thématiques sur le trajet : remplacement complet + get-or-create
+    // insensible à la casse.
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['thematiques' => ['Mer', 'Vélo']]);
+    $this->assertSame(200, $response->getStatusCode());
+    $names = array_column(json_decode((string) $response->getBody(), TRUE)['thematiques'], 'name');
+    $this->assertSame(['Mer', 'Vélo'], $names);
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['thematiques' => ['mer']]);
+    $terms = json_decode((string) $response->getBody(), TRUE)['thematiques'];
+    // Retrait effectif de « Vélo », et « mer » réutilise le terme « Mer ».
+    $this->assertCount(1, $terms);
+    $this->assertSame('Mer', $terms[0]['name']);
+    $search = json_decode((string) $this->apiRequest($this->userA, 'GET', '/thematiques', NULL, ['q' => 'me'])->getBody(), TRUE);
+    $this->assertSame(['Mer'], array_column($search['items'], 'name'));
+
+    // Baselines : création idempotente dépubliée, isolation, cycle complet.
+    $baselineUuid = '22222222-3333-4444-8555-666666666666';
+    $payload = [
+      'uuid' => $baselineUuid,
+      'title' => 'Baseline de A',
+      'body' => 'Une note géolocalisée.',
+      'lat' => 48.11,
+      'lng' => -1.68,
+      'thematiques' => ['Mer'],
+    ];
+    $response = $this->apiRequest($this->userA, 'POST', '/baselines', $payload);
+    $this->assertSame(201, $response->getStatusCode());
+    $baseline = json_decode((string) $response->getBody(), TRUE);
+    $this->assertFalse($baseline['published']);
+    $this->assertSame(48.11, $baseline['coordinates']['lat']);
+    $this->assertSame('Mer', $baseline['thematiques'][0]['name']);
+    $this->assertSame(200, $this->apiRequest($this->userA, 'POST', '/baselines', $payload)->getStatusCode());
+    $this->assertSame(409, $this->apiRequest($this->userB, 'POST', '/baselines', $payload)->getStatusCode());
+    $this->assertSame(404, $this->apiRequest($this->userB, 'PATCH', "/baselines/$baselineUuid", ['title' => 'Piraté'])->getStatusCode());
+    $listA = json_decode((string) $this->apiRequest($this->userA, 'GET', '/baselines')->getBody(), TRUE);
+    $this->assertSame(1, $listA['total']);
+    $response = $this->apiRequest($this->userA, 'PATCH', "/baselines/$baselineUuid", ['published' => TRUE, 'thematiques' => []]);
+    $patched = json_decode((string) $response->getBody(), TRUE);
+    $this->assertTrue($patched['published']);
+    $this->assertSame([], $patched['thematiques']);
+    $this->assertSame(204, $this->apiRequest($this->userA, 'DELETE', "/baselines/$baselineUuid")->getStatusCode());
+    $this->assertSame(404, $this->apiRequest($this->userA, 'PATCH', "/baselines/$baselineUuid", ['title' => 'x'])->getStatusCode());
   }
 
   /**
@@ -243,8 +314,10 @@ final class ApiEndpointsTest extends BrowserTestBase {
    *   Le chemin relatif à /opencar/api/v1.
    * @param array<string, mixed>|null $json
    *   Le corps JSON éventuel.
+   * @param array<string, string> $query
+   *   Paramètres de requête supplémentaires.
    */
-  private function apiRequest(?UserInterface $user, string $method, string $path, ?array $json = NULL): ResponseInterface {
+  private function apiRequest(?UserInterface $user, string $method, string $path, ?array $json = NULL, array $query = []): ResponseInterface {
     $options = ['http_errors' => FALSE];
     if ($user !== NULL) {
       $options['auth'] = [$user->getAccountName(), $user->passRaw];
@@ -252,7 +325,7 @@ final class ApiEndpointsTest extends BrowserTestBase {
     if ($json !== NULL) {
       $options['json'] = $json;
     }
-    $url = $this->buildUrl('opencar/api/v1' . $path, ['query' => ['_format' => 'json']]);
+    $url = $this->buildUrl('opencar/api/v1' . $path, ['query' => $query + ['_format' => 'json']]);
     return $this->getHttpClient()->request($method, $url, $options);
   }
 

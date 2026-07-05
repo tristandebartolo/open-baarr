@@ -43,6 +43,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="baselines"
+        options={{
+          title: 'Baselines',
+          tabBarIcon: ({ color, size }) => <Ionicons name="flag" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Réglages',

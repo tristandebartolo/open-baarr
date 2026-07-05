@@ -29,6 +29,7 @@ import { CartesianChart, Line } from 'victory-native';
 
 import { MapViewer } from '@/components/map-viewer';
 import { PhotoFormModal, type PhotoFormValues } from '@/components/photo-form';
+import { ThematiquesPicker } from '@/components/thematiques-picker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ACTIVITY_COLORS, ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
@@ -523,7 +524,12 @@ export default function TripDetailScreen() {
                 </>
               )}
 
-              {tab === 'notes' && <NotesForm detail={detail} onSaved={setDetail} />}
+              {tab === 'notes' && (
+                <>
+                  <NotesForm detail={detail} onSaved={setDetail} />
+                  <TripThematiques detail={detail} onSaved={setDetail} />
+                </>
+              )}
 
               {tab === 'galerie' && (
                 <Gallery
@@ -698,6 +704,49 @@ function EditableTitle({
         </ThemedText>
       )}
     </View>
+  );
+}
+
+/**
+ * Thématiques du trajet : chaque ajout/retrait envoie immédiatement la
+ * liste complète (remplacement du champ côté serveur).
+ */
+function TripThematiques({
+  detail,
+  onSaved,
+}: {
+  detail: TripDetail;
+  onSaved: (detail: TripDetail) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = async (names: string[]) => {
+    setSaving(true);
+    try {
+      onSaved(await patchTrip(detail.uuid, { thematiques: names }));
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Mise à jour impossible.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <SectionTitle title="THÉMATIQUES" />
+      <ThematiquesPicker
+        value={detail.thematiques.map((term) => term.name)}
+        onChange={(names) => void handleChange(names)}
+        disabled={saving}
+      />
+      {error !== null && (
+        <ThemedText type="small" style={styles.error}>
+          {error}
+        </ThemedText>
+      )}
+    </>
   );
 }
 

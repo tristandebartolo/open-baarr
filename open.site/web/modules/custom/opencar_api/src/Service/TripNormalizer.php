@@ -63,6 +63,7 @@ final class TripNormalizer {
         'feeling' => $this->intValue($trip, 'field_feeling'),
         'fatigue' => $this->intValue($trip, 'field_fatigue'),
       ],
+      'thematiques' => $this->thematiques($trip),
       'created' => (int) $trip->getCreatedTime(),
       'changed' => (int) $trip->getChangedTime(),
     ];
@@ -150,6 +151,52 @@ final class TripNormalizer {
       return NULL;
     }
     return (string) $media->get($field)->value;
+  }
+
+  /**
+   * Normalise un node baseline en tableau JSON.
+   *
+   * @return array<string, mixed>
+   *   La représentation JSON de la baseline.
+   */
+  public function normalizeBaseline(NodeInterface $baseline): array {
+    $coordinates = NULL;
+    if ($baseline->hasField('field_coordinates') && !$baseline->get('field_coordinates')->isEmpty()) {
+      $item = $baseline->get('field_coordinates')->first();
+      $lat = $item?->get('lat')->getValue();
+      $lng = $item?->get('lng')->getValue();
+      if ($lat !== NULL && $lng !== NULL) {
+        $coordinates = ['lat' => (float) $lat, 'lng' => (float) $lng];
+      }
+    }
+
+    return [
+      'uuid' => $baseline->uuid(),
+      'title' => $baseline->label(),
+      'published' => $baseline->isPublished(),
+      'body' => $this->stringValue($baseline, 'field_body'),
+      'coordinates' => $coordinates,
+      'thematiques' => $this->thematiques($baseline),
+      'created' => (int) $baseline->getCreatedTime(),
+      'changed' => (int) $baseline->getChangedTime(),
+    ];
+  }
+
+  /**
+   * Termes de field_thematiques sous forme {id, name}.
+   *
+   * @return list<array{id: int, name: string}>
+   *   Les thématiques du node.
+   */
+  private function thematiques(NodeInterface $node): array {
+    if (!$node->hasField('field_thematiques')) {
+      return [];
+    }
+    $terms = [];
+    foreach ($node->get('field_thematiques')->referencedEntities() as $term) {
+      $terms[] = ['id' => (int) $term->id(), 'name' => (string) $term->label()];
+    }
+    return $terms;
   }
 
   /**

@@ -362,6 +362,7 @@ html.oc-map-noscroll {
   gap: 20px;
 }
 
+
 @media (min-width: 640px) {
   .view-trajets .view-content {
     grid-template-columns: repeat(2, 1fr);
@@ -372,6 +373,12 @@ html.oc-map-noscroll {
   .view-trajets .view-content {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.view-trajets.view-display-id-page_2 .view-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }
 
 /* --------------------------------------------------------------------------

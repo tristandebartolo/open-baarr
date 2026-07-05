@@ -114,7 +114,7 @@ final class PayloadValidator {
       'title', 'chapo', 'body', 'activity_type', 'started_at', 'ended_at',
       'weight', 'feeling', 'fatigue', 'hydration', 'steps', 'calories',
       'heart_rate_avg', 'heart_rate_max', 'battery_start', 'battery_end',
-      'device_info', 'published',
+      'device_info', 'published', 'thematiques',
       'temperature', 'weather_code', 'wind_speed',
     ];
     $this->rejectUnknownKeys($payload, $allowed);
@@ -188,9 +188,126 @@ final class PayloadValidator {
         $changes['published'] = $payload['published'];
       }
     }
+    if (array_key_exists('thematiques', $payload)) {
+      $changes['thematiques'] = $this->optionalThematiques($payload, $errors);
+    }
 
     $this->throwIfErrors($errors);
     return $changes;
+  }
+
+  /**
+   * Valide le payload de POST /baselines (création idempotente).
+   *
+   * @param array<mixed> $payload
+   *   Le payload décodé.
+   *
+   * @return array<string, mixed>
+   *   Le payload normalisé.
+   */
+  public function validateBaselineCreate(array $payload): array {
+    $this->rejectUnknownKeys($payload, ['uuid', 'title', 'body', 'lat', 'lng', 'thematiques']);
+    $errors = [];
+
+    $uuid = $payload['uuid'] ?? NULL;
+    if (!is_string($uuid) || !Uuid::isValid($uuid)) {
+      $errors[] = 'uuid : UUID client requis et valide.';
+    }
+    $title = $payload['title'] ?? NULL;
+    if (!is_string($title) || trim($title) === '' || mb_strlen($title) > 255) {
+      $errors[] = 'title : chaîne non vide de 255 caractères maximum requise.';
+    }
+    $body = $this->optionalString($payload, 'body', 10000, $errors);
+    $lat = $this->optionalFloat($payload, 'lat', -90.0, 90.0, $errors);
+    $lng = $this->optionalFloat($payload, 'lng', -180.0, 180.0, $errors);
+    if (($lat === NULL) !== ($lng === NULL)) {
+      $errors[] = 'lat/lng : fournir les deux coordonnées, ou aucune.';
+    }
+    $thematiques = array_key_exists('thematiques', $payload)
+      ? $this->optionalThematiques($payload, $errors)
+      : NULL;
+
+    $this->throwIfErrors($errors);
+    return [
+      'uuid' => mb_strtolower((string) $uuid),
+      'title' => trim((string) $title),
+      'body' => $body,
+      'coordinates' => $lat !== NULL && $lng !== NULL ? ['lat' => $lat, 'lng' => $lng] : NULL,
+      'thematiques' => $thematiques,
+    ];
+  }
+
+  /**
+   * Valide le payload de PATCH /baselines/{uuid}.
+   *
+   * @param array<mixed> $payload
+   *   Le payload décodé.
+   *
+   * @return array<string, mixed>
+   *   Uniquement les clés fournies, normalisées.
+   */
+  public function validateBaselineUpdate(array $payload): array {
+    $this->rejectUnknownKeys($payload, ['title', 'body', 'published', 'thematiques']);
+    if ($payload === []) {
+      throw new UnprocessableEntityHttpException('Payload vide : au moins un champ à modifier est requis.');
+    }
+    $errors = [];
+    $changes = [];
+
+    if (array_key_exists('title', $payload)) {
+      if (!is_string($payload['title']) || trim($payload['title']) === '' || mb_strlen($payload['title']) > 255) {
+        $errors[] = 'title : chaîne non vide de 255 caractères maximum requise.';
+      }
+      else {
+        $changes['title'] = trim($payload['title']);
+      }
+    }
+    if (array_key_exists('body', $payload)) {
+      $changes['body'] = $this->optionalString($payload, 'body', 10000, $errors);
+    }
+    if (array_key_exists('published', $payload)) {
+      if (!is_bool($payload['published'])) {
+        $errors[] = 'published : booléen requis.';
+      }
+      else {
+        $changes['published'] = $payload['published'];
+      }
+    }
+    if (array_key_exists('thematiques', $payload)) {
+      $changes['thematiques'] = $this->optionalThematiques($payload, $errors);
+    }
+
+    $this->throwIfErrors($errors);
+    return $changes;
+  }
+
+  /**
+   * Valide la clé `thematiques` : liste de noms de termes (remplacement
+   * complet du champ — retirer un terme = renvoyer la liste sans lui).
+   *
+   * @param array<mixed> $payload
+   *   Le payload décodé.
+   * @param list<string> $errors
+   *   Accumulateur d'erreurs.
+   *
+   * @return list<string>
+   *   Les noms nettoyés.
+   */
+  private function optionalThematiques(array $payload, array &$errors): array {
+    $value = $payload['thematiques'];
+    if (!is_array($value) || count($value) > 20) {
+      $errors[] = 'thematiques : tableau de 20 noms maximum attendu.';
+      return [];
+    }
+    $names = [];
+    foreach ($value as $name) {
+      if (!is_string($name) || trim($name) === '' || mb_strlen($name) > 255) {
+        $errors[] = 'thematiques : chaque entrée doit être une chaîne non vide de 255 caractères maximum.';
+        return [];
+      }
+      $names[] = trim($name);
+    }
+    return $names;
   }
 
   /**

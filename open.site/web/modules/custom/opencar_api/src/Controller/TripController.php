@@ -8,6 +8,7 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\node\NodeInterface;
 use Drupal\opencar_api\Service\PayloadValidator;
+use Drupal\opencar_api\Service\ThematiqueResolver;
 use Drupal\opencar_api\Service\TripNormalizer;
 use Drupal\opencar_api\Service\TripRepository;
 use Drupal\opencar_core\Service\TrackPointRepository;
@@ -61,6 +62,7 @@ final class TripController extends ControllerBase {
     private readonly TrackPointRepository $trackPointRepository,
     private readonly TripMetricsCalculator $metricsCalculator,
     private readonly TripGeometryBuilder $geometryBuilder,
+    private readonly ThematiqueResolver $thematiqueResolver,
     private readonly TimeInterface $time,
   ) {}
 
@@ -75,6 +77,7 @@ final class TripController extends ControllerBase {
       $container->get('opencar_core.track_point_repository'),
       $container->get('opencar_core.trip_metrics_calculator'),
       $container->get('opencar_core.trip_geometry_builder'),
+      $container->get('opencar_api.thematique_resolver'),
       $container->get('datetime.time'),
     );
   }
@@ -163,6 +166,10 @@ final class TripController extends ControllerBase {
       }
       elseif ($key === 'published') {
         $value ? $trip->setPublished() : $trip->setUnpublished();
+      }
+      elseif ($key === 'thematiques') {
+        // Remplacement complet : retirer un terme = renvoyer la liste sans lui.
+        $this->setFieldValue($trip, 'field_thematiques', $this->thematiqueResolver->resolveNames($value));
       }
       else {
         $this->setFieldValue($trip, self::UPDATE_FIELD_MAP[$key], $value);

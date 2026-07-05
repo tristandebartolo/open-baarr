@@ -10,9 +10,10 @@ use Drupal\node\NodeInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Chargement des nodes trajet pour l'API mobile, avec contrôle de propriété.
+ * Chargement des nodes de l'API mobile (trajets, baselines), avec contrôle
+ * de propriété.
  *
- * Isolation entre utilisateurs : un trajet qui n'appartient pas au compte
+ * Isolation entre utilisateurs : un node qui n'appartient pas au compte
  * courant est traité comme inexistant (404, pas de fuite d'information),
  * sauf pour les porteurs de la permission `administer opencar`.
  */
@@ -23,24 +24,24 @@ final class TripRepository {
   ) {}
 
   /**
-   * Charge un trajet par son UUID, quel que soit son propriétaire.
+   * Charge un node par son UUID, quel que soit son propriétaire.
    */
-  public function loadByUuid(string $uuid): ?NodeInterface {
+  public function loadByUuid(string $uuid, string $bundle = 'trajet'): ?NodeInterface {
     $nodes = $this->entityTypeManager->getStorage('node')->loadByProperties([
       'uuid' => mb_strtolower($uuid),
-      'type' => 'trajet',
+      'type' => $bundle,
     ]);
     $node = reset($nodes);
     return $node instanceof NodeInterface ? $node : NULL;
   }
 
   /**
-   * Charge un trajet accessible au compte donné, sinon 404.
+   * Charge un node accessible au compte donné, sinon 404.
    */
-  public function loadForAccount(string $uuid, AccountInterface $account): NodeInterface {
-    $trip = $this->loadByUuid($uuid);
+  public function loadForAccount(string $uuid, AccountInterface $account, string $bundle = 'trajet'): NodeInterface {
+    $trip = $this->loadByUuid($uuid, $bundle);
     if ($trip === NULL || !$this->isAllowed($trip, $account)) {
-      throw new NotFoundHttpException('Trajet introuvable.');
+      throw new NotFoundHttpException('Contenu introuvable.');
     }
     return $trip;
   }
@@ -65,11 +66,11 @@ final class TripRepository {
    *   Le total (hors pagination) et la page de trajets, du plus récent au
    *   plus ancien (date de création).
    */
-  public function findForAccount(AccountInterface $account, array $filters): array {
+  public function findForAccount(AccountInterface $account, array $filters, string $bundle = 'trajet'): array {
     $storage = $this->entityTypeManager->getStorage('node');
     $query = $storage->getQuery()
       ->accessCheck(FALSE)
-      ->condition('type', 'trajet')
+      ->condition('type', $bundle)
       ->condition('uid', $account->id());
 
     if ($filters['status'] !== NULL) {
