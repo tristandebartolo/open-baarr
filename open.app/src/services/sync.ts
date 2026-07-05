@@ -3,6 +3,9 @@
  *
  * Ordre strict par trajet (protocole du plan, partie C) :
  *   1. POST /trips              — idempotent par uuid client (200 rejeu / 201)
+ *   1bis. PATCH /trips/status   — `recording` si le trajet a été rouvert
+ *                                 (« Reprendre ») alors que le serveur le
+ *                                 croyait `completed` (+ ended_at vidé)
  *   2. POST /points/batch       — paquets de 500 triés par seq, rejouables
  *                                 sans doublon (index unique trajet+seq)
  *   3. PATCH /trips             — métadonnées (battery_end, ended_at,
@@ -32,6 +35,7 @@ import * as Network from 'expo-network';
 import { ApiError, apiFetch, apiUpload } from '@/services/api';
 import {
   countUnsyncedPoints,
+  getTrip,
   getTripsNeedingSync,
   getUnsyncedPhotos,
   getUnsyncedPointsBatch,
@@ -116,6 +120,30 @@ async function ensureTripCreated(trip: TripRow): Promise<void> {
   await updateTripSyncState(trip.uuid, { serverCreated: 1, syncedStatus: 'recording' });
 }
 
+/**
+ * 1bis. Trajet rouvert localement (« Reprendre ») : le serveur le croit
+ * encore `completed`. Renvoie le statut `recording` et vide le `ended_at`
+ * périmé (PATCH dédié : pushMeta saute les null). `syncedStatus` n'est
+ * remis à `recording` qu'après les 200 — rejouable hors-ligne.
+ */
+async function pushReopenedStatus(trip: TripRow): Promise<void> {
+  if (
+    trip.syncedStatus !== 'completed' ||
+    (trip.status !== 'recording' && trip.status !== 'paused')
+  ) {
+    return;
+  }
+  await apiFetch(`/opencar/api/v1/trips/${trip.uuid}/status`, {
+    method: 'PATCH',
+    body: { status: 'recording' },
+  });
+  await apiFetch(`/opencar/api/v1/trips/${trip.uuid}`, {
+    method: 'PATCH',
+    body: { ended_at: null },
+  });
+  await updateTripSyncState(trip.uuid, { syncedStatus: 'recording' });
+}
+
 /** 2. Points non synchronisés, par paquets de 500 triés par seq. */
 async function pushPoints(trip: TripRow): Promise<number> {
   let pushed = 0;
@@ -156,22 +184,26 @@ async function pushMeta(trip: TripRow): Promise<void> {
 
 /** 4. Statut `completed` — déclenche le recalcul serveur (métriques + tracé). */
 async function pushCompletedStatus(trip: TripRow): Promise<void> {
-  if (trip.status !== 'completed' || trip.syncedStatus === 'completed') {
+  // Relecture fraîche : « Reprendre » a pu rouvrir le trajet pendant que ce
+  // run itérait sur un snapshot pris avant — on ne renvoie pas `completed`
+  // pour un trajet redevenu actif.
+  const fresh = (await getTrip(trip.uuid)) ?? trip;
+  if (fresh.status !== 'completed' || fresh.syncedStatus === 'completed') {
     return;
   }
-  if ((await countUnsyncedPoints(trip.uuid)) > 0) {
+  if ((await countUnsyncedPoints(fresh.uuid)) > 0) {
     // Des points restent à pousser (échec partiel plus haut) : le statut
     // attendra le prochain run pour que la consolidation soit complète.
     return;
   }
-  await apiFetch(`/opencar/api/v1/trips/${trip.uuid}/status`, {
+  await apiFetch(`/opencar/api/v1/trips/${fresh.uuid}/status`, {
     method: 'PATCH',
     body: {
       status: 'completed',
-      ...(trip.endedAt !== null ? { at: toEpochSeconds(trip.endedAt) } : {}),
+      ...(fresh.endedAt !== null ? { at: toEpochSeconds(fresh.endedAt) } : {}),
     },
   });
-  await updateTripSyncState(trip.uuid, { syncedStatus: 'completed' });
+  await updateTripSyncState(fresh.uuid, { syncedStatus: 'completed' });
 }
 
 /** Nom/type de fichier pour le multipart RN à partir de l'URI locale. */
@@ -248,6 +280,7 @@ async function runSync(reason: string): Promise<SyncResult> {
   for (const trip of pending) {
     try {
       await ensureTripCreated(trip);
+      await pushReopenedStatus(trip);
       result.pointsSynced += await pushPoints(trip);
       await pushMeta(trip);
       await pushCompletedStatus(trip);

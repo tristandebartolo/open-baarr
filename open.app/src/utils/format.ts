@@ -47,3 +47,15 @@ export function formatDayShort(isoDay: string): string {
   const [, month, day] = isoDay.split('-');
   return month !== undefined && day !== undefined ? `${day}/${month}` : isoDay;
 }
+
+/** Epoch secondes → « Juillet 2026 » (en-têtes de sections de l'historique). */
+export function formatMonthYear(epochSeconds: number | null): string {
+  if (epochSeconds === null) {
+    return 'Sans date';
+  }
+  const label = new Date(epochSeconds * 1000).toLocaleDateString('fr-FR', {
+    month: 'long',
+    year: 'numeric',
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}

@@ -26,6 +26,15 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+/** Couleurs sémantiques partagées (identiques en light/dark). */
+export const Palette = {
+  accent: '#208AEF',
+  danger: '#D64545',
+  warning: '#B8860B',
+  success: '#2E8B57',
+  altitude: '#7A5AF8',
+} as const;
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */

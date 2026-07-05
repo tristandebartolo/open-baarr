@@ -114,7 +114,7 @@ final class PayloadValidator {
       'title', 'body', 'activity_type', 'started_at', 'ended_at', 'weight',
       'feeling', 'fatigue', 'hydration', 'steps', 'calories',
       'heart_rate_avg', 'heart_rate_max', 'battery_start', 'battery_end',
-      'device_info',
+      'device_info', 'published',
     ];
     $this->rejectUnknownKeys($payload, $allowed);
     if ($payload === []) {
@@ -172,6 +172,14 @@ final class PayloadValidator {
     }
     if (array_key_exists('device_info', $payload)) {
       $changes['device_info'] = $this->optionalString($payload, 'device_info', 255, $errors);
+    }
+    if (array_key_exists('published', $payload)) {
+      if (!is_bool($payload['published'])) {
+        $errors[] = 'published : booléen requis.';
+      }
+      else {
+        $changes['published'] = $payload['published'];
+      }
     }
 
     $this->throwIfErrors($errors);

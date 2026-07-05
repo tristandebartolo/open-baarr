@@ -27,6 +27,18 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   hiking: 'trail-sign',
 };
 
+/**
+ * Couleur signature par activité (icônes, pastilles, polylines).
+ * Pastille de fond : suffixer l'alpha hex, ex. `ACTIVITY_COLORS[type] + '22'`.
+ */
+export const ACTIVITY_COLORS: Record<ActivityType, string> = {
+  car: '#208AEF',
+  motorcycle: '#E8890C',
+  running: '#E25C4A',
+  walking: '#2E9E6B',
+  hiking: '#7A5AF8',
+};
+
 export type GpsProfile = {
   accuracy: Location.Accuracy;
   /** Intervalle mini entre deux fixes (ms) — honoré par Android uniquement. */

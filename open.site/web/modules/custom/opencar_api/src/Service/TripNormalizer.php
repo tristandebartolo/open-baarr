@@ -34,6 +34,7 @@ final class TripNormalizer {
     $data = [
       'uuid' => $trip->uuid(),
       'title' => $trip->label(),
+      'published' => $trip->isPublished(),
       'activity_type' => $this->stringValue($trip, 'field_activity_type'),
       'status' => $this->stringValue($trip, 'field_trip_status'),
       'started_at' => $this->intValue($trip, 'field_started_at'),

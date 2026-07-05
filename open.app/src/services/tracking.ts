@@ -16,8 +16,10 @@ import { ACTIVITY_LABELS, GPS_PROFILES } from '@/constants/activities';
 import {
   completeTrip,
   getActiveTrip,
+  getTrip,
   insertTrip,
   pauseTrip,
+  reopenTrip,
   resumeTrip,
 } from '@/db/queries';
 import type { ActivityType, TripRow } from '@/db/schema';
@@ -122,6 +124,33 @@ export async function resumeRecording(trip: TripRow): Promise<void> {
 export async function stopRecording(trip: TripRow): Promise<void> {
   await stopLocationUpdates();
   await completeTrip(trip, Date.now(), await batteryPercent());
+}
+
+/**
+ * Rouvre un trajet terminé (enregistré sur cet appareil) : nouveau segment,
+ * le temps d'arrêt compte comme pause, la sync renverra le statut
+ * `recording` puis les métriques seront recalculées au prochain
+ * « Terminer ». Refuse si un autre enregistrement est actif : la tâche GPS
+ * route ses fixes vers l'unique trajet `recording`.
+ */
+export async function resumeCompletedRecording(trip: TripRow): Promise<TripRow> {
+  if (trip.status !== 'completed') {
+    throw new Error('Seul un trajet terminé peut être repris.');
+  }
+  if ((await getActiveTrip()) !== null) {
+    throw new Error('Un enregistrement est déjà en cours.');
+  }
+  const foreground = await Location.requestForegroundPermissionsAsync();
+  if (!foreground.granted) {
+    throw new Error('Permission de localisation refusée : impossible de reprendre le trajet.');
+  }
+  await reopenTrip(trip, Date.now());
+  await startLocationUpdates(trip.activityType);
+  const reopened = await getTrip(trip.uuid);
+  if (reopened === null) {
+    throw new Error('Trajet introuvable après réouverture.');
+  }
+  return reopened;
 }
 
 /**

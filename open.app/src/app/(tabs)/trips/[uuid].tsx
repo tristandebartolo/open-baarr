@@ -1,21 +1,25 @@
 /**
- * Détail d'un trajet : carte du tracé, métriques, courbes
- * vitesse/altitude/FC, santé manuelle (PATCH /trips), photos, export GPX.
+ * Détail d'un trajet : carte héro du tracé, métriques, courbes
+ * vitesse/altitude/FC, santé manuelle (PATCH /trips), photos, export GPX,
+ * renommage, reprise d'un trajet terminé et suppression.
  *
  * Le tracé vient des points SQLite si le trajet a été enregistré sur cet
  * appareil ; sinon il est reconstruit depuis l'export GPX du serveur
- * (l'API n'expose pas les points bruts).
+ * (l'API n'expose pas les points bruts). La présence de la ligne locale
+ * (`getTrip`) est aussi le critère du bouton « Reprendre ».
  */
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   TextInput,
   View,
 } from 'react-native';
@@ -24,17 +28,21 @@ import { CartesianChart, Line } from 'victory-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ACTIVITY_LABELS } from '@/constants/activities';
-import { Spacing } from '@/constants/theme';
-import { getTripPoints } from '@/db/queries';
+import { ACTIVITY_COLORS, ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
+import { Palette, Spacing } from '@/constants/theme';
+import { deleteLocalTrip, getTrip, getTripPoints, updateTripTitle } from '@/db/queries';
+import type { TripRow } from '@/db/schema';
 import { useTheme } from '@/hooks/use-theme';
 import { fetchTripTrack, shareTripGpx } from '@/services/gpx';
+import { deleteLocalPhoto } from '@/services/photos';
 import {
+  deleteTrip,
   fetchTripDetail,
   patchTrip,
-  type ManualHealthPatch,
   type TripDetail,
+  type TripPatch,
 } from '@/services/trips';
+import { useRecordStore } from '@/stores/record-store';
 import { chartFont, downsample } from '@/utils/chart';
 import { haversineMeters } from '@/utils/geo';
 import {
@@ -44,10 +52,6 @@ import {
   formatElevation,
   formatSpeed,
 } from '@/utils/format';
-
-const ACCENT = '#208AEF';
-const ALTITUDE = '#7A5AF8';
-const HEART = '#D64545';
 
 /** Point de tracé unifié (SQLite local ou GPX serveur). */
 type TrackPoint = {
@@ -67,11 +71,19 @@ export default function TripDetailScreen() {
   const theme = useTheme();
 
   const [detail, setDetail] = useState<TripDetail | null>(null);
+  const [localTrip, setLocalTrip] = useState<TripRow | null>(null);
   const [track, setTrack] = useState<TrackPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [resuming, setResuming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const phase = useRecordStore((s) => s.phase);
+  const activeTrip = useRecordStore((s) => s.trip);
+  const resumeCompleted = useRecordStore((s) => s.resumeCompleted);
 
   const load = useCallback(async () => {
+    setLocalTrip(await getTrip(uuid).catch(() => null));
     try {
       setDetail(await fetchTripDetail(uuid));
       setError(null);
@@ -86,11 +98,16 @@ export default function TripDetailScreen() {
     }
   }, [uuid]);
 
-  // setState uniquement après await (pas de rendu en cascade), le linter ne peut pas le voir.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
-  }, [load]);
+  // Rechargé à chaque focus : après une reprise + nouveau « Terminer »,
+  // les métriques serveur ont changé.
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
+
+  const activityColor =
+    detail?.activity_type != null ? ACTIVITY_COLORS[detail.activity_type] : Palette.accent;
 
   const segments = useMemo(() => {
     const bySeg = new Map<number, { latitude: number; longitude: number }[]>();
@@ -161,16 +178,78 @@ export default function TripDetailScreen() {
     }
   };
 
+  // Reprise : uniquement un trajet terminé ET enregistré sur cet appareil.
+  const canResume =
+    localTrip !== null && localTrip.status === 'completed' && phase === 'idle' && !deleting;
+
+  const handleResume = async () => {
+    if (resuming) {
+      return;
+    }
+    setResuming(true);
+    try {
+      await resumeCompleted(uuid);
+      router.navigate('/(tabs)/record');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Reprise impossible.');
+    } finally {
+      setResuming(false);
+    }
+  };
+
+  const isActiveTrip = activeTrip !== null && activeTrip.uuid === uuid && phase !== 'idle';
+
+  const handleDelete = () => {
+    if (deleting || isActiveTrip) {
+      return;
+    }
+    Alert.alert(
+      'Supprimer le trajet',
+      'Le trajet, ses points et ses photos seront définitivement supprimés.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: () => void performDelete(),
+        },
+      ],
+    );
+  };
+
+  const performDelete = async () => {
+    setDeleting(true);
+    try {
+      // Le serveur d'abord : pas de suppression locale sans son 204 (un
+      // trajet jamais synchronisé se supprime localement, sans appel API).
+      if (localTrip === null || localTrip.serverCreated === 1) {
+        await deleteTrip(uuid);
+      }
+      if (localTrip !== null) {
+        for (const localUri of await deleteLocalTrip(uuid)) {
+          deleteLocalPhoto(localUri);
+        }
+      }
+      router.back();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Suppression impossible.');
+      setDeleting(false);
+    }
+  };
+
+  const handleRename = async (title: string) => {
+    const updated = await patchTrip(uuid, { title } satisfies TripPatch);
+    setDetail(updated);
+    if (localTrip !== null) {
+      await updateTripTitle(uuid, updated.title);
+      setLocalTrip(await getTrip(uuid));
+    }
+  };
+
   return (
     <ThemedView style={styles.flex}>
-      <Stack.Screen options={{ title: detail?.title ?? 'Trajet' }} />
+      <Stack.Screen options={{ title: detail?.title ?? 'Trajet', headerTransparent: false }} />
       <ScrollView contentContainerStyle={styles.container}>
-        {error !== null && (
-          <ThemedText type="small" style={styles.error}>
-            {error}
-          </ThemedText>
-        )}
-
         {region !== null && (
           <MapView style={styles.map} initialRegion={region}>
             {segments.map((segment) =>
@@ -178,7 +257,7 @@ export default function TripDetailScreen() {
                 <Polyline
                   key={segment.seg}
                   coordinates={segment.coords}
-                  strokeColor={ACCENT}
+                  strokeColor={activityColor}
                   strokeWidth={4}
                 />
               ) : null,
@@ -203,125 +282,216 @@ export default function TripDetailScreen() {
           </MapView>
         )}
 
-        {detail !== null && (
-          <>
-            <ThemedText type="small" themeColor="textSecondary">
-              {detail.activity_type !== null ? `${ACTIVITY_LABELS[detail.activity_type]} · ` : ''}
-              {formatDateTime(detail.started_at)}
-              {detail.points_count > 0 ? ` · ${detail.points_count} points` : ''}
+        {/* Feuille de contenu qui chevauche la carte héro. */}
+        <View
+          style={[
+            styles.sheet,
+            { backgroundColor: theme.background },
+            region === null && styles.sheetNoMap,
+          ]}>
+          {error !== null && (
+            <ThemedText type="small" style={styles.error}>
+              {error}
             </ThemedText>
+          )}
 
-            <View style={styles.metricsGrid}>
-              <Metric
-                label="Distance"
-                value={detail.metrics.distance !== null ? formatDistance(detail.metrics.distance) : '—'}
-              />
-              <Metric
-                label="En mouvement"
-                value={
-                  detail.metrics.duration !== null
-                    ? formatDuration(detail.metrics.duration * 1000)
-                    : '—'
-                }
-              />
-              <Metric
-                label="Durée totale"
-                value={
-                  detail.metrics.duration_total !== null
-                    ? formatDuration(detail.metrics.duration_total * 1000)
-                    : '—'
-                }
-              />
-              <Metric label="Vitesse moy." value={formatSpeed(detail.metrics.speed_avg)} />
-              <Metric label="Vitesse max" value={formatSpeed(detail.metrics.speed_max)} />
-              <Metric
-                label="D+ / D−"
-                value={`${formatElevation(detail.metrics.elevation_gain)} / ${formatElevation(detail.metrics.elevation_loss)}`}
-              />
-            </View>
-
-            {(detail.health.heart_rate_avg !== null ||
-              detail.health.steps !== null ||
-              detail.health.calories !== null) && (
-              <>
-                <SectionTitle title="SANTÉ (CAPTEURS)" />
-                <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-                  <Row
-                    label="FC moyenne / max"
-                    value={
-                      detail.health.heart_rate_avg !== null || detail.health.heart_rate_max !== null
-                        ? `${detail.health.heart_rate_avg ?? '—'} / ${detail.health.heart_rate_max ?? '—'} bpm`
-                        : '—'
+          {detail !== null && (
+            <>
+              <View style={styles.header}>
+                <View
+                  style={[styles.activityBadge, { backgroundColor: activityColor + '22' }]}>
+                  <Ionicons
+                    name={
+                      (detail.activity_type !== null
+                        ? ACTIVITY_ICONS[detail.activity_type]
+                        : 'map') as keyof typeof Ionicons.glyphMap
                     }
-                  />
-                  <Row
-                    label="Pas"
-                    value={detail.health.steps !== null ? String(detail.health.steps) : '—'}
-                  />
-                  <Row
-                    label="Calories actives"
-                    value={
-                      detail.health.calories !== null
-                        ? `${Math.round(detail.health.calories)} kcal`
-                        : '—'
-                    }
+                    size={22}
+                    color={activityColor}
                   />
                 </View>
-              </>
-            )}
+                <View style={styles.headerBody}>
+                  <EditableTitle title={detail.title} onSave={handleRename} />
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {detail.activity_type !== null
+                      ? `${ACTIVITY_LABELS[detail.activity_type]} · `
+                      : ''}
+                    {formatDateTime(detail.started_at)}
+                  </ThemedText>
+                </View>
+                {detail.status !== null && detail.status !== 'completed' && (
+                  <StatusBadge status={detail.status} />
+                )}
+              </View>
 
-            {speedSeries.length > 1 && (
-              <Chart title="VITESSE (KM/H)" data={speedSeries} color={ACCENT} theme={theme} />
-            )}
-            {altitudeSeries.length > 1 && (
-              <Chart title="ALTITUDE (M)" data={altitudeSeries} color={ALTITUDE} theme={theme} />
-            )}
-            {heartSeries.length > 1 && (
-              <Chart title="FRÉQUENCE CARDIAQUE (BPM)" data={heartSeries} color={HEART} theme={theme} />
-            )}
+              <PublishRow detail={detail} onSaved={setDetail} onError={setError} />
 
-            {detail.photos.length > 0 && (
-              <>
-                <SectionTitle title="PHOTOS" />
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={styles.photosRow}>
-                    {detail.photos.map((photo) => (
-                      <Image
-                        key={photo.uuid}
-                        source={{ uri: photo.url }}
-                        style={styles.photo}
-                        contentFit="cover"
-                        transition={150}
-                      />
-                    ))}
+              <View style={[styles.distanceCard, { backgroundColor: theme.backgroundElement }]}>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.metricLabel}>
+                  DISTANCE
+                </ThemedText>
+                <ThemedText type="subtitle">
+                  {detail.metrics.distance !== null
+                    ? formatDistance(detail.metrics.distance)
+                    : '—'}
+                </ThemedText>
+              </View>
+
+              <View style={styles.metricsGrid}>
+                <Metric
+                  icon="time-outline"
+                  label="En mouvement"
+                  value={
+                    detail.metrics.duration !== null
+                      ? formatDuration(detail.metrics.duration * 1000)
+                      : '—'
+                  }
+                />
+                <Metric
+                  icon="hourglass-outline"
+                  label="Durée totale"
+                  value={
+                    detail.metrics.duration_total !== null
+                      ? formatDuration(detail.metrics.duration_total * 1000)
+                      : '—'
+                  }
+                />
+                <Metric
+                  icon="speedometer-outline"
+                  label="Vitesse moy."
+                  value={formatSpeed(detail.metrics.speed_avg)}
+                />
+                <Metric
+                  icon="flash-outline"
+                  label="Vitesse max"
+                  value={formatSpeed(detail.metrics.speed_max)}
+                />
+                <Metric
+                  icon="trending-up-outline"
+                  label="Dénivelé +"
+                  value={formatElevation(detail.metrics.elevation_gain)}
+                />
+                <Metric
+                  icon="trending-down-outline"
+                  label="Dénivelé −"
+                  value={formatElevation(detail.metrics.elevation_loss)}
+                />
+              </View>
+
+              {(detail.health.heart_rate_avg !== null ||
+                detail.health.steps !== null ||
+                detail.health.calories !== null) && (
+                <>
+                  <SectionTitle title="SANTÉ (CAPTEURS)" />
+                  <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+                    <Row
+                      label="FC moyenne / max"
+                      value={
+                        detail.health.heart_rate_avg !== null ||
+                        detail.health.heart_rate_max !== null
+                          ? `${detail.health.heart_rate_avg ?? '—'} / ${detail.health.heart_rate_max ?? '—'} bpm`
+                          : '—'
+                      }
+                    />
+                    <Row
+                      label="Pas"
+                      value={detail.health.steps !== null ? String(detail.health.steps) : '—'}
+                    />
+                    <Row
+                      label="Calories actives"
+                      value={
+                        detail.health.calories !== null
+                          ? `${Math.round(detail.health.calories)} kcal`
+                          : '—'
+                      }
+                    />
                   </View>
-                </ScrollView>
-              </>
-            )}
-
-            <HealthForm detail={detail} onSaved={setDetail} />
-
-            <Pressable
-              onPress={() => void handleExport()}
-              style={({ pressed }) => [
-                styles.exportButton,
-                { backgroundColor: ACCENT, opacity: pressed || exporting ? 0.8 : 1 },
-              ]}>
-              {exporting ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Ionicons name="share-outline" size={20} color="#ffffff" />
+                </>
               )}
-              <ThemedText type="smallBold" style={styles.exportLabel}>
-                Exporter en GPX
-              </ThemedText>
-            </Pressable>
-          </>
-        )}
 
-        {detail === null && error === null && (
-          <ActivityIndicator size="large" color={ACCENT} style={styles.loader} />
-        )}
+              {speedSeries.length > 1 && (
+                <Chart
+                  title="VITESSE (KM/H)"
+                  data={speedSeries}
+                  color={Palette.accent}
+                  theme={theme}
+                />
+              )}
+              {altitudeSeries.length > 1 && (
+                <Chart
+                  title="ALTITUDE (M)"
+                  data={altitudeSeries}
+                  color={Palette.altitude}
+                  theme={theme}
+                />
+              )}
+              {heartSeries.length > 1 && (
+                <Chart
+                  title="FRÉQUENCE CARDIAQUE (BPM)"
+                  data={heartSeries}
+                  color={Palette.danger}
+                  theme={theme}
+                />
+              )}
+
+              {detail.photos.length > 0 && (
+                <>
+                  <SectionTitle title="PHOTOS" />
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={styles.photosRow}>
+                      {detail.photos.map((photo) => (
+                        <Image
+                          key={photo.uuid}
+                          source={{ uri: photo.url }}
+                          style={styles.photo}
+                          contentFit="cover"
+                          transition={150}
+                        />
+                      ))}
+                    </View>
+                  </ScrollView>
+                </>
+              )}
+
+              <HealthForm detail={detail} onSaved={setDetail} />
+
+              <View style={styles.actions}>
+                {canResume && (
+                  <ActionPill
+                    icon="play"
+                    label="Reprendre ce trajet"
+                    color={Palette.accent}
+                    textColor="#ffffff"
+                    busy={resuming}
+                    onPress={() => void handleResume()}
+                  />
+                )}
+                <ActionPill
+                  icon="share-outline"
+                  label="Exporter en GPX"
+                  color={theme.backgroundElement}
+                  textColor={theme.text}
+                  busy={exporting}
+                  onPress={() => void handleExport()}
+                />
+                {!isActiveTrip && (
+                  <ActionPill
+                    icon="trash-outline"
+                    label="Supprimer le trajet"
+                    color="transparent"
+                    textColor={Palette.danger}
+                    busy={deleting}
+                    onPress={handleDelete}
+                  />
+                )}
+              </View>
+            </>
+          )}
+
+          {detail === null && error === null && (
+            <ActivityIndicator size="large" color={Palette.accent} style={styles.loader} />
+          )}
+        </View>
       </ScrollView>
     </ThemedView>
   );
@@ -360,6 +530,159 @@ async function loadTrack(uuid: string): Promise<TrackPoint[]> {
   });
 }
 
+/** Titre avec édition inline (crayon → TextInput → PATCH). */
+function EditableTitle({
+  title,
+  onSave,
+}: {
+  title: string;
+  onSave: (title: string) => Promise<void>;
+}) {
+  const theme = useTheme();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(title);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const startEditing = () => {
+    setDraft(title);
+    setSaveError(null);
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    const trimmed = draft.trim();
+    if (trimmed === '' || trimmed.length > 255) {
+      setSaveError('Titre requis (255 caractères max).');
+      return;
+    }
+    if (trimmed === title) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(trimmed);
+      setEditing(false);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Renommage impossible.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <Pressable onPress={startEditing} style={styles.titleRow} accessibilityRole="button">
+        <ThemedText type="smallBold" style={styles.title} numberOfLines={2}>
+          {title}
+        </ThemedText>
+        <Ionicons name="pencil" size={14} color={theme.textSecondary} />
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.titleEdit}>
+      <TextInput
+        style={[
+          styles.titleInput,
+          { backgroundColor: theme.backgroundElement, color: theme.text },
+        ]}
+        value={draft}
+        onChangeText={setDraft}
+        autoFocus
+        maxLength={255}
+        editable={!saving}
+        onSubmitEditing={() => void handleSave()}
+        returnKeyType="done"
+      />
+      <View style={styles.titleEditActions}>
+        <Pressable onPress={() => setEditing(false)} disabled={saving} hitSlop={8}>
+          <Ionicons name="close" size={20} color={theme.textSecondary} />
+        </Pressable>
+        <Pressable onPress={() => void handleSave()} disabled={saving} hitSlop={8}>
+          {saving ? (
+            <ActivityIndicator size="small" color={Palette.accent} />
+          ) : (
+            <Ionicons name="checkmark" size={20} color={Palette.accent} />
+          )}
+        </Pressable>
+      </View>
+      {saveError !== null && (
+        <ThemedText type="small" style={styles.error}>
+          {saveError}
+        </ThemedText>
+      )}
+    </View>
+  );
+}
+
+/**
+ * Publication sur le site : les trajets naissent dépubliés, le switch fait
+ * un PATCH `published` (client autoritaire, nécessite le réseau).
+ */
+function PublishRow({
+  detail,
+  onSaved,
+  onError,
+}: {
+  detail: TripDetail;
+  onSaved: (detail: TripDetail) => void;
+  onError: (message: string | null) => void;
+}) {
+  const theme = useTheme();
+  const [saving, setSaving] = useState(false);
+
+  const handleToggle = async (published: boolean) => {
+    setSaving(true);
+    try {
+      onSaved(await patchTrip(detail.uuid, { published }));
+      onError(null);
+    } catch (e) {
+      onError(e instanceof Error ? e.message : 'Publication impossible.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <View style={[styles.publishRow, { backgroundColor: theme.backgroundElement }]}>
+      <View style={styles.publishLabel}>
+        <Ionicons
+          name={detail.published ? 'globe-outline' : 'eye-off-outline'}
+          size={18}
+          color={detail.published ? Palette.success : theme.textSecondary}
+        />
+        <ThemedText type="small">
+          {detail.published ? 'Publié sur le site' : 'Non publié'}
+        </ThemedText>
+      </View>
+      {saving ? (
+        <ActivityIndicator size="small" color={Palette.accent} />
+      ) : (
+        <Switch
+          value={detail.published}
+          onValueChange={(value) => void handleToggle(value)}
+          trackColor={{ true: Palette.success }}
+        />
+      )}
+    </View>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const label = status === 'paused' ? 'En pause' : 'En cours';
+  const color = status === 'paused' ? Palette.warning : Palette.accent;
+  return (
+    <View style={[styles.statusBadge, { backgroundColor: color + '26' }]}>
+      <ThemedText type="small" style={{ color }}>
+        {label}
+      </ThemedText>
+    </View>
+  );
+}
+
 function SectionTitle({ title }: { title: string }) {
   return (
     <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionTitle}>
@@ -368,14 +691,27 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
   const theme = useTheme();
   return (
     <View style={[styles.metric, { backgroundColor: theme.backgroundElement }]}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {label}
+      <View style={styles.metricHeader}>
+        <Ionicons name={icon} size={15} color={theme.textSecondary} />
+        <ThemedText type="small" themeColor="textSecondary">
+          {label}
+        </ThemedText>
+      </View>
+      <ThemedText type="smallBold" style={styles.metricValue}>
+        {value}
       </ThemedText>
-      <ThemedText type="smallBold">{value}</ThemedText>
     </View>
   );
 }
@@ -388,6 +724,41 @@ function Row({ label, value }: { label: string; value: string }) {
       </ThemedText>
       <ThemedText type="small">{value}</ThemedText>
     </View>
+  );
+}
+
+function ActionPill({
+  icon,
+  label,
+  color,
+  textColor,
+  busy,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  color: string;
+  textColor: string;
+  busy: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={busy}
+      style={({ pressed }) => [
+        styles.actionPill,
+        { backgroundColor: color, opacity: pressed || busy ? 0.7 : 1 },
+      ]}>
+      {busy ? (
+        <ActivityIndicator size="small" color={textColor} />
+      ) : (
+        <Ionicons name={icon} size={20} color={textColor} />
+      )}
+      <ThemedText type="smallBold" style={{ color: textColor }}>
+        {label}
+      </ThemedText>
+    </Pressable>
   );
 }
 
@@ -417,7 +788,9 @@ function Chart({
             formatXLabel: () => '',
             formatYLabel: (value) => `${Math.round(Number(value))}`,
           }}>
-          {({ points }) => <Line points={points.v} color={color} strokeWidth={2} curveType="monotoneX" />}
+          {({ points }) => (
+            <Line points={points.v} color={color} strokeWidth={2} curveType="monotoneX" />
+          )}
         </CartesianChart>
       </View>
     </>
@@ -446,7 +819,7 @@ function HealthForm({
   };
 
   const handleSave = async () => {
-    const patch: ManualHealthPatch = {};
+    const patch: TripPatch = {};
     const parsedWeight = parseNumber(weight);
     const parsedHydration = parseNumber(hydration);
     if (parsedWeight !== null) {
@@ -520,7 +893,7 @@ function HealthForm({
         {message !== null && (
           <ThemedText
             type="small"
-            style={{ color: message.isError ? '#D64545' : '#2E8B57' }}>
+            style={{ color: message.isError ? Palette.danger : Palette.success }}>
             {message.text}
           </ThemedText>
         )}
@@ -533,7 +906,7 @@ function HealthForm({
             { backgroundColor: theme.backgroundSelected, opacity: pressed || saving ? 0.7 : 1 },
           ]}>
           {saving ? (
-            <ActivityIndicator size="small" color={ACCENT} />
+            <ActivityIndicator size="small" color={Palette.accent} />
           ) : (
             <ThemedText type="smallBold">Enregistrer la santé</ThemedText>
           )}
@@ -568,7 +941,7 @@ function ScaleRow({
               onPress={() => onChange(step)}
               style={[
                 styles.scaleDot,
-                { backgroundColor: selected ? ACCENT : theme.backgroundSelected },
+                { backgroundColor: selected ? Palette.accent : theme.backgroundSelected },
               ]}>
               <ThemedText
                 type="smallBold"
@@ -588,12 +961,85 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    paddingBottom: Spacing.four,
+  },
+  map: {
+    height: 280,
+  },
+  sheet: {
+    marginTop: -24,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: Spacing.three,
     gap: Spacing.two,
   },
-  map: {
-    height: 240,
+  sheetNoMap: {
+    marginTop: 0,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  headerBody: {
+    flex: 1,
+    gap: 2,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  title: {
+    flexShrink: 1,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  titleEdit: {
+    gap: Spacing.one,
+  },
+  titleInput: {
+    borderRadius: 8,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 8,
+    fontSize: 15,
+  },
+  titleEditActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.three,
+  },
+  activityBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusBadge: {
     borderRadius: 12,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 3,
+  },
+  publishRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 16,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  publishLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  distanceCard: {
+    borderRadius: 16,
+    padding: Spacing.three,
+    gap: 2,
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -601,18 +1047,31 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   metric: {
-    flexBasis: '31%',
+    flexBasis: '47%',
     flexGrow: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: Spacing.two + 4,
-    gap: 2,
+    gap: Spacing.one,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  metricLabel: {
+    letterSpacing: 1,
+  },
+  metricValue: {
+    fontSize: 17,
+    lineHeight: 22,
   },
   sectionTitle: {
-    marginTop: Spacing.two,
+    marginTop: Spacing.three,
     marginLeft: Spacing.two,
+    letterSpacing: 1,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
   },
@@ -622,7 +1081,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   chartCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: Spacing.two,
     height: 180,
   },
@@ -631,9 +1090,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   photo: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
+    width: 160,
+    height: 160,
+    borderRadius: 16,
   },
   form: {
     paddingVertical: Spacing.three,
@@ -673,22 +1132,22 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginTop: Spacing.one,
   },
-  exportButton: {
+  actions: {
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+  },
+  actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.one,
-    borderRadius: 24,
-    paddingVertical: Spacing.two + 4,
-    marginTop: Spacing.two,
-  },
-  exportLabel: {
-    color: '#ffffff',
+    borderRadius: 26,
+    height: 52,
   },
   loader: {
     marginTop: Spacing.six,
   },
   error: {
-    color: '#D64545',
+    color: Palette.danger,
   },
 });

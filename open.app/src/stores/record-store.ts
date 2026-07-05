@@ -24,6 +24,7 @@ import { syncNow } from '@/services/sync';
 import {
   pauseRecording,
   recoverActiveTrip,
+  resumeCompletedRecording,
   resumeRecording,
   startRecording,
   stopRecording,
@@ -58,6 +59,8 @@ type RecordState = {
   stop: () => Promise<void>;
   /** Reprise d'un trajet actif au démarrage de l'app (app tuée en cours). */
   restore: () => Promise<void>;
+  /** Réouverture d'un trajet terminé depuis l'écran détail. Jette en cas d'échec. */
+  resumeCompleted: (uuid: string) => Promise<void>;
 };
 
 // Curseurs de lecture incrémentale, hors état React (un seul trajet actif).
@@ -123,6 +126,9 @@ async function mergeHeartRate(tripUuid: string): Promise<void> {
 async function finalizeHealth(trip: TripRow, endedAt: number): Promise<void> {
   try {
     await mergeHeartRate(trip.uuid);
+    // Fenêtre [startedAt, endedAt] : après une réouverture, les pas/calories
+    // du trou d'arrêt sont inclus — approximation acceptée (la FC, elle,
+    // vient des points, donc jamais du trou).
     const [hrStats, summary] = await Promise.all([
       getTripHeartRateStats(trip.uuid),
       getHealthSummary(trip.startedAt, endedAt),
@@ -286,6 +292,46 @@ export const useRecordStore = create<RecordState>((set, get) => {
       }
       // Fin de trajet = déclencheur de sync (points restants + statut completed).
       void syncNow('fin de trajet');
+    },
+
+    resumeCompleted: async (uuid) => {
+      if (get().phase !== 'idle') {
+        throw new Error('Un enregistrement est déjà en cours.');
+      }
+      set({ phase: 'starting', error: null });
+      try {
+        const row = await getTrip(uuid);
+        if (row === null) {
+          throw new Error('Trajet introuvable sur cet appareil.');
+        }
+        const trip = await resumeCompletedRecording(row);
+        resetCursors();
+        // Pas `startedAt` : le trajet peut dater de plusieurs jours, la
+        // fenêtre HealthKit repart du moment de la reprise.
+        healthCursor = Date.now();
+        void ensureHealthPermissions();
+        set({
+          phase: 'recording',
+          trip,
+          backgroundGranted: true,
+          distanceM: 0,
+          elapsedMs: 0,
+          movingMs: 0,
+          speedMs: null,
+          pointCount: 0,
+          unsyncedCount: 0,
+          segments: [],
+          lastPoint: null,
+        });
+        // Reconstruit tracé et distance depuis SQLite (curseurs à zéro).
+        await tick();
+        startTimers();
+        // Pousse le PATCH `recording` sans attendre le cycle de 60 s.
+        void syncNow('reprise de trajet');
+      } catch (e) {
+        set({ phase: 'idle', error: e instanceof Error ? e.message : String(e) });
+        throw e;
+      }
     },
 
     restore: async () => {

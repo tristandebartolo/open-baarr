@@ -102,8 +102,57 @@ export async function completeTrip(
       batteryEnd,
       // battery_end (et ended_at de secours) à pousser via PATCH /trips.
       pendingMeta: 1,
+      // Trajet rouvert puis terminé avant toute sync : invalide l'acquittement
+      // `completed` pour que pushCompletedStatus rejoue le PATCH (recalcul
+      // serveur). En SQL : un run de sync a pu changer syncedStatus depuis la
+      // lecture de `trip`.
+      syncedStatus: sql`CASE WHEN ${trips.syncedStatus} = 'completed' THEN 'recording' ELSE ${trips.syncedStatus} END`,
     })
     .where(eq(trips.uuid, trip.uuid));
+}
+
+/**
+ * Rouvre un trajet terminé : le temps d'arrêt devient de la pause, la suite
+ * de l'enregistrement part sur un nouveau segment. Idempotent (`WHERE
+ * status = 'completed'`). `syncedStatus` n'est pas touché : il mémorise
+ * l'état connu du serveur, c'est la sync qui renverra `recording`.
+ */
+export async function reopenTrip(trip: TripRow, now: number): Promise<void> {
+  const db = await getDb();
+  await db
+    .update(trips)
+    .set({
+      status: 'recording',
+      pausedMs: trip.pausedMs + (trip.endedAt !== null ? Math.max(0, now - trip.endedAt) : 0),
+      endedAt: null,
+      pausedAt: null,
+      currentSegment: trip.currentSegment + 1,
+      // Périmée, refigée au prochain « Terminer ».
+      batteryEnd: null,
+    })
+    .where(and(eq(trips.uuid, trip.uuid), eq(trips.status, 'completed')));
+}
+
+/** Renomme un trajet local (miroir du PATCH title côté serveur). */
+export async function updateTripTitle(uuid: string, title: string): Promise<void> {
+  const db = await getDb();
+  await db.update(trips).set({ title }).where(eq(trips.uuid, uuid));
+}
+
+/**
+ * Supprime un trajet local ; points et photos_queue suivent par cascade.
+ *
+ * @returns Les URI locales des photos en file, à purger du disque par
+ *   l'appelant (la cascade SQL ne supprime pas les fichiers).
+ */
+export async function deleteLocalTrip(uuid: string): Promise<string[]> {
+  const db = await getDb();
+  const photos = await db
+    .select({ localUri: photosQueue.localUri })
+    .from(photosQueue)
+    .where(eq(photosQueue.tripUuid, uuid));
+  await db.delete(trips).where(eq(trips.uuid, uuid));
+  return photos.map((p) => p.localUri);
 }
 
 // ---------------------------------------------------------------------------
@@ -203,6 +252,8 @@ export async function getTripsNeedingSync(): Promise<TripRow[]> {
         eq(trips.serverCreated, 0),
         eq(trips.pendingMeta, 1),
         and(eq(trips.status, 'completed'), ne(sql`COALESCE(${trips.syncedStatus}, '')`, 'completed')),
+        // Trajet rouvert : le serveur le croit encore `completed`.
+        and(inArray(trips.status, ['recording', 'paused']), eq(trips.syncedStatus, 'completed')),
         inArray(trips.uuid, withUnsyncedPoints),
         inArray(trips.uuid, withUnsyncedPhotos),
       ),

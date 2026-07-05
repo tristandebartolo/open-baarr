@@ -1,29 +1,39 @@
 /**
- * Écran Enregistrer : carte live (react-native-maps, tracé par segment),
- * stats temps réel lues depuis SQLite, boutons start/pause/resume/stop.
+ * Écran Enregistrer : carte plein écran (tracé par segment, couleur de
+ * l'activité) et informations en surimpression translucide — la carte reste
+ * visible au travers. Stats temps réel lues depuis SQLite, boutons
+ * circulaires start/pause/resume/stop + photo, pastille de sync.
+ *
+ * Les textes de l'overlay sont blancs sur voile sombre quel que soit le
+ * thème (ils flottent sur la carte, pas sur le fond de l'app).
  */
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Polyline } from 'react-native-maps';
 
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ACTIVITY_ICONS, ACTIVITY_LABELS, ACTIVITY_TYPES } from '@/constants/activities';
-import { Spacing } from '@/constants/theme';
+import {
+  ACTIVITY_COLORS,
+  ACTIVITY_ICONS,
+  ACTIVITY_LABELS,
+  ACTIVITY_TYPES,
+} from '@/constants/activities';
+import { Palette, Spacing } from '@/constants/theme';
 import type { ActivityType } from '@/db/schema';
-import { useTheme } from '@/hooks/use-theme';
 import { captureTripPhoto } from '@/services/photos';
 import { useRecordStore } from '@/stores/record-store';
 import { useSyncStore } from '@/stores/sync-store';
 import { formatDistance, formatDuration, formatSpeed } from '@/utils/format';
 
-const ACCENT = '#208AEF';
-const DANGER = '#D64545';
+/** Voile et textes de la surimpression (indépendants du thème de l'app). */
+const OVERLAY_BG = 'rgba(12, 14, 18, 0.45)';
+const OVERLAY_ELEMENT = 'rgba(255, 255, 255, 0.18)';
+const TEXT = '#FFFFFF';
+const TEXT_MUTED = 'rgba(255, 255, 255, 0.78)';
 
 export default function RecordScreen() {
-  const theme = useTheme();
   const mapRef = useRef<MapView>(null);
   const [activityType, setActivityType] = useState<ActivityType>('car');
   const [photoMessage, setPhotoMessage] = useState<string | null>(null);
@@ -59,6 +69,7 @@ export default function RecordScreen() {
 
   const active = phase === 'recording' || phase === 'paused';
   const busy = phase === 'starting' || phase === 'stopping';
+  const trackColor = trip !== null ? ACTIVITY_COLORS[trip.activityType] : Palette.accent;
 
   // Photo géolocalisée pendant le trajet → photos_queue (upload par la sync).
   const handlePhoto = async () => {
@@ -86,7 +97,7 @@ export default function RecordScreen() {
     <ThemedView style={styles.container}>
       <MapView
         ref={mapRef}
-        style={styles.map}
+        style={StyleSheet.absoluteFill}
         showsUserLocation
         initialRegion={{
           latitude: 46.6,
@@ -99,49 +110,56 @@ export default function RecordScreen() {
             <Polyline
               key={segment.seg}
               coordinates={segment.coords}
-              strokeColor={ACCENT}
+              strokeColor={trackColor}
               strokeWidth={4}
             />
           ) : null,
         )}
       </MapView>
 
-      <View style={[styles.panel, { backgroundColor: theme.background }]}>
+      {/* Surimpression translucide : la carte reste visible au travers. */}
+      <View style={styles.overlay} pointerEvents="box-none">
         {error !== null && (
-          <ThemedText type="small" style={styles.error}>
-            {error}
-          </ThemedText>
+          <Text style={[styles.small, styles.error]}>{error}</Text>
         )}
 
         {active && trip !== null && (
           <>
-            <ThemedText type="smallBold" themeColor="textSecondary">
-              {trip.title}
-              {phase === 'paused' ? ' — en pause' : ''}
-            </ThemedText>
+            <View style={styles.headerRow}>
+              <Text style={[styles.smallBold, styles.headerTitle]} numberOfLines={1}>
+                {trip.title}
+              </Text>
+              {phase === 'paused' && (
+                <View style={[styles.pill, { backgroundColor: Palette.warning + '40' }]}>
+                  <Text style={[styles.small, { color: '#FFD98A' }]}>En pause</Text>
+                </View>
+              )}
+              <SyncPill syncing={syncing} unsyncedCount={unsyncedCount} />
+            </View>
+
+            <View style={styles.hero}>
+              <Text style={styles.heroValue}>{formatDistance(distanceM)}</Text>
+              <Text style={styles.heroLabel}>DISTANCE</Text>
+            </View>
+
             <View style={styles.statsRow}>
-              <Stat label="Distance" value={formatDistance(distanceM)} />
               <Stat label="Durée" value={formatDuration(movingMs)} />
               <Stat label="Vitesse" value={formatSpeed(speedMs)} />
+              <Stat label="Écoulé" value={formatDuration(elapsedMs)} />
             </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {pointCount} points · écoulé {formatDuration(elapsedMs)} ·{' '}
-              {syncing
-                ? 'sync en cours…'
-                : unsyncedCount > 0
-                  ? `${unsyncedCount} à synchroniser`
-                  : 'synchronisé'}
-            </ThemedText>
+
+            <Text style={[styles.small, styles.muted, styles.centered]}>
+              {pointCount} points
+            </Text>
+
             {!backgroundGranted && (
-              <ThemedText type="small" style={styles.warning}>
+              <Text style={[styles.small, styles.warning]}>
                 Localisation « Toujours » refusée : l’enregistrement s’interrompra si l’app passe
                 en arrière-plan.
-              </ThemedText>
+              </Text>
             )}
             {photoMessage !== null && (
-              <ThemedText type="small" themeColor="textSecondary">
-                {photoMessage}
-              </ThemedText>
+              <Text style={[styles.small, styles.muted, styles.centered]}>{photoMessage}</Text>
             )}
           </>
         )}
@@ -153,120 +171,142 @@ export default function RecordScreen() {
             contentContainerStyle={styles.chips}>
             {ACTIVITY_TYPES.map((type) => {
               const selected = type === activityType;
+              const color = ACTIVITY_COLORS[type];
               return (
                 <Pressable
                   key={type}
                   onPress={() => setActivityType(type)}
                   style={[
                     styles.chip,
-                    { backgroundColor: selected ? ACCENT : theme.backgroundElement },
+                    { backgroundColor: selected ? color : OVERLAY_ELEMENT },
                   ]}>
                   <Ionicons
                     name={ACTIVITY_ICONS[type] as keyof typeof Ionicons.glyphMap}
                     size={16}
-                    color={selected ? '#ffffff' : theme.textSecondary}
+                    color={selected ? '#ffffff' : color}
                   />
-                  <ThemedText
-                    type="smallBold"
-                    style={{ color: selected ? '#ffffff' : theme.text }}>
+                  <Text style={[styles.smallBold, { color: TEXT }]}>
                     {ACTIVITY_LABELS[type]}
-                  </ThemedText>
+                  </Text>
                 </Pressable>
               );
             })}
           </ScrollView>
         )}
 
-        <View style={styles.buttonsRow}>
-          {phase === 'idle' && (
-            <ActionButton
-              label="Démarrer"
-              icon="radio-button-on"
-              color={ACCENT}
-              onPress={() => void start(activityType)}
-            />
-          )}
-          {busy && <ActivityIndicator size="large" color={ACCENT} />}
-          {phase === 'recording' && (
-            <ActionButton
-              label="Pause"
-              icon="pause"
-              color={theme.backgroundSelected}
-              textColor={theme.text}
-              onPress={() => void pause()}
-            />
-          )}
-          {phase === 'paused' && (
-            <ActionButton
-              label="Reprendre"
-              icon="play"
-              color={ACCENT}
-              onPress={() => void resume()}
-            />
-          )}
-          {active && (
-            <ActionButton
-              label="Terminer"
+        {phase === 'idle' && (
+          <Pressable
+            onPress={() => void start(activityType)}
+            style={({ pressed }) => [
+              styles.startButton,
+              {
+                backgroundColor: ACTIVITY_COLORS[activityType],
+                opacity: pressed ? 0.85 : 1,
+              },
+            ]}>
+            <Ionicons name="radio-button-on" size={22} color="#ffffff" />
+            <Text style={[styles.smallBold, styles.startLabel]}>Démarrer</Text>
+          </Pressable>
+        )}
+
+        {busy && <ActivityIndicator size="large" color="#ffffff" style={styles.busy} />}
+
+        {active && (
+          <View style={styles.buttonsRow}>
+            {phase === 'recording' && (
+              <CircleButton
+                icon="pause"
+                label="Pause"
+                size={64}
+                color={OVERLAY_ELEMENT}
+                onPress={() => void pause()}
+              />
+            )}
+            {phase === 'paused' && (
+              <CircleButton
+                icon="play"
+                label="Reprendre"
+                size={64}
+                color={Palette.accent}
+                onPress={() => void resume()}
+              />
+            )}
+            <CircleButton
               icon="stop"
-              color={DANGER}
+              label="Terminer"
+              size={64}
+              color={Palette.danger}
               onPress={() => void stop()}
             />
-          )}
-          {active && (
-            <Pressable
-              accessibilityLabel="Prendre une photo"
+            <CircleButton
+              icon="camera"
+              label="Photo"
+              size={48}
+              color={OVERLAY_ELEMENT}
               onPress={() => void handlePhoto()}
-              style={({ pressed }) => [
-                styles.photoButton,
-                { backgroundColor: theme.backgroundSelected, opacity: pressed ? 0.7 : 1 },
-              ]}>
-              <Ionicons name="camera" size={22} color={theme.text} />
-            </Pressable>
-          )}
-        </View>
+            />
+          </View>
+        )}
       </View>
     </ThemedView>
+  );
+}
+
+function SyncPill({ syncing, unsyncedCount }: { syncing: boolean; unsyncedCount: number }) {
+  const [color, label] = syncing
+    ? [Palette.accent, 'Synchronisation…']
+    : unsyncedCount > 0
+      ? ['#FFC107', `${unsyncedCount} en attente`]
+      : ['#5BD08F', 'Synchronisé'];
+  return (
+    <View style={[styles.pill, { backgroundColor: OVERLAY_ELEMENT }]}>
+      <View style={[styles.syncDot, { backgroundColor: color }]} />
+      <Text style={[styles.small, styles.muted]}>{label}</Text>
+    </View>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.stat}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {label}
-      </ThemedText>
-      <ThemedText type="subtitle" style={styles.statValue}>
-        {value}
-      </ThemedText>
+      <Text style={[styles.small, styles.muted]}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
     </View>
   );
 }
 
-function ActionButton({
-  label,
+function CircleButton({
   icon,
+  label,
+  size,
   color,
-  textColor = '#ffffff',
   onPress,
 }: {
-  label: string;
   icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  size: number;
   color: string;
-  textColor?: string;
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: color, opacity: pressed ? 0.8 : 1 },
-      ]}>
-      <Ionicons name={icon} size={20} color={textColor} />
-      <ThemedText type="smallBold" style={{ color: textColor }}>
-        {label}
-      </ThemedText>
-    </Pressable>
+    <View style={styles.circleWrap}>
+      <Pressable
+        accessibilityLabel={label}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.circle,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: color,
+            opacity: pressed ? 0.8 : 1,
+          },
+        ]}>
+        <Ionicons name={icon} size={size >= 64 ? 26 : 20} color="#ffffff" />
+      </Pressable>
+      <Text style={[styles.small, styles.muted, styles.shadowed]}>{label}</Text>
+    </View>
   );
 }
 
@@ -274,12 +314,54 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
-    flex: 1,
-  },
-  panel: {
+  overlay: {
+    position: 'absolute',
+    left: Spacing.three,
+    right: Spacing.three,
+    bottom: Spacing.three,
+    borderRadius: 24,
     padding: Spacing.three,
     gap: Spacing.two,
+    backgroundColor: OVERLAY_BG,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  headerTitle: {
+    flex: 1,
+    color: TEXT_MUTED,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 3,
+  },
+  syncDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  hero: {
+    alignItems: 'center',
+  },
+  heroValue: {
+    color: TEXT,
+    fontSize: 40,
+    lineHeight: 46,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  heroLabel: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    letterSpacing: 2,
   },
   statsRow: {
     flexDirection: 'row',
@@ -287,10 +369,39 @@ const styles = StyleSheet.create({
   },
   stat: {
     flex: 1,
+    alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
-    lineHeight: 30,
+    color: TEXT,
+    fontSize: 19,
+    lineHeight: 25,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  small: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+    color: TEXT,
+  },
+  smallBold: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+    color: TEXT,
+  },
+  muted: {
+    color: TEXT_MUTED,
+  },
+  centered: {
+    textAlign: 'center',
+  },
+  shadowed: {
+    textShadowColor: 'rgba(0, 0, 0, 0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   chips: {
     gap: Spacing.two,
@@ -304,33 +415,39 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     borderRadius: 20,
   },
-  buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: Spacing.two,
-    marginTop: Spacing.one,
-  },
-  button: {
+  startButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.one,
-    borderRadius: 24,
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two + 4,
-    minWidth: 130,
+    borderRadius: 26,
+    height: 52,
   },
-  photoButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  startLabel: {
+    fontSize: 16,
+  },
+  busy: {
+    marginVertical: Spacing.two,
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    gap: Spacing.four,
+    marginTop: Spacing.one,
+  },
+  circleWrap: {
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  circle: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   error: {
-    color: '#D64545',
+    color: '#FF8A80',
   },
   warning: {
-    color: '#B8860B',
+    color: '#FFD98A',
   },
 });

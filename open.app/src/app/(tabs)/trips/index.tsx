@@ -1,30 +1,28 @@
 /**
- * Historique des trajets : liste paginée servie par GET /trips (le serveur
- * est la source de vérité une fois la sync passée), avec un rappel du
- * nombre de points encore à synchroniser depuis cet appareil.
+ * Historique des trajets : liste paginée servie par GET /trips, groupée par
+ * mois, avec un rappel du nombre de points encore à synchroniser depuis cet
+ * appareil. Le serveur est la source de vérité une fois la sync passée.
  */
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, RefreshControl, SectionList, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
-import { Spacing } from '@/constants/theme';
+import { ACTIVITY_COLORS, ACTIVITY_ICONS } from '@/constants/activities';
+import { Palette, Spacing } from '@/constants/theme';
 import { countUnsyncedPoints } from '@/db/queries';
 import { useTheme } from '@/hooks/use-theme';
 import { fetchTrips, type TripSummary } from '@/services/trips';
-import { formatDateTime, formatDistance, formatDuration } from '@/utils/format';
+import { formatDateTime, formatDistance, formatDuration, formatMonthYear } from '@/utils/format';
 
 const PAGE_SIZE = 50;
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'brouillon',
-  recording: 'en cours',
-  paused: 'en pause',
-  completed: '',
+type TripSection = {
+  title: string;
+  data: TripSummary[];
 };
 
 export default function TripsScreen() {
@@ -54,7 +52,7 @@ export default function TripsScreen() {
   }, []);
 
   // Rechargement à chaque retour sur l'onglet (un trajet vient peut-être
-  // d'être synchronisé depuis l'écran Enregistrer).
+  // d'être synchronisé, repris ou supprimé).
   useFocusEffect(
     useCallback(() => {
       void loadFirstPage();
@@ -84,12 +82,28 @@ export default function TripsScreen() {
     }
   };
 
+  // Sections par mois (la liste API est déjà triée par date décroissante).
+  const sections = useMemo<TripSection[]>(() => {
+    const grouped: TripSection[] = [];
+    for (const trip of trips) {
+      const title = formatMonthYear(trip.started_at);
+      const last = grouped[grouped.length - 1];
+      if (last !== undefined && last.title === title) {
+        last.data.push(trip);
+      } else {
+        grouped.push({ title, data: [trip] });
+      }
+    }
+    return grouped;
+  }, [trips]);
+
   return (
     <ThemedView style={styles.flex}>
-      <FlatList
-        data={trips}
+      <SectionList
+        sections={sections}
         keyExtractor={(trip) => trip.uuid}
         contentContainerStyle={styles.list}
+        stickySectionHeadersEnabled={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
         onEndReachedThreshold={0.4}
         onEndReached={() => void handleEndReached()}
@@ -110,11 +124,20 @@ export default function TripsScreen() {
         }
         ListEmptyComponent={
           error === null ? (
-            <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
-              Aucun trajet pour le moment : lancez un enregistrement !
-            </ThemedText>
+            <View style={styles.empty}>
+              <Ionicons name="map-outline" size={48} color={theme.textSecondary} />
+              <ThemedText>Aucun trajet</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
+                Lancez votre premier enregistrement depuis l’onglet Enregistrer.
+              </ThemedText>
+            </View>
           ) : null
         }
+        renderSectionHeader={({ section }) => (
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionHeader}>
+            {section.title.toUpperCase()}
+          </ThemedText>
+        )}
         renderItem={({ item }) => <TripRow trip={item} theme={theme} />}
       />
     </ThemedView>
@@ -122,37 +145,56 @@ export default function TripsScreen() {
 }
 
 function TripRow({ trip, theme }: { trip: TripSummary; theme: ReturnType<typeof useTheme> }) {
+  const color = trip.activity_type !== null ? ACTIVITY_COLORS[trip.activity_type] : Palette.accent;
   const icon = trip.activity_type !== null ? ACTIVITY_ICONS[trip.activity_type] : 'map';
-  const statusLabel = trip.status !== null ? (STATUS_LABELS[trip.status] ?? '') : '';
   return (
-    <Link href={{ pathname: '/(tabs)/trips/[uuid]', params: { uuid: trip.uuid } }} asChild>
-      <Pressable style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-        <View style={[styles.iconWrap, { backgroundColor: theme.backgroundSelected }]}>
-          <Ionicons
-            name={icon as keyof typeof Ionicons.glyphMap}
-            size={20}
-            color={theme.textSecondary}
-          />
-        </View>
-        <View style={styles.cardBody}>
-          <ThemedText type="smallBold" numberOfLines={1}>
-            {trip.title}
-          </ThemedText>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() =>
+        router.push({ pathname: '/(tabs)/trips/[uuid]', params: { uuid: trip.uuid } })
+      }
+      style={({ pressed }) => [
+        styles.row,
+        { borderBottomColor: theme.backgroundSelected, opacity: pressed ? 0.7 : 1 },
+      ]}>
+      <View style={[styles.iconWrap, { backgroundColor: color + '22' }]}>
+        <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={color} />
+      </View>
+      <View style={styles.rowBody}>
+        <ThemedText type="smallBold" numberOfLines={1}>
+          {trip.title}
+        </ThemedText>
+        <View style={styles.rowMeta}>
           <ThemedText type="small" themeColor="textSecondary">
             {formatDateTime(trip.started_at)}
-            {trip.activity_type !== null ? ` · ${ACTIVITY_LABELS[trip.activity_type]}` : ''}
-            {statusLabel !== '' ? ` · ${statusLabel}` : ''}
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {trip.metrics.distance !== null ? formatDistance(trip.metrics.distance) : '—'}
-            {trip.metrics.duration !== null
-              ? ` · ${formatDuration(trip.metrics.duration * 1000)}`
-              : ''}
-          </ThemedText>
+          {trip.status !== null && trip.status !== 'completed' && (
+            <StatusBadge status={trip.status} />
+          )}
         </View>
-        <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
-      </Pressable>
-    </Link>
+      </View>
+      <View style={styles.rowRight}>
+        <ThemedText type="smallBold" style={styles.rowDistance}>
+          {trip.metrics.distance !== null ? formatDistance(trip.metrics.distance) : '—'}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {trip.metrics.duration !== null ? formatDuration(trip.metrics.duration * 1000) : ''}
+        </ThemedText>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+    </Pressable>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const label = status === 'paused' ? 'En pause' : 'En cours';
+  const color = status === 'paused' ? Palette.warning : Palette.accent;
+  return (
+    <View style={[styles.statusBadge, { backgroundColor: color + '26' }]}>
+      <ThemedText type="small" style={{ color }}>
+        {label}
+      </ThemedText>
+    </View>
   );
 }
 
@@ -162,36 +204,64 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: Spacing.three,
-    gap: Spacing.two,
   },
-  card: {
+  sectionHeader: {
+    letterSpacing: 1,
+    marginTop: Spacing.three,
+    marginBottom: Spacing.one,
+    marginLeft: Spacing.two,
+  },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    borderRadius: 12,
-    padding: Spacing.two + 4,
+    paddingVertical: Spacing.two + 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardBody: {
+  rowBody: {
     flex: 1,
     gap: 2,
   },
+  rowMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  rowRight: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  rowDistance: {
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  statusBadge: {
+    borderRadius: 12,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+  },
   pending: {
-    color: '#B8860B',
+    color: Palette.warning,
     marginBottom: Spacing.two,
   },
   error: {
-    color: '#D64545',
+    color: Palette.danger,
     marginBottom: Spacing.two,
   },
   empty: {
-    textAlign: 'center',
+    alignItems: 'center',
+    gap: Spacing.two,
     marginTop: Spacing.six,
+  },
+  emptyHint: {
+    textAlign: 'center',
+    paddingHorizontal: Spacing.four,
   },
 });

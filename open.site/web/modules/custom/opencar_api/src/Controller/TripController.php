@@ -94,7 +94,9 @@ final class TripController extends ControllerBase {
       'uuid' => $payload['uuid'],
       'title' => $payload['title'],
       'uid' => $this->currentUser()->id(),
-      'status' => NodeInterface::PUBLISHED,
+      // Dépublié par défaut : le trajet ne paraît sur le site qu'après une
+      // publication explicite (PATCH published: true depuis l'app).
+      'status' => NodeInterface::NOT_PUBLISHED,
       'field_activity_type' => $payload['activity_type'],
       'field_trip_status' => $payload['status'],
       'field_started_at' => $payload['started_at'],
@@ -154,6 +156,9 @@ final class TripController extends ControllerBase {
       }
       elseif ($key === 'body') {
         $this->setFieldValue($trip, 'field_body', $value === NULL ? NULL : ['value' => $value, 'format' => 'plain_text']);
+      }
+      elseif ($key === 'published') {
+        $value ? $trip->setPublished() : $trip->setUnpublished();
       }
       else {
         $this->setFieldValue($trip, self::UPDATE_FIELD_MAP[$key], $value);

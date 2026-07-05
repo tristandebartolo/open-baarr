@@ -33,6 +33,8 @@ export type TripHealth = {
 export type TripSummary = {
   uuid: string;
   title: string;
+  /** Publié sur le site (les trajets naissent dépubliés). */
+  published: boolean;
   activity_type: ActivityType | null;
   status: TripStatus | null;
   started_at: number | null;
@@ -87,8 +89,10 @@ export type StatsSummary = {
   series: { date: string; distance: number; duration: number }[];
 };
 
-/** Champs de santé manuelle modifiables depuis l'écran détail. */
-export type ManualHealthPatch = Partial<{
+/** Champs modifiables depuis l'écran détail (titre, publication, santé manuelle). */
+export type TripPatch = Partial<{
+  title: string;
+  published: boolean;
   weight: number;
   feeling: number;
   fatigue: number;
@@ -109,8 +113,13 @@ export function fetchTripDetail(uuid: string): Promise<TripDetail> {
   return apiFetch<TripDetail>(`/opencar/api/v1/trips/${uuid}`);
 }
 
-export function patchTrip(uuid: string, patch: ManualHealthPatch): Promise<TripDetail> {
+export function patchTrip(uuid: string, patch: TripPatch): Promise<TripDetail> {
   return apiFetch<TripDetail>(`/opencar/api/v1/trips/${uuid}`, { method: 'PATCH', body: patch });
+}
+
+/** Suppression définitive côté serveur (204 ; les points suivent par hook). */
+export function deleteTrip(uuid: string): Promise<void> {
+  return apiFetch<void>(`/opencar/api/v1/trips/${uuid}`, { method: 'DELETE' });
 }
 
 export function fetchStatsSummary(

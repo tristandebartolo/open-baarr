@@ -139,10 +139,23 @@ final class ApiEndpointsTest extends BrowserTestBase {
     ];
     $response = $this->apiRequest($this->userA, 'POST', '/trips', $payload);
     $this->assertSame(201, $response->getStatusCode());
+    $created = json_decode((string) $response->getBody(), TRUE);
+    // Dépublié par défaut : publication explicite via PATCH.
+    $this->assertFalse($created['published']);
 
     // Rejeu du POST par A : idempotent (200, pas de doublon).
     $response = $this->apiRequest($this->userA, 'POST', '/trips', $payload);
     $this->assertSame(200, $response->getStatusCode());
+
+    // Publication puis dépublication par le propriétaire.
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['published' => TRUE]);
+    $this->assertSame(200, $response->getStatusCode());
+    $this->assertTrue(json_decode((string) $response->getBody(), TRUE)['published']);
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['published' => FALSE]);
+    $this->assertFalse(json_decode((string) $response->getBody(), TRUE)['published']);
+    // Booléen strict : "yes" refusé.
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['published' => 'yes']);
+    $this->assertSame(422, $response->getStatusCode());
 
     // Sans le rôle, pas d'écriture : 403.
     $response = $this->apiRequest($this->userNoRole, 'POST', '/trips', $payload);
