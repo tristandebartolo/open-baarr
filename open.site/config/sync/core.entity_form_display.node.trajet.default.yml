@@ -28,10 +28,13 @@ dependencies:
     - field.field.node.trajet.field_speed_max
     - field.field.node.trajet.field_started_at
     - field.field.node.trajet.field_steps
+    - field.field.node.trajet.field_temperature
     - field.field.node.trajet.field_thematiques
     - field.field.node.trajet.field_trip_status
     - field.field.node.trajet.field_vignette
+    - field.field.node.trajet.field_weather_code
     - field.field.node.trajet.field_weight
+    - field.field.node.trajet.field_wind_speed
     - node.type.trajet
   module:
     - geolocation
@@ -223,6 +226,13 @@ content:
     settings:
       placeholder: ''
     third_party_settings: {  }
+  field_temperature:
+    type: number
+    weight: 160
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
   field_thematiques:
     type: entity_reference_autocomplete
     weight: 134
@@ -246,9 +256,23 @@ content:
     settings:
       media_types: {  }
     third_party_settings: {  }
+  field_weather_code:
+    type: number
+    weight: 161
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
   field_weight:
     type: number
     weight: 152
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_wind_speed:
+    type: number
+    weight: 162
     region: content
     settings:
       placeholder: ''

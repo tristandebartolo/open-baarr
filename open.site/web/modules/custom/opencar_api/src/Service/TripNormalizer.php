@@ -48,6 +48,11 @@ final class TripNormalizer {
         'speed_avg' => $this->floatValue($trip, 'field_speed_avg'),
         'speed_max' => $this->floatValue($trip, 'field_speed_max'),
       ],
+      'weather' => [
+        'temperature' => $this->floatValue($trip, 'field_temperature'),
+        'weather_code' => $this->intValue($trip, 'field_weather_code'),
+        'wind_speed' => $this->floatValue($trip, 'field_wind_speed'),
+      ],
       'health' => [
         'heart_rate_avg' => $this->intValue($trip, 'field_heart_rate_avg'),
         'heart_rate_max' => $this->intValue($trip, 'field_heart_rate_max'),

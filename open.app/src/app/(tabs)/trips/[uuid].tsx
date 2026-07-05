@@ -27,6 +27,7 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { CartesianChart, Line } from 'victory-native';
 
+import { MapViewer } from '@/components/map-viewer';
 import { PhotoFormModal, type PhotoFormValues } from '@/components/photo-form';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -42,6 +43,7 @@ import {
 import type { TripRow } from '@/db/schema';
 import { useTheme } from '@/hooks/use-theme';
 import { fetchTripTrack, shareTripGpx } from '@/services/gpx';
+import { weatherIcon, weatherLabel } from '@/services/weather';
 import { deleteLocalPhoto, pickLibraryPhoto, queueTripPhoto } from '@/services/photos';
 import { syncNow } from '@/services/sync';
 import {
@@ -100,6 +102,7 @@ export default function TripDetailScreen() {
   const [exporting, setExporting] = useState(false);
   const [resuming, setResuming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [mapExpanded, setMapExpanded] = useState(false);
 
   const phase = useRecordStore((s) => s.phase);
   const activeTrip = useRecordStore((s) => s.trip);
@@ -274,35 +277,52 @@ export default function TripDetailScreen() {
       <Stack.Screen options={{ title: detail?.title ?? 'Trajet', headerTransparent: false }} />
       <ScrollView contentContainerStyle={styles.container}>
         {region !== null && (
-          <MapView style={styles.map} initialRegion={region}>
-            {segments.map((segment) =>
-              segment.coords.length > 1 ? (
-                <Polyline
-                  key={segment.seg}
-                  coordinates={segment.coords}
-                  strokeColor={activityColor}
-                  strokeWidth={4}
-                />
-              ) : null,
-            )}
-            {track.length > 0 && (
-              <>
-                <Marker
-                  coordinate={{ latitude: track[0].lat, longitude: track[0].lng }}
-                  pinColor="green"
-                  title="Départ"
-                />
-                <Marker
-                  coordinate={{
-                    latitude: track[track.length - 1].lat,
-                    longitude: track[track.length - 1].lng,
-                  }}
-                  pinColor="red"
-                  title="Arrivée"
-                />
-              </>
-            )}
-          </MapView>
+          <View>
+            <MapView style={styles.map} initialRegion={region}>
+              {segments.map((segment) =>
+                segment.coords.length > 1 ? (
+                  <Polyline
+                    key={segment.seg}
+                    coordinates={segment.coords}
+                    strokeColor={activityColor}
+                    strokeWidth={4}
+                  />
+                ) : null,
+              )}
+              {track.length > 0 && (
+                <>
+                  <Marker
+                    coordinate={{ latitude: track[0].lat, longitude: track[0].lng }}
+                    pinColor="green"
+                    title="Départ"
+                  />
+                  <Marker
+                    coordinate={{
+                      latitude: track[track.length - 1].lat,
+                      longitude: track[track.length - 1].lng,
+                    }}
+                    pinColor="red"
+                    title="Arrivée"
+                  />
+                </>
+              )}
+            </MapView>
+            <Pressable
+              accessibilityLabel="Agrandir la carte"
+              onPress={() => setMapExpanded(true)}
+              style={({ pressed }) => [styles.expandButton, { opacity: pressed ? 0.7 : 1 }]}>
+              <Ionicons name="expand" size={20} color="#FFFFFF" />
+            </Pressable>
+          </View>
+        )}
+
+        {mapExpanded && (
+          <MapViewer
+            visible
+            segments={segments}
+            strokeColor={activityColor}
+            onClose={() => setMapExpanded(false)}
+          />
         )}
 
         {/* Feuille de contenu qui chevauche la carte héro. */}
@@ -414,6 +434,35 @@ export default function TripDetailScreen() {
                       value={formatElevation(detail.metrics.elevation_loss)}
                     />
                   </View>
+
+                  {detail.weather.temperature !== null && (
+                    <View
+                      style={[styles.weatherCard, { backgroundColor: theme.backgroundElement }]}>
+                      <Ionicons
+                        name={
+                          (detail.weather.weather_code !== null
+                            ? weatherIcon(detail.weather.weather_code)
+                            : 'thermometer-outline') as keyof typeof Ionicons.glyphMap
+                        }
+                        size={22}
+                        color={theme.textSecondary}
+                      />
+                      <View>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          Météo au départ
+                        </ThemedText>
+                        <ThemedText type="smallBold">
+                          {detail.weather.temperature.toFixed(1).replace('.', ',')} °C
+                          {detail.weather.weather_code !== null
+                            ? ` · ${weatherLabel(detail.weather.weather_code)}`
+                            : ''}
+                          {detail.weather.wind_speed !== null
+                            ? ` · vent ${(detail.weather.wind_speed * 3.6).toFixed(0)} km/h`
+                            : ''}
+                        </ThemedText>
+                      </View>
+                    </View>
+                  )}
 
                   {speedSeries.length > 1 && (
                     <Chart
@@ -1335,6 +1384,17 @@ const styles = StyleSheet.create({
   map: {
     height: 280,
   },
+  expandButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(12, 14, 18, 0.55)',
+  },
   sheet: {
     marginTop: -24,
     borderTopLeftRadius: 24,
@@ -1433,6 +1493,13 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 17,
     lineHeight: 22,
+  },
+  weatherCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 16,
+    padding: Spacing.two + 4,
   },
   sectionTitle: {
     marginTop: Spacing.three,

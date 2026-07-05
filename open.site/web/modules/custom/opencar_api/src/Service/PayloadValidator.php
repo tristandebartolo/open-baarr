@@ -115,6 +115,7 @@ final class PayloadValidator {
       'weight', 'feeling', 'fatigue', 'hydration', 'steps', 'calories',
       'heart_rate_avg', 'heart_rate_max', 'battery_start', 'battery_end',
       'device_info', 'published',
+      'temperature', 'weather_code', 'wind_speed',
     ];
     $this->rejectUnknownKeys($payload, $allowed);
     if ($payload === []) {
@@ -149,6 +150,8 @@ final class PayloadValidator {
       'weight' => [0.0, 500.0],
       'hydration' => [0.0, 100.0],
       'calories' => [0.0, 100000.0],
+      'temperature' => [-90.0, 60.0],
+      'wind_speed' => [0.0, 150.0],
     ] as $key => [$min, $max]) {
       if (array_key_exists($key, $payload)) {
         $changes[$key] = $this->optionalFloat($payload, $key, $min, $max, $errors);
@@ -162,6 +165,7 @@ final class PayloadValidator {
       'heart_rate_max' => [1, 300],
       'battery_start' => [0, 100],
       'battery_end' => [0, 100],
+      'weather_code' => [0, 99],
     ] as $key => [$min, $max]) {
       if (array_key_exists($key, $payload)) {
         $changes[$key] = $this->optionalInt($payload, $key, $min, $max, $errors);

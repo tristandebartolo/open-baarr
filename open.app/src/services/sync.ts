@@ -175,6 +175,9 @@ async function pushMeta(trip: TripRow): Promise<void> {
     ...(trip.hrMax !== null ? { heart_rate_max: trip.hrMax } : {}),
     ...(trip.steps !== null ? { steps: trip.steps } : {}),
     ...(trip.calories !== null ? { calories: trip.calories } : {}),
+    ...(trip.temperature !== null ? { temperature: trip.temperature } : {}),
+    ...(trip.weatherCode !== null ? { weather_code: trip.weatherCode } : {}),
+    ...(trip.windSpeed !== null ? { wind_speed: trip.windSpeed } : {}),
   };
   if (Object.keys(body).length > 0) {
     await apiFetch(`/opencar/api/v1/trips/${trip.uuid}`, { method: 'PATCH', body });

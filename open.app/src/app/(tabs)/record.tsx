@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Polyline } from 'react-native-maps';
 
+import { MapControls, nextMapKind, zoomMap } from '@/components/map-controls';
 import { PhotoFormModal, type PhotoFormValues } from '@/components/photo-form';
 import { ThemedView } from '@/components/themed-view';
 import {
@@ -25,6 +26,15 @@ import {
 import { Palette, Spacing } from '@/constants/theme';
 import type { ActivityType } from '@/db/schema';
 import { queueTripPhoto, takeTripPhoto } from '@/services/photos';
+import {
+  loadMapPrefs,
+  loadPanelCollapsed,
+  saveMapOrientation,
+  saveMapType,
+  savePanelCollapsed,
+  type MapKind,
+  type MapOrientation,
+} from '@/services/prefs';
 import { useRecordStore } from '@/stores/record-store';
 import { useSyncStore } from '@/stores/sync-store';
 import { formatDistance, formatDuration, formatSpeed } from '@/utils/format';
@@ -41,6 +51,27 @@ export default function RecordScreen() {
   const [photoMessage, setPhotoMessage] = useState<string | null>(null);
   /** Photo capturée en attente de ses métadonnées (modale ouverte). */
   const [pendingPhoto, setPendingPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  // --- Options carte (persistées) et suivi de la caméra ---
+  /** false dès que l'utilisateur manipule la carte ; « Recentrer » le rétablit. */
+  const [follow, setFollow] = useState(true);
+  const [orientation, setOrientation] = useState<MapOrientation>('north');
+  const [mapType, setMapType] = useState<MapKind>('standard');
+  const [collapsed, setCollapsed] = useState(false);
+  const altitudeRef = useRef(2500);
+  /** Dernier cap connu (le GPS n'en fournit pas à l'arrêt). */
+  const courseRef = useRef(0);
+
+  // setState après await uniquement (pas de rendu en cascade).
+  useEffect(() => {
+    void (async () => {
+      const [prefs, panelCollapsed] = await Promise.all([loadMapPrefs(), loadPanelCollapsed()]);
+      altitudeRef.current = prefs.altitude;
+      setOrientation(prefs.orientation);
+      setMapType(prefs.mapType);
+      setCollapsed(panelCollapsed);
+    })();
+  }, []);
 
   const phase = useRecordStore((s) => s.phase);
   const trip = useRecordStore((s) => s.trip);
@@ -61,15 +92,70 @@ export default function RecordScreen() {
 
   const syncing = useSyncStore((s) => s.syncing);
 
-  // La caméra suit le dernier fix pendant l'enregistrement.
+  // La caméra suit le dernier fix pendant l'enregistrement — seulement si
+  // l'utilisateur n'a pas pris la main (`follow`). En mode « cap », la carte
+  // s'oriente dans la direction du déplacement.
   useEffect(() => {
-    if (lastPoint !== null && phase === 'recording') {
+    if (lastPoint !== null && phase === 'recording' && follow) {
+      if (lastPoint.brg !== null) {
+        courseRef.current = lastPoint.brg;
+      }
       mapRef.current?.animateCamera(
-        { center: { latitude: lastPoint.lat, longitude: lastPoint.lng } },
+        {
+          center: { latitude: lastPoint.lat, longitude: lastPoint.lng },
+          heading: orientation === 'course' ? courseRef.current : 0,
+        },
         { duration: 700 },
       );
     }
-  }, [lastPoint, phase]);
+  }, [lastPoint, phase, follow, orientation]);
+
+  const handleRecenter = () => {
+    setFollow(true);
+    const center =
+      lastPoint !== null ? { latitude: lastPoint.lat, longitude: lastPoint.lng } : null;
+    if (center !== null) {
+      mapRef.current?.animateCamera(
+        {
+          center,
+          heading: orientation === 'course' ? courseRef.current : 0,
+          altitude: altitudeRef.current,
+        },
+        { duration: 400 },
+      );
+    }
+  };
+
+  const handleToggleOrientation = () => {
+    const next: MapOrientation = orientation === 'north' ? 'course' : 'north';
+    setOrientation(next);
+    saveMapOrientation(next);
+    mapRef.current?.animateCamera(
+      { heading: next === 'course' ? courseRef.current : 0 },
+      { duration: 300 },
+    );
+  };
+
+  const handleCycleMapType = () => {
+    const next = nextMapKind(mapType);
+    setMapType(next);
+    saveMapType(next);
+  };
+
+  const handleZoom = (direction: 'in' | 'out') => {
+    void zoomMap(mapRef.current, direction).then(async () => {
+      const camera = await mapRef.current?.getCamera().catch(() => null);
+      if (camera?.altitude != null) {
+        altitudeRef.current = camera.altitude;
+      }
+    });
+  };
+
+  const handleToggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    savePanelCollapsed(next);
+  };
 
   const active = phase === 'recording' || phase === 'paused';
   const busy = phase === 'starting' || phase === 'stopping';
@@ -119,6 +205,14 @@ export default function RecordScreen() {
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         showsUserLocation
+        mapType={mapType}
+        rotateEnabled
+        // Un geste utilisateur coupe le suivi automatique de la caméra.
+        onRegionChangeComplete={(_, details) => {
+          if (details?.isGesture) {
+            setFollow(false);
+          }
+        }}
         initialRegion={{
           latitude: 46.6,
           longitude: 2.4,
@@ -137,15 +231,44 @@ export default function RecordScreen() {
         )}
       </MapView>
 
+      <MapControls
+        orientation={orientation}
+        mapType={mapType}
+        onRecenter={handleRecenter}
+        onToggleOrientation={handleToggleOrientation}
+        onCycleMapType={handleCycleMapType}
+        onZoom={handleZoom}
+      />
+
       {/* Surimpression translucide : la carte reste visible au travers. */}
       <View style={styles.overlay} pointerEvents="box-none">
         {error !== null && (
           <Text style={[styles.small, styles.error]}>{error}</Text>
         )}
 
-        {active && trip !== null && (
+        {active && trip !== null && collapsed && (
+          // Mode réduit : une seule ligne, la carte reste lisible.
+          <View style={styles.collapsedRow}>
+            <Pressable accessibilityLabel="Déplier les informations" onPress={handleToggleCollapsed} hitSlop={8}>
+              <Ionicons name="chevron-up" size={20} color={TEXT} />
+            </Pressable>
+            <Text style={[styles.smallBold, styles.collapsedStats]} numberOfLines={1}>
+              {formatDistance(distanceM)} · {formatDuration(movingMs)} · {formatSpeed(speedMs)}
+              {phase === 'paused' ? ' · en pause' : ''}
+            </Text>
+            <SyncPill syncing={syncing} unsyncedCount={unsyncedCount} />
+          </View>
+        )}
+
+        {active && trip !== null && !collapsed && (
           <>
             <View style={styles.headerRow}>
+              <Pressable
+                accessibilityLabel="Réduire les informations"
+                onPress={handleToggleCollapsed}
+                hitSlop={8}>
+                <Ionicons name="chevron-down" size={20} color={TEXT} />
+              </Pressable>
               <Text style={[styles.smallBold, styles.headerTitle]} numberOfLines={1}>
                 {trip.title}
               </Text>
@@ -231,7 +354,7 @@ export default function RecordScreen() {
 
         {busy && <ActivityIndicator size="large" color="#ffffff" style={styles.busy} />}
 
-        {active && (
+        {active && !collapsed && (
           <View style={styles.buttonsRow}>
             {phase === 'recording' && (
               <CircleButton
@@ -360,6 +483,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  collapsedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  collapsedStats: {
+    flex: 1,
   },
   headerTitle: {
     flex: 1,

@@ -13,6 +13,7 @@ import { getDb } from '@/db';
 import {
   photosQueue,
   points,
+  syncMeta,
   trips,
   type ActivityType,
   type NewPointRow,
@@ -418,6 +419,21 @@ export async function setTripHealthSummary(
     .where(eq(trips.uuid, uuid));
 }
 
+/**
+ * Fige la météo du départ sur le trajet (une fois, au premier fix) et la
+ * marque à pousser via PATCH /trips (`pendingMeta`).
+ */
+export async function setTripWeather(
+  uuid: string,
+  weather: { temperature: number; weatherCode: number; windSpeed: number },
+): Promise<void> {
+  const db = await getDb();
+  await db
+    .update(trips)
+    .set({ ...weather, pendingMeta: 1 })
+    .where(eq(trips.uuid, uuid));
+}
+
 /** FC moyenne/max calculées sur les points locaux d'un trajet (bpm, NULL sans FC). */
 export async function getTripHeartRateStats(
   tripUuid: string,
@@ -483,4 +499,22 @@ export async function recordPhotoError(id: number, error: string): Promise<void>
     .update(photosQueue)
     .set({ lastError: error.slice(0, 500), attempts: sql`${photosQueue.attempts} + 1` })
     .where(eq(photosQueue.id, id));
+}
+
+// ---------------------------------------------------------------------------
+// Clés/valeurs persistées (préférences, diagnostics) — table sync_meta
+// ---------------------------------------------------------------------------
+
+export async function getMeta(key: string): Promise<string | null> {
+  const db = await getDb();
+  const rows = await db.select().from(syncMeta).where(eq(syncMeta.key, key)).limit(1);
+  return rows[0]?.value ?? null;
+}
+
+export async function setMeta(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  await db
+    .insert(syncMeta)
+    .values({ key, value })
+    .onConflictDoUpdate({ target: syncMeta.key, set: { value } });
 }

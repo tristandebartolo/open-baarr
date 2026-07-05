@@ -17,9 +17,11 @@ import {
   getTripHeartRateStats,
   mergeHeartRateSamples,
   setTripHealthSummary,
+  setTripWeather,
 } from '@/db/queries';
 import type { ActivityType, PointRow, TripRow } from '@/db/schema';
 import { ensureHealthPermissions, getHealthSummary, getHeartRateSamples } from '@/services/health';
+import { fetchCurrentWeather } from '@/services/weather';
 import { syncNow } from '@/services/sync';
 import {
   pauseRecording,
@@ -73,10 +75,33 @@ let ticking = false;
 /** Borne basse de la prochaine lecture d'échantillons FC (epoch ms). */
 let healthCursor = 0;
 let mergingHealth = false;
+/** Une seule tentative météo par session d'enregistrement. */
+let weatherRequested = false;
 
 function resetCursors(): void {
   lastPointId = 0;
   lastCoord = null;
+  weatherRequested = false;
+}
+
+/**
+ * Météo du départ (une tentative, au premier fix) : l'iPhone n'a pas de
+ * capteur de température — Open-Meteo fournit température/code WMO/vent,
+ * poussés ensuite par le PATCH meta de la sync.
+ */
+async function captureWeather(tripUuid: string, lat: number, lng: number): Promise<void> {
+  try {
+    const trip = await getTrip(tripUuid);
+    if (trip === null || trip.temperature !== null) {
+      return;
+    }
+    const weather = await fetchCurrentWeather(lat, lng);
+    if (weather !== null) {
+      await setTripWeather(tripUuid, weather);
+    }
+  } catch (e) {
+    console.warn('opencar: capture météo échouée', e);
+  }
 }
 
 function stopTimers(): void {
@@ -182,6 +207,10 @@ export const useRecordStore = create<RecordState>((set, get) => {
           segments.push(segment);
         }
         segment.coords.push({ latitude: point.lat, longitude: point.lng });
+      }
+      if (!weatherRequested && fresh.length > 0) {
+        weatherRequested = true;
+        void captureWeather(trip.uuid, fresh[0].lat, fresh[0].lng);
       }
       const last = fresh.length > 0 ? fresh[fresh.length - 1] : get().lastPoint;
       set({

@@ -96,7 +96,17 @@ final class ApiEndpointsTest extends BrowserTestBase {
       'entity_type' => 'node',
       'type' => 'string_long',
     ])->save();
-    foreach (['field_activity_type', 'field_trip_status', 'field_started_at', 'field_chapo'] as $fieldName) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_temperature',
+      'entity_type' => 'node',
+      'type' => 'float',
+    ])->save();
+    FieldStorageConfig::create([
+      'field_name' => 'field_weather_code',
+      'entity_type' => 'node',
+      'type' => 'integer',
+    ])->save();
+    foreach (['field_activity_type', 'field_trip_status', 'field_started_at', 'field_chapo', 'field_temperature', 'field_weather_code'] as $fieldName) {
       FieldConfig::create([
         'field_name' => $fieldName,
         'entity_type' => 'node',
@@ -167,6 +177,15 @@ final class ApiEndpointsTest extends BrowserTestBase {
     $this->assertSame(200, $response->getStatusCode());
     $detail = json_decode((string) $response->getBody(), TRUE);
     $this->assertSame('Un résumé du trajet.', $detail['chapo']);
+
+    // Météo au départ : PATCH relu, bornes respectées.
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['temperature' => 21.5, 'weather_code' => 61]);
+    $this->assertSame(200, $response->getStatusCode());
+    $weather = json_decode((string) $response->getBody(), TRUE)['weather'];
+    $this->assertSame(21.5, $weather['temperature']);
+    $this->assertSame(61, $weather['weather_code']);
+    $response = $this->apiRequest($this->userA, 'PATCH', "/trips/$uuid", ['temperature' => 99.0]);
+    $this->assertSame(422, $response->getStatusCode());
 
     // Sans le rôle, pas d'écriture : 403.
     $response = $this->apiRequest($this->userNoRole, 'POST', '/trips', $payload);

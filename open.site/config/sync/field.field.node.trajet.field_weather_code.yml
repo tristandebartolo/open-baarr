@@ -1,0 +1,23 @@
+uuid: 1953228f-0e26-413e-a316-6917fc0d518a
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_weather_code
+    - node.type.trajet
+id: node.trajet.field_weather_code
+field_name: field_weather_code
+entity_type: node
+bundle: trajet
+label: 'Code météo (WMO)'
+description: ''
+required: null
+translatable: null
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

@@ -29,10 +29,13 @@ dependencies:
     - field.field.node.trajet.field_speed_max
     - field.field.node.trajet.field_started_at
     - field.field.node.trajet.field_steps
+    - field.field.node.trajet.field_temperature
     - field.field.node.trajet.field_thematiques
     - field.field.node.trajet.field_trip_status
     - field.field.node.trajet.field_vignette
+    - field.field.node.trajet.field_weather_code
     - field.field.node.trajet.field_weight
+    - field.field.node.trajet.field_wind_speed
     - node.type.trajet
   module:
     - geolocation
@@ -122,6 +125,9 @@ hidden:
   field_speed_max: true
   field_started_at: true
   field_steps: true
+  field_temperature: true
   field_trip_status: true
+  field_weather_code: true
   field_weight: true
+  field_wind_speed: true
   langcode: true

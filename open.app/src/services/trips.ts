@@ -30,6 +30,15 @@ export type TripHealth = {
   fatigue: number | null;
 };
 
+export type TripWeather = {
+  /** °C. */
+  temperature: number | null;
+  /** Code WMO. */
+  weather_code: number | null;
+  /** m/s. */
+  wind_speed: number | null;
+};
+
 export type TripSummary = {
   uuid: string;
   title: string;
@@ -40,6 +49,7 @@ export type TripSummary = {
   started_at: number | null;
   ended_at: number | null;
   metrics: TripMetrics;
+  weather: TripWeather;
   health: TripHealth;
   created: number;
   changed: number;

@@ -49,6 +49,9 @@ final class TripController extends ControllerBase {
     'battery_start' => 'field_battery_start',
     'battery_end' => 'field_battery_end',
     'device_info' => 'field_device_info',
+    'temperature' => 'field_temperature',
+    'weather_code' => 'field_weather_code',
+    'wind_speed' => 'field_wind_speed',
   ];
 
   public function __construct(

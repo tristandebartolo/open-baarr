@@ -1,0 +1,20 @@
+uuid: c0722d45-bc65-44c1-9275-b6a1e3d806f8
+langcode: fr
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_weather_code
+field_name: field_weather_code
+entity_type: node
+type: integer
+settings:
+  unsigned: false
+  size: normal
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

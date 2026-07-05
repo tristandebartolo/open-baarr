@@ -1,0 +1,23 @@
+uuid: 4d5386b0-2d3b-417e-ad18-604f0a797b3d
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_temperature
+    - node.type.trajet
+id: node.trajet.field_temperature
+field_name: field_temperature
+entity_type: node
+bundle: trajet
+label: 'Température (°C)'
+description: ''
+required: null
+translatable: null
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

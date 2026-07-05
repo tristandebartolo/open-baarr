@@ -1,0 +1,23 @@
+uuid: cb28e129-ecb1-4988-a457-1da47e4bebd8
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_wind_speed
+    - node.type.trajet
+id: node.trajet.field_wind_speed
+field_name: field_wind_speed
+entity_type: node
+bundle: trajet
+label: 'Vent (m/s)'
+description: ''
+required: null
+translatable: null
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: float

@@ -44,6 +44,13 @@ export const trips = sqliteTable(
     steps: integer('steps'),
     /** Calories actives (kcal). */
     calories: real('calories'),
+    // --- Météo au départ (Open-Meteo, une tentative au premier fix) ---
+    /** °C. */
+    temperature: real('temperature'),
+    /** Code WMO (traduit côté app). */
+    weatherCode: integer('weather_code'),
+    /** m/s. */
+    windSpeed: real('wind_speed'),
     // --- État de synchronisation vers Drupal ---
     /** 1 quand POST /trips a répondu 200/201 pour cet uuid. */
     serverCreated: integer('server_created').notNull().default(0),
