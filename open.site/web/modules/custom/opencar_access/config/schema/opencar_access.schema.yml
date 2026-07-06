@@ -1,0 +1,7 @@
+opencar_access.settings:
+  type: config_object
+  label: 'OpenCar Access settings'
+  mapping:
+    active_redirection_baseline:
+      type: boolean
+      label: 'Active redirection baseline'

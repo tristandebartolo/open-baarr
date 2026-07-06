@@ -11,7 +11,7 @@ _core:
   default_config_hash: uOfSAur4i16wFX7dll4i86-C9x4sC3lARDO_uuImPGQ
 id: opencar_app_user
 label: 'Utilisateur app OpenCar'
-weight: 3
+weight: -7
 is_admin: false
 permissions:
   - 'record opencar trips'

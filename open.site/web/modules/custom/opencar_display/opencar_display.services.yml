@@ -20,3 +20,7 @@ services:
       - '@opencar_display.trajet_map_data_builder'
       - '@opencar_display.trajet_stats_presenter'
       - '@opencar_display.site_stats'
+  opencar_display.trajet_listing_builder:
+    class: Drupal\opencar_display\Service\TrajetListingBuilder
+    arguments:
+      - '@entity_type.manager'

@@ -1,7 +1,0 @@
-entity.user.deconnexion:
-  path: '/user/{user}/deconnexion'
-  defaults:
-    _controller: '\Drupal\gentil_access\Controller\LogoutTabController::logout'
-  requirements:
-    _user_is_logged_in: 'TRUE'
-    _csrf_token: 'TRUE'

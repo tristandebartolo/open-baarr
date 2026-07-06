@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\gentil_access\Controller;
+namespace Drupal\opencar_access\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;

@@ -1,0 +1,67 @@
+{#
+/**
+ * @file
+ * Section 1 du listing /trajets : « Dernier voyage » en hero bord-à-bord.
+ *
+ * Carte interactive du tracé en couverture (data-opencar-map, behavior
+ * trajet-map.js) + panneau titre / activité / stats clés / CTA. Repli sur la
+ * vignette si le trajet n'a pas de tracé.
+ *
+ * Variables injectées par opencar_display_preprocess_node() (view mode hero) :
+ * - trajet_activity : { type, label, color }
+ * - trajet_started_at : date formatée ou null
+ * - trajet_hero_stats : tuiles clés (distance, durée, D+)
+ * - trajet_map : { id } ou null
+ */
+#}
+{%
+  set classes = [
+    'node',
+    'node--type-' ~ node.bundle|clean_class,
+    not node.isPublished() ? 'node--unpublished',
+    view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+    'oc-trajet-hero',
+  ]
+%}
+<article{{ attributes.addClass(classes).setAttribute('style', '--oc-activity: ' ~ trajet_activity.color) }}>
+
+	{% if trajet_map %}
+		<div class="oc-hero-map oc-trajet-hero__map">
+			<div class="oc-hero-map__canvas" data-opencar-map="{{ trajet_map.id }}" role="region" aria-label="{{ 'Carte du dernier trajet'|t }}"></div>
+			<button type="button" class="oc-map-expand" aria-expanded="false" aria-label="{{ 'Agrandir la carte'|t }}">
+				<span uk-icon="icon: expand" aria-hidden="true"></span>
+			</button>
+		</div>
+	{% elseif content.field_vignette|render %}
+		<div class="oc-hero-vignette oc-trajet-hero__map">{{ content.field_vignette }}</div>
+	{% endif %}
+
+	<div class="oc-trajet-hero__panel">
+		<header class="oc-trajet-hero__head">
+			<span class="oc-activity-badge" aria-hidden="true">
+				<span uk-icon="icon: location"></span>
+			</span>
+			<div>
+				<h2{{ title_attributes.addClass('oc-trajet-hero__title') }}>
+					<a href="{{ url }}" rel="bookmark">{{ label }}</a>
+				</h2>
+				<p class="oc-trajet-meta">
+					{{ trajet_activity.label }}{% if trajet_started_at %} · {{ trajet_started_at }}{% endif %}
+				</p>
+			</div>
+		</header>
+
+		{% if trajet_hero_stats %}
+			<div class="oc-trajet-hero__stats">
+				{% for tile in trajet_hero_stats %}
+					{% include '@gentil_claro/partials/trajet-stat-tile.html.twig' with { tile: tile } only %}
+				{% endfor %}
+			</div>
+		{% endif %}
+
+		<a class="oc-btn oc-btn--primary oc-trajet-hero__cta" href="{{ url }}">
+			{{ 'Voir le trajet'|t }}
+			<span uk-icon="icon: arrow-right" aria-hidden="true"></span>
+		</a>
+	</div>
+</article>

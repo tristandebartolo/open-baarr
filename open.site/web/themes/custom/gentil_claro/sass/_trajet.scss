@@ -35,7 +35,9 @@
   .oc-hero-map .leaflet-layer,
   .oc-hero-map .leaflet-control-zoom,
   .oc-hero-map .leaflet-control-layers,
-  .oc-hero-map .leaflet-control-attribution {
+  .oc-hero-map .leaflet-control-attribution,
+  .oc-trajet-card__map .leaflet-layer,
+  .oc-trajet-card__map .leaflet-control-attribution {
     filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
   }
 
@@ -440,4 +442,261 @@ html.oc-map-noscroll {
     font-size: 0.9rem;
     color: var(--oc-text-secondary);
   }
+}
+
+/* --------------------------------------------------------------------------
+   Couverture carte décorative d'une card (Section 2, non interactive).
+   -------------------------------------------------------------------------- */
+
+.oc-trajet-card__map {
+  aspect-ratio: 16 / 9;
+  background: var(--oc-surface);
+}
+
+.oc-trajet-card__map-canvas {
+  width: 100%;
+  height: 100%;
+  /* La card entière est cliquable : la carte ne capte aucune interaction. */
+  pointer-events: none;
+}
+
+/* Décor uniquement : pas de contrôles Leaflet sur les cards. */
+.oc-trajet-card__map .leaflet-control-container {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Section 1 — Hero « Dernier voyage » (bord à bord, carte interactive).
+   -------------------------------------------------------------------------- */
+
+.oc-listing-featured {
+  margin-top: 0;
+}
+
+.oc-trajet-hero {
+  position: relative;
+  color: var(--oc-text);
+
+  &__map {
+    position: relative;
+    height: clamp(260px, 42vh, 380px);
+  }
+
+  .oc-hero-vignette img {
+    height: clamp(260px, 42vh, 380px);
+  }
+
+  &__panel {
+    position: relative;
+    z-index: 2;
+    margin: -40px 16px 0;
+    padding: 20px;
+    border-radius: var(--oc-radius-sheet);
+    background: var(--oc-bg);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.2;
+
+    a {
+      color: var(--oc-text);
+      text-decoration: none;
+
+      &:hover,
+      &:focus-visible {
+        color: var(--oc-activity, var(--oc-accent));
+      }
+    }
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-trajet-hero__map,
+  .oc-trajet-hero .oc-hero-vignette img {
+    height: clamp(360px, 56vh, 520px);
+  }
+
+  /* Panneau en encart sur la carte (la carte reste interactive autour). */
+  .oc-trajet-hero__panel {
+    position: absolute;
+    left: 40px;
+    right: auto;
+    bottom: 40px;
+    max-width: 380px;
+    margin: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Section 2 — Grille « À la une ».
+   -------------------------------------------------------------------------- */
+
+.oc-listing-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .oc-listing-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .oc-listing-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Section 3 — Liste tiny (une colonne, remplace la grille de cards).
+   -------------------------------------------------------------------------- */
+
+.view-trajets.view-display-id-page_1 .view-content {
+  display: block;
+  gap: 0;
+}
+
+.oc-trajet-tiny {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 6px;
+  border-bottom: 1px solid var(--oc-border);
+  color: var(--oc-text);
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--oc-surface-selected);
+  }
+
+  &__media {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--oc-surface);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__badge {
+    flex: none;
+  }
+
+  &__body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.3;
+
+    a {
+      color: var(--oc-text);
+      text-decoration: none;
+
+      &:hover,
+      &:focus-visible {
+        color: var(--oc-activity, var(--oc-accent));
+      }
+    }
+  }
+
+  &__stats {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    .uk-icon {
+      color: var(--oc-text-secondary);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-trajet-tiny {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Pager (/trajets) : pastilles, cibles tactiles ≥ 44px, page active en accent.
+   -------------------------------------------------------------------------- */
+
+.view-trajets .pager__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.view-trajets .pager__item {
+  margin: 0;
+}
+
+.view-trajets .pager__item a,
+.view-trajets .pager__item > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--oc-surface);
+  color: var(--oc-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.view-trajets .pager__item a:hover,
+.view-trajets .pager__item a:focus-visible {
+  background: var(--oc-surface-selected);
+}
+
+.view-trajets .pager__item.is-active a,
+.view-trajets .pager__item.is-active > span,
+.view-trajets .pager__item [aria-current] {
+  background: var(--oc-accent);
+  color: #ffffff;
 }

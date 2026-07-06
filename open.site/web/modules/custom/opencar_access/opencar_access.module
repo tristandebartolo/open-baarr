@@ -3,7 +3,7 @@
 /**
  * Implements hook_preprocess_page().
  */
-function gentil_access_preprocess_html(&$variables) {
+function opencar_access_preprocess_html(&$variables) {
   //$getScheme = \Drupal::request();
   //$variables['is_back'] = str_starts_with($getScheme->getHost(), 'bck') ? TRUE : FALSE;
   //if (\Drupal::currentUser()->isAuthenticated()) {
@@ -16,7 +16,7 @@ function gentil_access_preprocess_html(&$variables) {
 /**
  * Implements hook_preprocess_page().
  */
-function gentil_access_preprocess_page(&$variables) {
+function opencar_access_preprocess_page(&$variables) {
   $getScheme = \Drupal::request();
   $variables['is_back'] = str_starts_with($getScheme->getHost(), 'bck') ? TRUE : FALSE;
 }
@@ -24,7 +24,7 @@ function gentil_access_preprocess_page(&$variables) {
 /**
  * Implements hook_preprocess_node().
  */
-function gentil_access_preprocess_node(&$variables) {
+function opencar_access_preprocess_node(&$variables) {
   $getScheme = \Drupal::request();
   $variables['is_back'] = str_starts_with($getScheme->getHost(), 'bck') ? TRUE : FALSE;
 }
@@ -34,7 +34,7 @@ function gentil_access_preprocess_node(&$variables) {
  *
  * Changes weight and access for the 'Log out' tab on the user page.
  */
-function gentil_access_menu_local_tasks_alter(&$data, $route_name, &$cacheability) {
+function opencar_access_menu_local_tasks_alter(&$data, $route_name, &$cacheability) {
   if (isset($data['tabs'][0]['entity.user.deconnexion'])) {
     $tab_data = &$data['tabs'][0]['entity.user.deconnexion'];
     $link_params = $tab_data['#link']['url']->getRouteParameters();

@@ -1,0 +1,15 @@
+entity.user.deconnexion:
+  path: '/user/{user}/deconnexion'
+  defaults:
+    _controller: '\Drupal\opencar_access\Controller\LogoutTabController::logout'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _csrf_token: 'TRUE'
+
+opencar_access.baseline_redirect_settings:
+  path: '/admin/config/opencar/baseline-redirect'
+  defaults:
+    _form: '\Drupal\opencar_access\Form\BaselineRedirectSettingsForm'
+    _title: 'Redirection baseline'
+  requirements:
+    _permission: 'administer site configuration'

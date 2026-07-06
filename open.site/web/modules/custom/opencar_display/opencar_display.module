@@ -75,43 +75,19 @@ function opencar_display_preprocess_page(array &$variables): void {
  */
 function opencar_display_preprocess_node(array &$variables): void {
   $node = $variables['node'];
-  if (!$node instanceof NodeInterface || $node->bundle() !== 'trajet' || !in_array($variables['view_mode'], ['full', 'card'], TRUE)) {
+  $viewMode = $variables['view_mode'];
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'trajet' || !in_array($viewMode, ['full', 'hero', 'card', 'tiny'], TRUE)) {
     return;
   }
 
   /** @var \Drupal\opencar_display\Service\TrajetStatsPresenter $statsPresenter */
   $statsPresenter = \Drupal::service('opencar_display.trajet_stats_presenter');
-
-  // Le view mode card (listing) ne reçoit que l'activité et deux mini-stats.
-  if ($variables['view_mode'] === 'card') {
-    $activityType = $node->hasField('field_activity_type') && !$node->get('field_activity_type')->isEmpty()
-      ? (string) $node->get('field_activity_type')->value
-      : NULL;
-    $variables['trajet_activity'] = [
-      'type' => $activityType,
-      'label' => $statsPresenter->activityLabel($activityType),
-      'color' => $statsPresenter->activityColor($activityType),
-    ];
-    $variables['trajet_started_at'] = $statsPresenter->formatDateTime($node, 'field_started_at');
-    $tiles = $statsPresenter->build($node);
-    $variables['trajet_card_stats'] = array_values(array_filter(
-      $tiles,
-      static fn (array $tile): bool => in_array($tile['id'], ['distance', 'duration'], TRUE),
-    ));
-    return;
-  }
   /** @var \Drupal\opencar_display\Service\TrajetMapDataBuilder $mapDataBuilder */
   $mapDataBuilder = \Drupal::service('opencar_display.trajet_map_data_builder');
-  /** @var \Drupal\opencar_display\Service\TrajetChartDataBuilder $chartDataBuilder */
-  $chartDataBuilder = \Drupal::service('opencar_display.trajet_chart_data_builder');
-  /** @var \Drupal\opencar_display\Service\TrajetGalleryBuilder $galleryBuilder */
-  $galleryBuilder = \Drupal::service('opencar_display.trajet_gallery_builder');
 
-  $mapId = 'node-' . $node->id();
   $activityType = $node->hasField('field_activity_type') && !$node->get('field_activity_type')->isEmpty()
     ? (string) $node->get('field_activity_type')->value
     : NULL;
-
   $variables['trajet_activity'] = [
     'type' => $activityType,
     'label' => $statsPresenter->activityLabel($activityType),
@@ -119,13 +95,38 @@ function opencar_display_preprocess_node(array &$variables): void {
   ];
   $variables['trajet_started_at'] = $statsPresenter->formatDateTime($node, 'field_started_at');
 
-  $tiles = $statsPresenter->build($node);
-  $variables['trajet_stats'] = [
-    'stats' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'stats')),
-    'health' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'health')),
-    'weather' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'weather')),
-  ];
+  // Listing léger : card (carte décorative en couverture) et tiny (sans carte).
+  if ($viewMode === 'card' || $viewMode === 'tiny') {
+    $tiles = $statsPresenter->build($node);
+    $wanted = $viewMode === 'card' ? ['distance', 'duration'] : ['distance'];
+    $variables['trajet_card_stats'] = array_values(array_filter(
+      $tiles,
+      static fn (array $tile): bool => in_array($tile['id'], $wanted, TRUE),
+    ));
 
+    $variables['trajet_map'] = NULL;
+    // Seule la card reçoit une carte décorative (non interactive, multi-instance).
+    if ($viewMode === 'card') {
+      $mapData = $mapDataBuilder->build($node);
+      if ($mapData !== NULL) {
+        $mapId = 'card-' . $node->id();
+        $variables['trajet_map'] = ['id' => $mapId];
+        $variables['#attached']['library'][] = 'opencar_display/card-map';
+        if (\Drupal::moduleHandler()->moduleExists('cookies')) {
+          $variables['#attached']['library'][] = 'cookies/cookies.lib';
+        }
+        $variables['#attached']['drupalSettings']['opencarDisplay']['cardMaps'][$mapId] = [
+          'geojson' => $mapData['geojson'],
+          'color' => $statsPresenter->activityColor($activityType),
+        ];
+      }
+    }
+    return;
+  }
+
+  // Vue riche : full (page détail) et hero (Section 1 du listing) — carte
+  // interactive du tracé, même mécanique drupalSettings.opencarDisplay.maps.
+  $mapId = 'node-' . $node->id();
   $mapData = $mapDataBuilder->build($node);
   $variables['trajet_map'] = $mapData !== NULL ? ['id' => $mapId] : NULL;
   if ($mapData !== NULL) {
@@ -142,6 +143,30 @@ function opencar_display_preprocess_node(array &$variables): void {
       'end' => $mapData['end'],
     ];
   }
+
+  $tiles = $statsPresenter->build($node);
+
+  // Hero du listing : quelques tuiles clés pour l'overlay, sans galerie ni
+  // graphiques (réservés à la page détail).
+  if ($viewMode === 'hero') {
+    $variables['trajet_hero_stats'] = array_values(array_filter(
+      $tiles,
+      static fn (array $tile): bool => in_array($tile['id'], ['distance', 'duration', 'elevation_gain'], TRUE),
+    ));
+    return;
+  }
+
+  // Page détail (full) : stats groupées, galerie, graphiques.
+  /** @var \Drupal\opencar_display\Service\TrajetChartDataBuilder $chartDataBuilder */
+  $chartDataBuilder = \Drupal::service('opencar_display.trajet_chart_data_builder');
+  /** @var \Drupal\opencar_display\Service\TrajetGalleryBuilder $galleryBuilder */
+  $galleryBuilder = \Drupal::service('opencar_display.trajet_gallery_builder');
+
+  $variables['trajet_stats'] = [
+    'stats' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'stats')),
+    'health' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'health')),
+    'weather' => array_values(array_filter($tiles, static fn (array $tile): bool => $tile['group'] === 'weather')),
+  ];
 
   $variables['trajet_gallery'] = $galleryBuilder->build($node);
 
@@ -162,5 +187,33 @@ function opencar_display_preprocess_node(array &$variables): void {
     $variables['#attached']['drupalSettings']['opencarDisplay']['charts'][$mapId] = [
       'series' => $chartData['series'],
     ];
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view().
+ *
+ * Injecte les sections « hero » (dernier trajet publié) et « à la une » (les 3
+ * suivants, en view mode card) en tête du listing /trajets, sur la première
+ * page uniquement. Le reste de la liste (view mode tiny) est paginé par le
+ * display lui-même, avec un pager décalé de 4 pour ne pas répéter les trajets
+ * mis en avant.
+ */
+function opencar_display_preprocess_views_view(array &$variables): void {
+  $view = $variables['view'];
+  if ($view->id() !== 'trajets' || $view->current_display !== 'page_1' || $view->getCurrentPage() > 0) {
+    return;
+  }
+
+  /** @var \Drupal\opencar_display\Service\TrajetListingBuilder $listingBuilder */
+  $listingBuilder = \Drupal::service('opencar_display.trajet_listing_builder');
+  $featured = $listingBuilder->featured(3);
+
+  $viewBuilder = \Drupal::entityTypeManager()->getViewBuilder('node');
+  if ($featured['hero'] instanceof NodeInterface) {
+    $variables['trajets_hero'] = $viewBuilder->view($featured['hero'], 'hero');
+  }
+  if ($featured['cards'] !== []) {
+    $variables['trajets_cards'] = $viewBuilder->viewMultiple($featured['cards'], 'card');
   }
 }

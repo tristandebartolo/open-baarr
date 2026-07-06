@@ -1,5 +1,5 @@
-name: 'Gentil Access'
+name: 'OpenCar Access'
 type: module
 description: 'Permission access sites.'
 core_version_requirement: ^11
-package: 'Gentil'
+package: 'OpenCar'

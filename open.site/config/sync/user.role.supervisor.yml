@@ -1,0 +1,9 @@
+uuid: 3c42c3ff-8087-4527-b74a-d57eac84ff41
+langcode: fr
+status: true
+dependencies: {  }
+id: supervisor
+label: Supervisor
+weight: -6
+is_admin: false
+permissions: {  }

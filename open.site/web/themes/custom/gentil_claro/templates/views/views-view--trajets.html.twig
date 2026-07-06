@@ -38,9 +38,31 @@
 	{% endif %}
 	{{ attachment_before }}
 
+	{# Section 1 — Hero « Dernier voyage » (page 1 uniquement, injecté en preprocess). #}
+	{% if trajets_hero %}
+		<section class="oc-section oc-listing-featured" aria-labelledby="oc-listing-featured-label">
+			<h2 id="oc-listing-featured-label" class="visually-hidden">{{ 'Dernier voyage'|t }}</h2>
+			{{ trajets_hero }}
+		</section>
+	{% endif %}
+
+	{# Section 2 — À la une : les 3 trajets suivants en cards. #}
+	{% if trajets_cards %}
+		<section class="oc-section" aria-labelledby="oc-listing-cards-label">
+			<div class="uk-container">
+				<h2 id="oc-listing-cards-label" class="oc-section-label">{{ 'À la une'|t }}</h2>
+				<div class="oc-listing-cards">{{ trajets_cards }}</div>
+			</div>
+		</section>
+	{% endif %}
+
   {% if rows %}
+		{# Section 3 — Tous les trajets : le reste de la liste en tiny, paginé. #}
 		<div class="uk-section uk-section-xsmall">
 			<div class="uk-container">
+				{% if trajets_hero or trajets_cards %}
+					<h2 class="oc-section-label">{{ 'Tous les trajets'|t }}</h2>
+				{% endif %}
 				<div class="view-content">
           {{ rows }}
         </div>

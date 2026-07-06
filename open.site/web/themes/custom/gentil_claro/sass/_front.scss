@@ -447,7 +447,7 @@ html[data-theme='dark'] {
     var(--oc-surface);
   border-bottom: 1px solid var(--oc-border);
   padding: clamp(32px, 7vw, 72px) 0;
-  margin-bottom: 32px;
+  margin: 0;
 
   &__kicker {
     margin: 0 0 6px;

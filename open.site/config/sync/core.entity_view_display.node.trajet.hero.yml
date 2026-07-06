@@ -1,9 +1,9 @@
-uuid: 0fb347db-c025-46d8-b6b1-535810c1d3ea
+uuid: 2a62d06a-adcb-42b6-82ed-f78d03eef17a
 langcode: fr
 status: true
 dependencies:
   config:
-    - core.entity_view_mode.node.tiny
+    - core.entity_view_mode.node.hero
     - field.field.node.trajet.field_activity_type
     - field.field.node.trajet.field_battery_end
     - field.field.node.trajet.field_battery_start
@@ -36,52 +36,28 @@ dependencies:
     - field.field.node.trajet.field_weather_code
     - field.field.node.trajet.field_weight
     - field.field.node.trajet.field_wind_speed
-    - image.style.thumbnail
     - node.type.trajet
   module:
     - geolocation
+    - geolocation_geometry
     - layout_builder
-    - media
+    - text
     - user
 third_party_settings:
   layout_builder:
     enabled: false
     allow_custom: false
-id: node.trajet.tiny
+id: node.trajet.hero
 targetEntityType: node
 bundle: trajet
-mode: tiny
+mode: hero
 content:
-  field_chapo:
-    type: basic_string
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 1
-    region: content
-  field_coordinates:
-    type: geolocation_latlng
-    label: hidden
-    settings: {  }
-    third_party_settings: {  }
-    weight: 3
-    region: content
-  field_thematiques:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 2
-    region: content
   field_vignette:
-    type: media_thumbnail
+    type: entity_reference_entity_view
     label: hidden
     settings:
-      image_link: ''
-      image_style: thumbnail
-      image_loading:
-        attribute: lazy
+      view_mode: default
+      link: false
     third_party_settings: {  }
     weight: 0
     region: content
@@ -91,6 +67,8 @@ hidden:
   field_battery_start: true
   field_body: true
   field_calories: true
+  field_chapo: true
+  field_coordinates: true
   field_coordinates_travel: true
   field_device_info: true
   field_distance: true
@@ -110,6 +88,7 @@ hidden:
   field_started_at: true
   field_steps: true
   field_temperature: true
+  field_thematiques: true
   field_trip_status: true
   field_weather_code: true
   field_weight: true

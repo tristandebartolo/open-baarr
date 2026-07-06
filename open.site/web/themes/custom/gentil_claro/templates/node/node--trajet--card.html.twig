@@ -7,6 +7,7 @@
  * - trajet_activity : { type, label, color }
  * - trajet_started_at : date formatée ou null
  * - trajet_card_stats : mini-tuiles (distance, durée)
+ * - trajet_map : { id } ou null — carte décorative en couverture (card-map.js)
  */
 #}
 {%
@@ -20,7 +21,11 @@
   ]
 %}
 <article{{ attributes.addClass(classes).setAttribute('style', '--oc-activity: ' ~ trajet_activity.color) }} data-clk-oo="true">
-	{% if content.field_vignette|render %}
+	{% if trajet_map %}
+		<div class="oc-trajet-card__media oc-trajet-card__map">
+			<div class="oc-trajet-card__map-canvas" data-opencar-card-map="{{ trajet_map.id }}" role="img" aria-label="{{ 'Tracé du trajet'|t }}"></div>
+		</div>
+	{% elseif content.field_vignette|render %}
 		<div class="oc-trajet-card__media">{{ content.field_vignette }}</div>
 	{% endif %}
 	<div class="oc-trajet-card__body">
