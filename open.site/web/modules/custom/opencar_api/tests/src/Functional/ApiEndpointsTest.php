@@ -291,10 +291,14 @@ final class ApiEndpointsTest extends BrowserTestBase {
     $this->assertSame(48.11, $baseline['coordinates']['lat']);
     $this->assertSame('Mer', $baseline['thematiques'][0]['name']);
     $this->assertSame(200, $this->apiRequest($this->userA, 'POST', '/baselines', $payload)->getStatusCode());
-    $this->assertSame(409, $this->apiRequest($this->userB, 'POST', '/baselines', $payload)->getStatusCode());
-    $this->assertSame(404, $this->apiRequest($this->userB, 'PATCH', "/baselines/$baselineUuid", ['title' => 'Piraté'])->getStatusCode());
-    $listA = json_decode((string) $this->apiRequest($this->userA, 'GET', '/baselines')->getBody(), TRUE);
-    $this->assertSame(1, $listA['total']);
+    // Contenu partagé : contrairement aux trajets, un autre porteur du rôle
+    // voit et modifie les baselines (rejeu du POST → 200, pas de 409).
+    $this->assertSame(200, $this->apiRequest($this->userB, 'POST', '/baselines', $payload)->getStatusCode());
+    $listB = json_decode((string) $this->apiRequest($this->userB, 'GET', '/baselines')->getBody(), TRUE);
+    $this->assertSame(1, $listB['total']);
+    $response = $this->apiRequest($this->userB, 'PATCH', "/baselines/$baselineUuid", ['title' => 'Partagée']);
+    $this->assertSame(200, $response->getStatusCode());
+    $this->assertSame('Partagée', json_decode((string) $response->getBody(), TRUE)['title']);
     $response = $this->apiRequest($this->userA, 'PATCH', "/baselines/$baselineUuid", ['published' => TRUE, 'thematiques' => []]);
     $patched = json_decode((string) $response->getBody(), TRUE);
     $this->assertTrue($patched['published']);

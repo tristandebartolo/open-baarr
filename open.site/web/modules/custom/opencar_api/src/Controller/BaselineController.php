@@ -14,7 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Baselines : /opencar/api/v1/baselines[/{uuid}] + recherche de thématiques.
@@ -50,11 +49,10 @@ final class BaselineController extends ControllerBase {
   public function createBaseline(Request $request): JsonResponse {
     $payload = $this->validator->validateBaselineCreate($this->validator->decode($request));
 
+    // Contenu partagé : le rejeu d'un POST est idempotent quel que soit le
+    // compte porteur du rôle (pas de 409 propriétaire comme les trajets).
     $existing = $this->repository->loadByUuid($payload['uuid'], 'baseline');
     if ($existing !== NULL) {
-      if (!$this->repository->isAllowed($existing, $this->currentUser())) {
-        throw new ConflictHttpException('UUID déjà utilisé.');
-      }
       return new JsonResponse($this->normalizer->normalizeBaseline($existing), 200);
     }
 
@@ -92,7 +90,7 @@ final class BaselineController extends ControllerBase {
     $filters['status'] = NULL;
     $filters['activity_type'] = NULL;
     $filters['since'] = NULL;
-    $result = $this->repository->findForAccount($this->currentUser(), $filters, 'baseline');
+    $result = $this->repository->findForAccount($this->currentUser(), $filters, 'baseline', FALSE);
 
     return new JsonResponse([
       'items' => array_map(
@@ -109,7 +107,7 @@ final class BaselineController extends ControllerBase {
    * PATCH /baselines/{uuid} — title, body, published, thématiques.
    */
   public function update(string $uuid, Request $request): JsonResponse {
-    $baseline = $this->repository->loadForAccount($uuid, $this->currentUser(), 'baseline');
+    $baseline = $this->repository->loadForAccount($uuid, $this->currentUser(), 'baseline', FALSE);
     $changes = $this->validator->validateBaselineUpdate($this->validator->decode($request));
 
     foreach ($changes as $key => $value) {
@@ -145,7 +143,7 @@ final class BaselineController extends ControllerBase {
    * DELETE /baselines/{uuid} — 204.
    */
   public function delete(string $uuid): Response {
-    $baseline = $this->repository->loadForAccount($uuid, $this->currentUser(), 'baseline');
+    $baseline = $this->repository->loadForAccount($uuid, $this->currentUser(), 'baseline', FALSE);
     $baseline->delete();
     return new Response('', 204);
   }

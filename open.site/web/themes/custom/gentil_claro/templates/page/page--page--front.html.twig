@@ -44,7 +44,8 @@
 			<section class="oc-front-section oc-road-section">
 				<div class="uk-container">
 					<header class="oc-front-section__header">
-						<h2 class="oc-front-section__title">{{ 'La route'|t }}</h2>
+						{# <h2 class="oc-front-section__title">{{ 'La route'|t }}</h2> #}
+            <span></span>
 						<a class="oc-front-section__more" href="/trajets">{{ 'Tous les trajets'|t }} <span uk-icon="icon: arrow-right; ratio: 0.8" aria-hidden="true"></span></a>
 					</header>
 				</div>
@@ -124,7 +125,7 @@
 		{% endif %}
 
 		{# Derniers trajets. #}
-		<section class="oc-front-section oc-front-trips">
+		{# <section class="oc-front-section oc-front-trips">
 			<div class="uk-container">
 				<header class="oc-front-section__header">
 					<h2 class="oc-front-section__title">{{ 'Derniers trajets'|t }}</h2>
@@ -132,7 +133,7 @@
 				</header>
 				{{ front_trips }}
 			</div>
-		</section>
+		</section> #}
 
 		{# Chiffres clés publics. #}
 		{% if front_stats %}

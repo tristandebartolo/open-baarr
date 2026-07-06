@@ -37,10 +37,14 @@ final class TripRepository {
 
   /**
    * Charge un node accessible au compte donné, sinon 404.
+   *
+   * @param bool $scopeToOwner
+   *   FALSE pour un contenu partagé (baselines) : tout porteur du rôle y
+   *   accède, seule l'existence compte.
    */
-  public function loadForAccount(string $uuid, AccountInterface $account, string $bundle = 'trajet'): NodeInterface {
+  public function loadForAccount(string $uuid, AccountInterface $account, string $bundle = 'trajet', bool $scopeToOwner = TRUE): NodeInterface {
     $trip = $this->loadByUuid($uuid, $bundle);
-    if ($trip === NULL || !$this->isAllowed($trip, $account)) {
+    if ($trip === NULL || ($scopeToOwner && !$this->isAllowed($trip, $account))) {
       throw new NotFoundHttpException('Contenu introuvable.');
     }
     return $trip;
@@ -66,12 +70,14 @@ final class TripRepository {
    *   Le total (hors pagination) et la page de trajets, du plus récent au
    *   plus ancien (date de création).
    */
-  public function findForAccount(AccountInterface $account, array $filters, string $bundle = 'trajet'): array {
+  public function findForAccount(AccountInterface $account, array $filters, string $bundle = 'trajet', bool $scopeToOwner = TRUE): array {
     $storage = $this->entityTypeManager->getStorage('node');
     $query = $storage->getQuery()
       ->accessCheck(FALSE)
-      ->condition('type', $bundle)
-      ->condition('uid', $account->id());
+      ->condition('type', $bundle);
+    if ($scopeToOwner) {
+      $query->condition('uid', $account->id());
+    }
 
     if ($filters['status'] !== NULL) {
       $query->condition('field_trip_status', $filters['status']);

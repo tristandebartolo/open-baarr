@@ -50,7 +50,7 @@ export function createBaseline(baseline: {
 
 export function patchBaseline(
   uuid: string,
-  patch: Partial<{ title: string; body: string; published: boolean; thematiques: string[] }>,
+  patch: Partial<{ title: string; body: string | null; published: boolean; thematiques: string[] }>,
 ): Promise<Baseline> {
   return apiFetch<Baseline>(`/opencar/api/v1/baselines/${uuid}`, { method: 'PATCH', body: patch });
 }

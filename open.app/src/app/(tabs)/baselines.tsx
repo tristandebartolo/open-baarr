@@ -22,6 +22,7 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Switch,
   TextInput,
@@ -48,6 +49,8 @@ export default function BaselinesScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
+  /** Note en cours d'édition (le formulaire passe en mode édition). */
+  const [editing, setEditing] = useState<Baseline | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -55,7 +58,7 @@ export default function BaselinesScreen() {
       setBaselines(response.items);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Baselines indisponibles.');
+      setError(e instanceof Error ? e.message : 'Notes indisponibles.');
     }
   }, []);
 
@@ -81,7 +84,7 @@ export default function BaselinesScreen() {
   };
 
   const handleDelete = (baseline: Baseline) => {
-    Alert.alert('Supprimer la baseline', `« ${baseline.title} » sera définitivement supprimée.`, [
+    Alert.alert('Supprimer la Note', `« ${baseline.title} » sera définitivement supprimée.`, [
       { text: 'Annuler', style: 'cancel' },
       {
         text: 'Supprimer',
@@ -117,7 +120,7 @@ export default function BaselinesScreen() {
               ]}>
               <Ionicons name="add" size={20} color="#ffffff" />
               <ThemedText type="smallBold" style={styles.addLabel}>
-                Ajouter une baseline
+                Ajouter une Note
               </ThemedText>
             </Pressable>
             {error !== null && (
@@ -131,9 +134,9 @@ export default function BaselinesScreen() {
           error === null ? (
             <View style={styles.empty}>
               <Ionicons name="flag-outline" size={44} color={theme.textSecondary} />
-              <ThemedText>Aucune baseline</ThemedText>
+              <ThemedText>Aucune Note</ThemedText>
               <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
-                Une baseline est une note géolocalisée : un titre, une description, des
+                Une Note est une note géolocalisée : un titre, une description, des
                 thématiques — enregistrée à l’endroit où vous êtes.
               </ThemedText>
             </View>
@@ -143,18 +146,28 @@ export default function BaselinesScreen() {
           <BaselineRow
             baseline={item}
             onTogglePublished={(published) => void handleTogglePublished(item, published)}
+            onEdit={() => setEditing(item)}
             onDelete={() => handleDelete(item)}
           />
         )}
       />
 
-      {formVisible && (
+      {(formVisible || editing !== null) && (
         <BaselineForm
-          onCreated={(baseline) => {
-            setBaselines((current) => [baseline, ...current]);
+          initial={editing}
+          onSaved={(baseline) => {
+            setBaselines((current) =>
+              editing !== null
+                ? current.map((b) => (b.uuid === baseline.uuid ? baseline : b))
+                : [baseline, ...current],
+            );
             setFormVisible(false);
+            setEditing(null);
           }}
-          onDismiss={() => setFormVisible(false)}
+          onDismiss={() => {
+            setFormVisible(false);
+            setEditing(null);
+          }}
         />
       )}
     </ThemedView>
@@ -164,10 +177,12 @@ export default function BaselinesScreen() {
 function BaselineRow({
   baseline,
   onTogglePublished,
+  onEdit,
   onDelete,
 }: {
   baseline: Baseline;
   onTogglePublished: (published: boolean) => void;
+  onEdit: () => void;
   onDelete: () => void;
 }) {
   const theme = useTheme();
@@ -182,6 +197,9 @@ function BaselineRow({
             {baseline.coordinates !== null ? ' · 📍' : ''}
           </ThemedText>
         </View>
+        <Pressable accessibilityLabel="Modifier" onPress={onEdit} hitSlop={8}>
+          <Ionicons name="pencil" size={18} color={theme.textSecondary} />
+        </Pressable>
         <Pressable accessibilityLabel="Supprimer" onPress={onDelete} hitSlop={8}>
           <Ionicons name="trash-outline" size={18} color={Palette.danger} />
         </Pressable>
@@ -216,27 +234,40 @@ function BaselineRow({
   );
 }
 
-/** Formulaire d'ajout : coordonnées capturées automatiquement à l'ouverture. */
+/**
+ * Formulaire de Note : création (coordonnées capturées automatiquement à
+ * l'ouverture) ou édition (`initial` — titre/description/thématiques
+ * préremplis, coordonnées existantes conservées).
+ */
 function BaselineForm({
-  onCreated,
+  initial,
+  onSaved,
   onDismiss,
 }: {
-  onCreated: (baseline: Baseline) => void;
+  initial: Baseline | null;
+  onSaved: (baseline: Baseline) => void;
   onDismiss: () => void;
 }) {
   const theme = useTheme();
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [thematiques, setThematiques] = useState<string[]>([]);
+  const isEditing = initial !== null;
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [body, setBody] = useState(initial?.body ?? '');
+  const [thematiques, setThematiques] = useState<string[]>(
+    initial?.thematiques.map((term) => term.name) ?? [],
+  );
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [locating, setLocating] = useState(true);
+  const [locating, setLocating] = useState(!isEditing);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Capture automatique de la position à l'ouverture (non bloquante :
-  // permission refusée ou GPS muet → baseline sans coordonnées).
+  // Capture automatique de la position à l'ouverture — création uniquement
+  // (non bloquante : permission refusée ou GPS muet → Note sans
+  // coordonnées ; en édition, les coordonnées existantes sont conservées).
   useFocusEffect(
     useCallback(() => {
+      if (isEditing) {
+        return;
+      }
       let cancelled = false;
       void (async () => {
         try {
@@ -250,7 +281,7 @@ function BaselineForm({
             }
           }
         } catch (e) {
-          console.warn('opencar: position de la baseline indisponible', e);
+          console.warn('opencar: position de la Note indisponible', e);
         } finally {
           if (!cancelled) {
             setLocating(false);
@@ -260,7 +291,7 @@ function BaselineForm({
       return () => {
         cancelled = true;
       };
-    }, []),
+    }, [isEditing]),
   );
 
   const handleSave = async () => {
@@ -271,14 +302,20 @@ function BaselineForm({
     }
     setSaving(true);
     try {
-      const baseline = await createBaseline({
-        uuid: Crypto.randomUUID(),
-        title: trimmedTitle,
-        ...(body.trim() !== '' ? { body: body.trim() } : {}),
-        ...(position !== null ? { lat: position.lat, lng: position.lng } : {}),
-        ...(thematiques.length > 0 ? { thematiques } : {}),
-      });
-      onCreated(baseline);
+      const baseline = isEditing
+        ? await patchBaseline(initial.uuid, {
+            title: trimmedTitle,
+            body: body.trim() === '' ? null : body.trim(),
+            thematiques,
+          })
+        : await createBaseline({
+            uuid: Crypto.randomUUID(),
+            title: trimmedTitle,
+            ...(body.trim() !== '' ? { body: body.trim() } : {}),
+            ...(position !== null ? { lat: position.lat, lng: position.lng } : {}),
+            ...(thematiques.length > 0 ? { thematiques } : {}),
+          });
+      onSaved(baseline);
     } catch (e) {
       setFormError(e instanceof Error ? e.message : 'Enregistrement impossible.');
     } finally {
@@ -294,7 +331,14 @@ function BaselineForm({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.backdrop}>
         <View style={[styles.sheet, { backgroundColor: theme.background }]}>
-          <ThemedText type="smallBold">Nouvelle baseline</ThemedText>
+          {/* Défilement + persistTaps : le champ thématiques reste
+              accessible clavier ouvert, et ses suggestions touchables. */}
+          <ScrollView
+            contentContainerStyle={styles.sheetContent}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets
+            showsVerticalScrollIndicator={false}>
+          <ThemedText type="smallBold">{isEditing ? 'Modifier la Note' : 'Nouvelle Note'}</ThemedText>
 
           <ThemedText type="small" themeColor="textSecondary">
             Titre *
@@ -330,16 +374,24 @@ function BaselineForm({
 
           <View style={styles.positionRow}>
             <Ionicons
-              name={position !== null ? 'location' : 'location-outline'}
+              name={position !== null || initial?.coordinates != null ? 'location' : 'location-outline'}
               size={16}
-              color={position !== null ? Palette.success : theme.textSecondary}
+              color={
+                position !== null || initial?.coordinates != null
+                  ? Palette.success
+                  : theme.textSecondary
+              }
             />
             <ThemedText type="small" themeColor="textSecondary">
-              {locating
-                ? 'Localisation en cours…'
-                : position !== null
-                  ? `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)} (automatique)`
-                  : 'Position indisponible — baseline sans coordonnées.'}
+              {isEditing
+                ? initial.coordinates !== null
+                  ? 'Position enregistrée à la création (conservée).'
+                  : 'Note sans coordonnées.'
+                : locating
+                  ? 'Localisation en cours…'
+                  : position !== null
+                    ? `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)} (automatique)`
+                    : 'Position indisponible — Note sans coordonnées.'}
             </ThemedText>
           </View>
 
@@ -375,6 +427,7 @@ function BaselineForm({
               )}
             </Pressable>
           </View>
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -450,6 +503,9 @@ const styles = StyleSheet.create({
   sheet: {
     borderRadius: 20,
     padding: Spacing.three,
+    maxHeight: '85%',
+  },
+  sheetContent: {
     gap: Spacing.two,
   },
   input: {

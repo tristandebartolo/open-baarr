@@ -276,7 +276,12 @@ export default function TripDetailScreen() {
   return (
     <ThemedView style={styles.flex}>
       <Stack.Screen options={{ title: detail?.title ?? 'Trajet', headerTransparent: false }} />
-      <ScrollView contentContainerStyle={styles.container}>
+      {/* Insets clavier : le champ thématiques du bas reste accessible ;
+          persistTaps : toucher une suggestion clavier ouvert l'ajoute. */}
+      <ScrollView
+        contentContainerStyle={styles.container}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled">
         {region !== null && (
           <View>
             <MapView style={styles.map} initialRegion={region}>

@@ -363,3 +363,7 @@ a:focus {
 .gntl-offcanvas-menu .item-list ul li, .gntl-offcanvas-menu .menu-item {
   list-style: none;
 }
+
+section.oc-front-section.oc-front-articles {
+  background-color: var(--oc-surface);
+}
