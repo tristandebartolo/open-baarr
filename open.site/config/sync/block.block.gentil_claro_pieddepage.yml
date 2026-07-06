@@ -1,0 +1,25 @@
+uuid: 432c6330-4f5f-49be-8ec6-2895815d3a82
+langcode: fr
+status: true
+dependencies:
+  config:
+    - system.menu.footer
+  module:
+    - system
+  theme:
+    - gentil_claro
+id: gentil_claro_pieddepage
+theme: gentil_claro
+region: footer
+weight: 0
+provider: null
+plugin: 'system_menu_block:footer'
+settings:
+  id: 'system_menu_block:footer'
+  label: 'Pied de page'
+  label_display: '0'
+  provider: system
+  level: 1
+  depth: null
+  expand_all_items: false
+visibility: {  }
