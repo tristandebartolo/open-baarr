@@ -1,0 +1,22 @@
+uuid: ebc12e44-d403-4742-9556-62304319ff5d
+langcode: fr
+status: true
+dependencies:
+  config:
+    - node.type.trajet
+id: node.trajet.sticky
+field_name: sticky
+entity_type: node
+bundle: trajet
+label: 'Epinglé en haut des listes'
+description: ''
+required: false
+translatable: true
+default_value:
+  -
+    value: 1
+default_value_callback: ''
+settings:
+  on_label: Activé
+  off_label: Désactivé
+field_type: boolean

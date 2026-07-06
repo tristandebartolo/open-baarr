@@ -25,10 +25,14 @@ function opencar_display_preprocess_page(array &$variables): void {
   $builder = \Drupal::service('opencar_display.front_page_builder');
   $site = \Drupal::config('system.site');
 
-  $hero = $builder->hero();
+  // Fond du hero : image d'un trajet promu en priorité (pas de consentement
+  // cookies), carte du dernier trajet publié en repli seulement si aucune image.
+  $image = $builder->heroImage();
+  $hero = $image === NULL ? $builder->hero() : NULL;
   // La plus récente alimente le hero, les 10 suivantes le mur de baselines.
   $baselines = $builder->baselines(11);
   $variables['front_hero'] = [
+    'image' => $image !== NULL ? ['url' => $image['url'], 'alt' => $image['alt']] : NULL,
     'has_map' => $hero !== NULL,
     'title' => $site->get('name'),
     'baseline' => $baselines[0] ?? ($site->get('slogan') ?: ''),
@@ -55,7 +59,10 @@ function opencar_display_preprocess_page(array &$variables): void {
   // Render array imprimé par le template : fait buller les cache tags des
   // variables Twig pures (hero, tuiles de stats) et du nom/slogan du site.
   $tags = ['node_list:trajet', 'node_list:article', 'node_list:baseline', 'config:system.site'];
-  if ($hero !== NULL) {
+  if ($image !== NULL) {
+    $tags[] = 'node:' . $image['nid'];
+  }
+  elseif ($hero !== NULL) {
     $tags[] = 'node:' . $hero['nid'];
   }
   $variables['front_cacheability'] = [

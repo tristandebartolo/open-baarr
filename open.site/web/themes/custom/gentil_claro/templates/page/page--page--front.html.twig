@@ -23,9 +23,11 @@
 			<div class="uk-container">{{ page.msg }}</div>
 		{% endif %}
 
-		{# Hero : carte du dernier trajet publié en fond, contenu par-dessus. #}
+		{# Hero : image d'un trajet promu en fond (repli carte), contenu par-dessus. #}
 		<section class="oc-front-hero">
-			{% if front_hero.has_map %}
+			{% if front_hero.image %}
+				<img class="oc-front-hero__img" src="{{ front_hero.image.url }}" alt="" aria-hidden="true" loading="eager">
+			{% elseif front_hero.has_map %}
 				<div class="oc-front-hero__map" data-opencar-front-hero aria-hidden="true"></div>
 			{% endif %}
 			<div class="oc-front-hero__veil" aria-hidden="true"></div>
@@ -151,7 +153,7 @@
 			</div>
 		</section> #}
 
-    		{# Articles récents. #}
+    {# Articles récents. #}
 		{% if front_articles %}
 			<section class="oc-front-section oc-front-articles">
 				<div class="uk-container">

@@ -8,7 +8,7 @@ third_party_settings:
   menu_ui:
     available_menus: {  }
     parent: ''
-name: baseline
+name: Note
 type: baseline
 description: null
 help: null

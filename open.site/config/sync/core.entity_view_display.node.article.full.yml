@@ -10,9 +10,11 @@ dependencies:
     - field.field.node.article.field_thematiques
     - field.field.node.article.field_video
     - field.field.node.article.field_vignette
+    - image.style.wide
     - node.type.article
   module:
     - layout_builder
+    - media
     - text
     - user
 third_party_settings:
@@ -65,11 +67,13 @@ content:
     weight: 5
     region: content
   field_vignette:
-    type: entity_reference_entity_view
+    type: media_thumbnail
     label: hidden
     settings:
-      view_mode: default
-      link: false
+      image_link: ''
+      image_style: wide
+      image_loading:
+        attribute: lazy
     third_party_settings: {  }
     weight: 0
     region: content

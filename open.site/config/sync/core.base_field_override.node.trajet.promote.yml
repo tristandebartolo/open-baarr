@@ -1,0 +1,22 @@
+uuid: 7f663c11-6c78-4c17-9e75-0ae8ce6d64c2
+langcode: fr
+status: true
+dependencies:
+  config:
+    - node.type.trajet
+id: node.trajet.promote
+field_name: promote
+entity_type: node
+bundle: trajet
+label: "Promu en page d'accueil"
+description: ''
+required: false
+translatable: true
+default_value:
+  -
+    value: 1
+default_value_callback: ''
+settings:
+  on_label: Activé
+  off_label: Désactivé
+field_type: boolean

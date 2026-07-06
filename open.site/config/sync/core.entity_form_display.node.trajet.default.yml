@@ -49,33 +49,33 @@ mode: default
 content:
   created:
     type: datetime_timestamp
-    weight: 10
+    weight: 3
     region: content
     settings: {  }
     third_party_settings: {  }
   field_activity_type:
     type: options_select
-    weight: 137
+    weight: 15
     region: content
     settings: {  }
     third_party_settings: {  }
   field_battery_end:
     type: number
-    weight: 157
+    weight: 35
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_battery_start:
     type: number
-    weight: 156
+    weight: 34
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_body:
     type: text_textarea_with_summary
-    weight: 131
+    weight: 9
     region: content
     settings:
       rows: 9
@@ -85,14 +85,14 @@ content:
     third_party_settings: {  }
   field_calories:
     type: number
-    weight: 151
+    weight: 29
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_chapo:
     type: string_textarea
-    weight: 132
+    weight: 10
     region: content
     settings:
       rows: 5
@@ -100,19 +100,19 @@ content:
     third_party_settings: {  }
   field_coordinates:
     type: geolocation_latlng
-    weight: 135
+    weight: 13
     region: content
     settings: {  }
     third_party_settings: {  }
   field_coordinates_travel:
     type: geolocation_geometry_geojson
-    weight: 136
+    weight: 14
     region: content
     settings: {  }
     third_party_settings: {  }
   field_device_info:
     type: string_textfield
-    weight: 158
+    weight: 36
     region: content
     settings:
       size: 60
@@ -120,122 +120,122 @@ content:
     third_party_settings: {  }
   field_distance:
     type: number
-    weight: 141
+    weight: 19
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_duration:
     type: number
-    weight: 146
+    weight: 24
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_duration_total:
     type: number
-    weight: 147
+    weight: 25
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_elevation_gain:
     type: number
-    weight: 142
+    weight: 20
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_elevation_loss:
     type: number
-    weight: 143
+    weight: 21
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_ended_at:
     type: datetime_timestamp
-    weight: 140
+    weight: 18
     region: content
     settings: {  }
     third_party_settings: {  }
   field_fatigue:
     type: options_select
-    weight: 155
+    weight: 33
     region: content
     settings: {  }
     third_party_settings: {  }
   field_feeling:
     type: options_select
-    weight: 154
+    weight: 32
     region: content
     settings: {  }
     third_party_settings: {  }
   field_galerie:
     type: media_library_widget
-    weight: 159
+    weight: 37
     region: content
     settings:
       media_types: {  }
     third_party_settings: {  }
   field_heart_rate_avg:
     type: number
-    weight: 148
+    weight: 26
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_heart_rate_max:
     type: number
-    weight: 149
+    weight: 27
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_hydration:
     type: number
-    weight: 153
+    weight: 31
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_speed_avg:
     type: number
-    weight: 144
+    weight: 22
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_speed_max:
     type: number
-    weight: 145
+    weight: 23
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_started_at:
     type: datetime_timestamp
-    weight: 139
+    weight: 17
     region: content
     settings: {  }
     third_party_settings: {  }
   field_steps:
     type: number
-    weight: 150
+    weight: 28
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_temperature:
     type: number
-    weight: 160
+    weight: 38
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_thematiques:
     type: entity_reference_autocomplete
-    weight: 134
+    weight: 12
     region: content
     settings:
       match_operator: CONTAINS
@@ -245,71 +245,85 @@ content:
     third_party_settings: {  }
   field_trip_status:
     type: options_select
-    weight: 138
+    weight: 16
     region: content
     settings: {  }
     third_party_settings: {  }
   field_vignette:
     type: media_library_widget
-    weight: 133
+    weight: 11
     region: content
     settings:
       media_types: {  }
     third_party_settings: {  }
   field_weather_code:
     type: number
-    weight: 161
+    weight: 39
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_weight:
     type: number
-    weight: 152
+    weight: 30
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   field_wind_speed:
     type: number
-    weight: 162
+    weight: 40
     region: content
     settings:
       placeholder: ''
     third_party_settings: {  }
   langcode:
     type: language_select
-    weight: 2
+    weight: 1
     region: content
     settings:
       include_locked: true
     third_party_settings: {  }
   path:
     type: path
-    weight: 30
+    weight: 5
     region: content
     settings: {  }
     third_party_settings: {  }
+  promote:
+    type: boolean_checkbox
+    weight: 41
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
   simple_sitemap:
-    weight: 10
+    weight: 4
     region: content
     settings: {  }
     third_party_settings: {  }
   simple_sitemap_index_now:
-    weight: 130
+    weight: 8
     region: content
     settings: {  }
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 120
+    weight: 7
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+  sticky:
+    type: boolean_checkbox
+    weight: 42
     region: content
     settings:
       display_label: true
     third_party_settings: {  }
   title:
     type: string_textfield
-    weight: -5
+    weight: 0
     region: content
     settings:
       size: 60
@@ -317,7 +331,7 @@ content:
     third_party_settings: {  }
   uid:
     type: entity_reference_autocomplete
-    weight: 5
+    weight: 2
     region: content
     settings:
       match_operator: CONTAINS
@@ -326,10 +340,8 @@ content:
       placeholder: ''
     third_party_settings: {  }
   url_redirects:
-    weight: 50
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
-hidden:
-  promote: true
-  sticky: true
+hidden: {  }

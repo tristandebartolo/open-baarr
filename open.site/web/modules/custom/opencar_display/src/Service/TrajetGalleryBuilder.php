@@ -51,6 +51,34 @@ final class TrajetGalleryBuilder {
   }
 
   /**
+   * Image de couverture d'un trajet : 1re photo de galerie, sinon vignette.
+   *
+   * Utilisé par le hero de l'accueil (fond image d'un trajet promu). Retourne
+   * l'URL du fichier original et son texte alternatif.
+   *
+   * @return array{url: string, alt: string}|null
+   *   L'image, ou NULL si le trajet n'a ni galerie ni vignette exploitable.
+   */
+  public function coverImage(NodeInterface $trajet): ?array {
+    $gallery = $this->build($trajet);
+    if ($gallery !== []) {
+      return ['url' => $gallery[0]['url'], 'alt' => $gallery[0]['alt']];
+    }
+
+    if ($trajet->hasField('field_vignette') && !$trajet->get('field_vignette')->isEmpty()) {
+      $media = $trajet->get('field_vignette')->entity;
+      if ($media instanceof MediaInterface) {
+        $photo = $this->normalize($media, NULL);
+        if ($photo !== NULL) {
+          return ['url' => $photo['url'], 'alt' => $photo['alt']];
+        }
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
    * Normalise un media image en entrée de galerie.
    *
    * @return array{url: string, thumb: string, alt: string, caption: string|null, copyright: string|null}|null

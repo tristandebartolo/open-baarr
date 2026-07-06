@@ -22,7 +22,46 @@ final class FrontPageBuilder {
     private readonly TrajetMapDataBuilder $mapDataBuilder,
     private readonly TrajetStatsPresenter $statsPresenter,
     private readonly SiteStatsService $siteStats,
+    private readonly TrajetGalleryBuilder $galleryBuilder,
   ) {}
+
+  /**
+   * Image de fond du hero : couverture d'un trajet publié et promu.
+   *
+   * Un trajet promu (base field promote) est tiré au hasard parmi ceux qui ont
+   * une image ; le tirage est figé par le cache de l'accueil. Sert d'alternative
+   * à la carte pour éviter le consentement cookies au premier affichage.
+   *
+   * @return array{nid: int, url: string, alt: string}|null
+   *   L'image, ou NULL si aucun trajet promu n'a d'image exploitable (repli
+   *   carte côté preprocess).
+   */
+  public function heroImage(): ?array {
+    $storage = $this->entityTypeManager->getStorage('node');
+    $nids = array_values($storage->getQuery()
+      ->accessCheck(TRUE)
+      ->condition('type', 'trajet')
+      ->condition('status', 1)
+      ->condition('promote', 1)
+      ->execute());
+    shuffle($nids);
+
+    foreach ($nids as $nid) {
+      $trajet = $storage->load($nid);
+      if (!$trajet instanceof NodeInterface) {
+        continue;
+      }
+      $cover = $this->galleryBuilder->coverImage($trajet);
+      if ($cover !== NULL) {
+        return [
+          'nid' => (int) $trajet->id(),
+          'url' => $cover['url'],
+          'alt' => $cover['alt'],
+        ];
+      }
+    }
+    return NULL;
+  }
 
   /**
    * Carte du dernier trajet publié pour le hero.
