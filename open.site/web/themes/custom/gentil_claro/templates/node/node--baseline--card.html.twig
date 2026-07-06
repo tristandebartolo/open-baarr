@@ -9,46 +9,36 @@
  * - trajet_card_stats : mini-tuiles (distance, durée)
  */
 #}
-{%
-  set classes = [
+{% set classes = [
     'node',
     'node-card',
     'node--type-' ~ node.bundle|clean_class,
     not node.isPublished() ? 'node--unpublished',
     view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
     'oc-trajet-card',
-  ]
-%}
-<article{{ attributes.addClass(classes).setAttribute('style', '--oc-activity: ' ~ trajet_activity.color) }} data-clk-oo="true">
+  ] %}
+<article{{ attributes.addClass(classes).setAttribute('style','--oc-activity:'~trajet_activity.color) }} data-clk-oo="true">
 	{% if content.field_vignette|render %}
 		<div class="oc-trajet-card__media">{{ content.field_vignette }}</div>
 	{% endif %}
 	<div class="oc-trajet-card__body">
 		<header class="oc-trajet-card__header">
 			<span class="oc-activity-badge oc-activity-badge--small" aria-hidden="true">
-				<span uk-icon="icon: location; ratio: 0.7"></span>
+				<span uk-icon="icon: quote-right; ratio: 0.7"></span>
 			</span>
 			<div>
 				<h2{{ title_attributes.addClass('oc-trajet-card__title') }}>
 					{{ label }}
 				</h2>
 				<p class="oc-trajet-meta">
-					{{ trajet_activity.label }}{% if trajet_started_at %} · {{ trajet_started_at }}{% endif %}
+					{% if date %}
+						{{ date }}
+					{% endif %}
 				</p>
 			</div>
 		</header>
-		{% if trajet_card_stats %}
-			<div class="oc-trajet-card__stats">
-				{% for tile in trajet_card_stats %}
-					<span class="oc-trajet-card__stat">
-						<span uk-icon="icon: {{ tile.icon }}; ratio: 0.7" aria-hidden="true"></span>
-						{{ tile.value }}
-					</span>
-				{% endfor %}
-			</div>
-		{% endif %}
-		{% if content.field_chapo|render %}
-			<div class="oc-trajet-card__chapo">{{ content.field_chapo }}</div>
+		{% if content.field_body|render %}
+			<div class="oc-trajet-card__chapo">{{ content.field_body }}</div>
 		{% endif %}
 	</div>
 </article>

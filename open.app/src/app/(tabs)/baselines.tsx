@@ -197,12 +197,14 @@ function BaselineRow({
             {baseline.coordinates !== null ? ' · 📍' : ''}
           </ThemedText>
         </View>
-        <Pressable accessibilityLabel="Modifier" onPress={onEdit} hitSlop={8}>
-          <Ionicons name="pencil" size={18} color={theme.textSecondary} />
-        </Pressable>
-        <Pressable accessibilityLabel="Supprimer" onPress={onDelete} hitSlop={8}>
-          <Ionicons name="trash-outline" size={18} color={Palette.danger} />
-        </Pressable>
+        <View style={styles.cardActions}>
+          <Pressable accessibilityLabel="Modifier" onPress={onEdit} hitSlop={10}>
+            <Ionicons name="pencil" size={18} color={theme.textSecondary} />
+          </Pressable>
+          <Pressable accessibilityLabel="Supprimer" onPress={onDelete} hitSlop={10}>
+            <Ionicons name="trash-outline" size={18} color={Palette.danger} />
+          </Pressable>
+        </View>
       </View>
 
       {/* Description masquée quand elle est vide. */}
@@ -469,6 +471,13 @@ const styles = StyleSheet.create({
   cardTitleBlock: {
     flex: 1,
     gap: 2,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // Espace généreux entre modifier et supprimer (cibles distinctes).
+    gap: Spacing.four,
+    paddingLeft: Spacing.two,
   },
   chips: {
     flexDirection: 'row',
