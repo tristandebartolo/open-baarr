@@ -39,6 +39,22 @@
 			</div>
 		</section>
 
+		{# Chiffres clés publics. #}
+		{% if front_stats %}
+			<section class="oc-front-section oc-front-stats">
+				<div class="uk-container">
+					{# <header class="oc-front-section__header">
+						<h2 class="oc-front-section__title">{{ 'Chiffres clés'|t }}</h2>
+					</header> #}
+					<div class="oc-front-stats__grid">
+						{% for tile in front_stats %}
+							{% include '@gentil_claro/partials/trajet-stat-tile.html.twig' with { tile: tile } only %}
+						{% endfor %}
+					</div>
+				</div>
+			</section>
+		{% endif %}
+
 		{# La route : timeline horizontale des derniers trajets. #}
 		{% if front_road %}
 			<section class="oc-front-section oc-road-section">
@@ -135,17 +151,15 @@
 			</div>
 		</section> #}
 
-		{# Chiffres clés publics. #}
-		{% if front_stats %}
-			<section class="oc-front-section oc-front-stats">
+    		{# Articles récents. #}
+		{% if front_articles %}
+			<section class="oc-front-section oc-front-articles">
 				<div class="uk-container">
 					<header class="oc-front-section__header">
-						<h2 class="oc-front-section__title">{{ 'Chiffres clés'|t }}</h2>
+						<h2 class="oc-front-section__title">{{ 'Articles récents'|t }}</h2>
 					</header>
-					<div class="oc-front-stats__grid">
-						{% for tile in front_stats %}
-							{% include '@gentil_claro/partials/trajet-stat-tile.html.twig' with { tile: tile } only %}
-						{% endfor %}
+					<div class="oc-front-articles__grid">
+						{{ front_articles }}
 					</div>
 				</div>
 			</section>
@@ -170,19 +184,6 @@
 			</section>
 		{% endif %}
 
-		{# Articles récents. #}
-		{% if front_articles %}
-			<section class="oc-front-section oc-front-articles">
-				<div class="uk-container">
-					<header class="oc-front-section__header">
-						<h2 class="oc-front-section__title">{{ 'Articles récents'|t }}</h2>
-					</header>
-					<div class="oc-front-articles__grid">
-						{{ front_articles }}
-					</div>
-				</div>
-			</section>
-		{% endif %}
 	</main>
 	{# Footer #}
 	{% include directory ~ '/templates/partials/gntl-footer.html.twig' %}

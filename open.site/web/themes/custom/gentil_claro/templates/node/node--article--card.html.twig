@@ -20,9 +20,9 @@
 				{% set border_attribute = 'text-shadow: 20px 20px 49px ' ~ color  ~ ';'%}
 				{% set title_attributes = title_attributes.setAttribute('style', border_attribute) %}
 			{% endif %}
-			<h2{{title_attributes.addClass('node__title')}}>
+			<h3{{title_attributes.addClass('node__title')}}>
 				<a data-clk-oo-target="{{ url }}" href="{{ url }}" rel="bookmark">{{ label }}</a>
-			</h2>
+			</h3>
 		{% endif %}
 	</header>
 	{% if content.field_chapo and content.field_chapo[0] %}
