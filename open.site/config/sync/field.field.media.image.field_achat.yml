@@ -1,0 +1,23 @@
+uuid: fe6f6cfe-4d6d-46d8-a9d4-71a4fb4a4078
+langcode: fr
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_achat
+    - media.type.image
+  module:
+    - link
+id: media.image.field_achat
+field_name: field_achat
+entity_type: media
+bundle: image
+label: Achat
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 0
+  link_type: 17
+field_type: link

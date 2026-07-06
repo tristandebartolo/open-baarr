@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.media.image.field_achat
     - field.field.media.image.field_coordinates
     - field.field.media.image.field_copyright
     - field.field.media.image.field_description
@@ -12,6 +13,7 @@ dependencies:
   module:
     - geolocation
     - image
+    - link
 _core:
   default_config_hash: 73xaTNkI5J6sfFcBmNYeuk070X3mQS_iwwWaPYyfG2M
 id: media.image.default
@@ -19,6 +21,18 @@ targetEntityType: media
 bundle: image
 mode: default
 content:
+  field_achat:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
   field_coordinates:
     type: geolocation_latlng
     label: above

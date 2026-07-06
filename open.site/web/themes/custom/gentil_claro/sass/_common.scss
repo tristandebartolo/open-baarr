@@ -127,22 +127,19 @@ div#drupal-off-canvas-wrapper {
 .gntl-nav-branding input:focus-within,
 .gntl-nav-branding button:focus-within,
 .gntl-nav-branding a:focus-within {
-  background-color: #f7f7f7 !important;
+   border: 0px solid !important;
 }
 
 input:focus-within,
 button:focus-within,
 a:focus-within {
   border: 0px solid !important;
-  outline-style: none !important;
-  box-shadow: none !important;
-  border-color: transparent !important;
 }
 
-.tdb-img a:focus-within {
-  border: 1px solid #ea8787 !important;
-  outline: none;
-}
+// .tdb-img a:focus-within {
+//   border: 1px solid #ea8787 !important;
+//   outline: none;
+// }
 
 a.visually-hidden.focusable:focus-within {
   width: 100%;
@@ -268,8 +265,7 @@ a {
 
 .page-wrapper *:focus,
 .ui-dialog *:focus {
-  outline: 0 !important;
-  box-shadow: none !important;
+  border: 0px solid !important;
 }
 
 .cookies-fallback {
@@ -289,7 +285,7 @@ a {
 
 article {
   a[target=_blank] {
-    color: #dd4d4d;
+    color: var(--oc-activity, var(--oc-accent)) !important;
     &::after {
       font-family: 'Gentil' !important;
       content: "\e94f";
@@ -298,12 +294,11 @@ article {
   }
 }
 
-
 a {
   text-decoration: none !important;
 	background:
 		linear-gradient(to right, transparent, transparent),
-		linear-gradient(to right, rgb(233, 171, 171), rgba(234, 135, 135, 1), rgb(227, 85, 85));
+		linear-gradient(to right, var(--oc-surface), var(--color-gray-700), var(--oc-activity, var(--oc-accent))) ;
 	background-size: 100% 0.1em, 0 0.1em;
   background-position: 100% 100%, 0 100%;
   background-repeat: no-repeat;

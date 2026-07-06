@@ -117,7 +117,7 @@ html[data-theme='dark'] {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   &--primary {
-    background: var(--oc-accent);
+    background: var(--oc-activity, var(--oc-accent)) !important;
     color: #ffffff;
 
     &:hover,

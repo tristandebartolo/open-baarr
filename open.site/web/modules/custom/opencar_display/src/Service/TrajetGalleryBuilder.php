@@ -109,6 +109,7 @@ final class TrajetGalleryBuilder {
       'alt' => $alt !== '' ? $alt : (string) $media->label(),
       'caption' => $this->stringValue($media, 'field_description'),
       'copyright' => $this->stringValue($media, 'field_copyright'),
+      'achat' => $this->uriValue($media, 'field_achat'),
     ];
   }
 
@@ -120,6 +121,17 @@ final class TrajetGalleryBuilder {
       return NULL;
     }
     $value = (string) $media->get($field)->value;
+    return $value !== '' ? $value : NULL;
+  }
+
+    /**
+   * Valeur texte d'un champ du media, NULL si absente.
+   */
+  private function uriValue(MediaInterface $media, string $field): ?string {
+    if (!$media->hasField($field) || $media->get($field)->isEmpty()) {
+      return NULL;
+    }
+    $value = (string) $media->get($field)->uri;
     return $value !== '' ? $value : NULL;
   }
 

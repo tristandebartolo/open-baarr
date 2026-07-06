@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.media.media_library
+    - field.field.media.image.field_achat
     - field.field.media.image.field_coordinates
     - field.field.media.image.field_copyright
     - field.field.media.image.field_description
@@ -32,6 +33,7 @@ content:
     region: content
 hidden:
   created: true
+  field_achat: true
   field_coordinates: true
   field_copyright: true
   field_description: true

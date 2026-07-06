@@ -700,3 +700,17 @@ html.oc-map-noscroll {
   background: var(--oc-accent);
   color: #ffffff;
 }
+
+
+.gg-buy-picture {
+  top: 15px;
+  right: 15px;
+  z-index: 2;
+  background-color: var(--oc-text);
+  padding: 10px;
+  border-radius: 50px;
+  color: var(--oc-bg);
+  &:hover {
+    background-color: var(--oc-surface);
+  }
+}

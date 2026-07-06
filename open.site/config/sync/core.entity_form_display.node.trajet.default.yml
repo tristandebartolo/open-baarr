@@ -40,6 +40,7 @@ dependencies:
     - geolocation
     - geolocation_geometry
     - media_library
+    - media_library_edit
     - path
     - text
 id: node.trajet.default
@@ -177,7 +178,10 @@ content:
     region: content
     settings:
       media_types: {  }
-    third_party_settings: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: true
+        edit_form_mode: media_library
   field_heart_rate_avg:
     type: number
     weight: 26
@@ -255,7 +259,10 @@ content:
     region: content
     settings:
       media_types: {  }
-    third_party_settings: {  }
+    third_party_settings:
+      media_library_edit:
+        show_edit: true
+        edit_form_mode: media_library
   field_weather_code:
     type: number
     weight: 39

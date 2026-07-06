@@ -1,0 +1,19 @@
+uuid: eb23d2d7-800c-44eb-8312-460be2b224ba
+langcode: fr
+status: true
+dependencies:
+  module:
+    - link
+    - media
+id: media.field_achat
+field_name: field_achat
+entity_type: media
+type: link
+settings: {  }
+module: link
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

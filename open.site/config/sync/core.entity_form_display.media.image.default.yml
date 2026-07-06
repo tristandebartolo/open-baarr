@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.media.image.field_achat
     - field.field.media.image.field_coordinates
     - field.field.media.image.field_copyright
     - field.field.media.image.field_description
@@ -12,6 +13,7 @@ dependencies:
   module:
     - focal_point
     - geolocation
+    - link
     - path
 _core:
   default_config_hash: JSY4-JPyNZBiYYo6imdRYF6_SdtWQexPndrLvn3-vw4
@@ -25,6 +27,14 @@ content:
     weight: 10
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_achat:
+    type: link_default
+    weight: 104
+    region: content
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
     third_party_settings: {  }
   field_coordinates:
     type: geolocation_latlng

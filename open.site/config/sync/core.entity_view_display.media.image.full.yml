@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.media.full
+    - field.field.media.image.field_achat
     - field.field.media.image.field_coordinates
     - field.field.media.image.field_copyright
     - field.field.media.image.field_description
@@ -14,6 +15,7 @@ dependencies:
     - geolocation
     - image
     - layout_builder
+    - link
 third_party_settings:
   layout_builder:
     enabled: false
@@ -25,6 +27,18 @@ targetEntityType: media
 bundle: image
 mode: full
 content:
+  field_achat:
+    type: link
+    label: above
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 4
+    region: content
   field_coordinates:
     type: geolocation_latlng
     label: hidden
